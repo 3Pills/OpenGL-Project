@@ -50,7 +50,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)src;./deps/glfw/include;./deps/glm</AdditionalIncludeDirectories>
-      <AdditionalUsingDirectories>$(ProjectDir)src</AdditionalUsingDirectories>
+      <AdditionalUsingDirectories>$(ProjectDir)src;./deps/glfw/include;./deps/glm</AdditionalUsingDirectories>
       <PreprocessorDefinitions>WIN32;GLM_FORCE_PURE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -67,7 +67,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)src;./deps/glfw/include;./deps/glm</AdditionalIncludeDirectories>
-      <AdditionalUsingDirectories>$(ProjectDir)src</AdditionalUsingDirectories>
+      <AdditionalUsingDirectories>$(ProjectDir)src;./deps/glfw/include;./deps/glm</AdditionalUsingDirectories>
       <PreprocessorDefinitions>WIN32;GLM_FORCE_PURE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
