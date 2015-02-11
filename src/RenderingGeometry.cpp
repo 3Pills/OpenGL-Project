@@ -1,5 +1,8 @@
 #include "RenderingGeometry.h"
 #include "Vertex.h"
+#include <fstream>
+#include <string>
+#include "Utility.h"
 
 RenderingGeometry::RenderingGeometry() : m_oCamera(0.1){
 	Application::Application();
@@ -11,7 +14,7 @@ bool RenderingGeometry::startup(){
 		return false;
 	}
 
-	generateShader();
+	LoadShader("vertex-wavy.glsl", "fragment.glsl", &m_programID);
 	generateGrid(100,100);
 
 	Gizmos::create();
@@ -50,6 +53,15 @@ void RenderingGeometry::draw(){
 
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_LINES, m_indexCount, GL_UNSIGNED_INT, 0);
+
+	vec4 white(1);
+	vec4 black(0, 0, 0, 1);
+
+	for (int i = 0; i <= 20; ++i){
+		Gizmos::addLine(vec3(-10 + i, 0, -10), i != 10 ? vec3(-10 + i, 0, 10) : vec3(-10 + i, 0, 0), i != 10 ? black : white);
+		Gizmos::addLine(vec3(-10, 0, -10 + i), i != 10 ? vec3(10, 0, -10 + i) : vec3(0, 0, -10 + i), i != 10 ? black : white);
+	}
 
 	Gizmos::addTransform(mat4(1), 10);
 	Gizmos::draw(m_oCamera.getProjectionView());
@@ -114,37 +126,25 @@ void RenderingGeometry::generateGrid(const unsigned int rows, const unsigned int
 void RenderingGeometry::generateShader() {
 	/*
 	const char* vs_source =
-		"#version 410\n"
-		"layout(location = 0) in vec4 Position; \n"
-		"layout(location=1) in vec4 Color;\n"
-		"out vec4 vColor;\n"
-		"uniform mat4 ProjectionView;\n"
-		"void main() {"
-			"vColor = Color;"
-			"gl_Position = ProjectionView * Position;"
-		"}";
 	*/
-	const char* vs_source =
-		"#version 410\n"
-		"layout(location = 0) in vec4 Position;\n"
-		"layout(location=1) in vec4 Color;\n"
-		"out vec4 vColor;\n"
-		"uniform mat4 ProjectionView;\n"
-		"uniform float time;\n"
-		"uniform float heightScale;\n"
-		"void main() {"
-		"vColor = Color;"
-		"vec4 P = Position;"
-		"P.y += cos(time*2 + abs((P.x - 50)/10)) * heightScale;"
-		"P.y += cos(time*3 + abs((P.z - 50)/8)) * heightScale;"
-		"gl_Position = ProjectionView * P;"
-		"}";
+	std::string vs_string, fs_string, filebuffer;
+	std::ifstream vs_file("vertex-wavy.glsl");
+	if (vs_file.is_open()){
+		while (std::getline(vs_file, filebuffer)){
+			vs_string += filebuffer + "\n";
+		}
+		vs_file.close();
+	}
+	std::ifstream fs_file("fragment.glsl");
+	if (fs_file.is_open()){
+		while (std::getline(fs_file, filebuffer)){
+			fs_string += filebuffer + "\n";
+		}
+		fs_file.close();
+	}
 
-	const char* fs_source =
-		"#version 410\n"
-		"in vec4 vColor;\n"
-		"out vec4 fragColor; \n"
-		"void main() { fragColor = vColor; }";
+	const char* vs_source = vs_string.c_str();
+	const char* fs_source = fs_string.c_str();
 
 	unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 	unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);

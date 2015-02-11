@@ -1,0 +1,89 @@
+#include <iostream>
+#include "gl_core_4_4.h"
+
+unsigned int LoadShader(char* a_vertex_Filename, char* a_fragment_Filename, GLuint* result){
+	bool succeeded = false;
+	FILE* vs_file = fopen(a_vertex_Filename, "r");
+	FILE* fs_file = fopen(a_fragment_Filename, "r");
+
+	if (vs_file != 0 && fs_file != 0) {
+		fseek(vs_file, 0, SEEK_END);
+		long vs_file_len = ftell(vs_file);
+		rewind(vs_file);
+
+		fseek(fs_file, 0, SEEK_END);
+		long fs_file_len = ftell(fs_file);
+		rewind(fs_file);
+
+		char* vs_source = (char*)malloc(sizeof(char)*vs_file_len);
+		char* fs_source = new char[fs_file_len];
+
+		fread(vs_source, 1, vs_file_len, vs_file);
+		vs_source[vs_file_len-1] = '\0';
+		fread(fs_source, 1, fs_file_len, fs_file);
+		fs_source[fs_file_len-1] = '\0';
+
+		succeeded = true;
+
+		/*
+		std::string vs_string, fs_string, filebuffer;
+		std::ifstream vs_file("vertex-wavy.glsl");
+		if (vs_file.is_open()){
+			while (std::getline(vs_file, filebuffer)){
+				vs_string += filebuffer + "\n";
+			}
+			vs_file.close();
+		}
+		std::ifstream fs_file("fragment.glsl");
+		if (fs_file.is_open()){
+			while (std::getline(fs_file, filebuffer)){
+				fs_string += filebuffer + "\n";
+			}
+			fs_file.close();
+		}
+
+		const char* vs_source = vs_string.c_str();
+		const char* fs_source = fs_string.c_str();
+		*/
+
+		printf("\n%s\n%d\n%s\n%d\n", vs_source, vs_file_len, fs_source, fs_file_len);
+
+		unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+		unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+
+		glShaderSource(vertex_shader, 1, &vs_source, 0);
+		glCompileShader(vertex_shader);
+
+		glShaderSource(fragment_shader, 1, &fs_source, 0);
+		glCompileShader(fragment_shader);
+
+		unsigned int result = glCreateProgram();
+		glAttachShader(result, vertex_shader);
+		glAttachShader(result, fragment_shader);
+		glLinkProgram(result);
+
+		int success = GL_FALSE;
+		glGetProgramiv(result, GL_LINK_STATUS, &success);
+		if (success == GL_FALSE){
+			int log_length = 0;
+			glGetProgramiv(result, GL_INFO_LOG_LENGTH, &log_length);
+
+			char* log = new char[log_length];
+			glGetProgramInfoLog(result, log_length, 0, log);
+			printf("Error: Failed to link shader program!\n");
+			printf("%s\n", log);
+			delete[] log;
+			succeeded = false;
+		}
+
+		glDeleteShader(fragment_shader);
+		glDeleteShader(vertex_shader);
+
+		delete[] vs_source;
+		delete[] fs_source;
+	}
+	fclose(vs_file);
+	fclose(fs_file);
+
+	return succeeded;
+}

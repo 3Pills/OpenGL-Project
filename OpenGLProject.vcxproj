@@ -40,9 +40,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>./deps/glfw/include;./deps/glm;$(IncludePath)</IncludePath>
+    <SourcePath>./src;$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>./deps/glfw/include;./deps/glm;$(IncludePath)</IncludePath>
+    <SourcePath>./src;$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -51,7 +53,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)src;./deps/glfw/include;./deps/glm</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>$(ProjectDir)src;./deps/glfw/include;./deps/glm</AdditionalUsingDirectories>
-      <PreprocessorDefinitions>WIN32;GLM_FORCE_PURE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;GLM_FORCE_PURE;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -88,6 +90,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\AppBase.cpp" />
     <ClCompile Include="src\RenderingGeometry.cpp" />
+    <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h" />
@@ -99,7 +102,13 @@
     <ClInclude Include="src\IntroToOpenGL.h" />
     <ClInclude Include="src\RenderingGeometry.h" />
     <ClInclude Include="src\AppBase.h" />
+    <ClInclude Include="src\Utility.h" />
     <ClInclude Include="src\Vertex.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\fragment.glsl" />
+    <None Include="resources\vertex-wavy.glsl" />
+    <None Include="resources\vertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

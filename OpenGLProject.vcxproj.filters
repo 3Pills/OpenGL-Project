@@ -48,6 +48,9 @@
     <ClCompile Include="src\RenderingGeometry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Utility.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\gl_core_4_4.h">
@@ -80,5 +83,19 @@
     <ClInclude Include="src\glm_header.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\fragment.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\vertex.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\vertex-wavy.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
