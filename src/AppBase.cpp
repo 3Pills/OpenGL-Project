@@ -1,11 +1,11 @@
-#include "VirtualAppBase.h"
+#include "AppBase.h"
 
-VirtualAppBase::VirtualAppBase(){
+AppBase::AppBase(){
 	Application::Application();
 }
-VirtualAppBase::~VirtualAppBase(){}
+AppBase::~AppBase(){}
 
-bool VirtualAppBase::startup(){
+bool AppBase::startup(){
 	if (!Application::startup()){
 		return false;
 	}
@@ -14,10 +14,10 @@ bool VirtualAppBase::startup(){
 
 	return true;
 }
-bool VirtualAppBase::shutdown(){
+bool AppBase::shutdown(){
 	return Application::shutdown();
 }
-bool VirtualAppBase::update(){
+bool AppBase::update(){
 	if (!Application::update()){
 		return false;
 	}
@@ -26,7 +26,7 @@ bool VirtualAppBase::update(){
 
 	return true;
 }
-void VirtualAppBase::draw(){
+void AppBase::draw(){
 	//Draw stuff goes here.
 	Application::draw();
 }

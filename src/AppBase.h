@@ -2,11 +2,10 @@
 #define _APP_BASE_H_
 #include "Application.h"
 
-class VirtualAppBase : public Application
-{
+class AppBase : public Application {
 public:
-	VirtualAppBase();
-	virtual ~VirtualAppBase();
+	AppBase();
+	virtual ~AppBase();
 
 	virtual bool startup();
 	virtual bool shutdown();

@@ -1,9 +1,7 @@
 #ifndef _CAMERA_H_
 #define _CAMERA_H_
-#include "glm/glm.hpp"
-#include "glm/ext.hpp""
 
-using namespace glm;
+#include "glm_header.h"
 
 class Camera {
 private:

@@ -1,7 +1,7 @@
 #include "Camera.h"
 #include <GLFW\glfw3.h>
 
-Camera::Camera():m_fFoV(radians(90.0f)), m_fAspect(1280.0f/720.0f), m_fNearZ(0.1f), m_fFarZ(20000.0f), m_vEye(vec3(10,0,0)), m_vTo(vec3(0,0,0)), m_vUp(vec3(0,1,0)){}
+Camera::Camera():m_fFoV(glm::radians(90.0f)), m_fAspect(1280.0f/720.0f), m_fNearZ(0.1f), m_fFarZ(20000.0f), m_vEye(vec3(10,0,0)), m_vTo(vec3(0,0,0)), m_vUp(vec3(0,1,0)){}
 
 void Camera::UpdateProjectionViewTransform(){
 	m_mViewTransform = glm::inverse(m_mWorldTransform);
@@ -28,6 +28,7 @@ void Camera::setPos(const vec3 a_vPos){
 	m_mWorldTransform[3].z = a_vPos.z;
 	m_vEye = a_vPos;
 	m_vTo += a_vPos - m_vEye;
+	m_mViewTransform = glm::inverse(m_mWorldTransform);
 }
 
 void Camera::setFoV(const float a_fFoV){
@@ -38,7 +39,7 @@ mat4 Camera::getWorldTransform(){
 	return m_mWorldTransform;
 }
 mat4 Camera::getView(){
-	return m_mViewTransform;
+	return glm::inverse(m_mWorldTransform);
 }
 mat4 Camera::getProjection(){
 	return m_mProjTransform;

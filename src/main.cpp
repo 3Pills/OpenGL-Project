@@ -1,8 +1,8 @@
 #include "IntroToOpenGL.h"
-#include "CameraAndProjections.h"
+#include "RenderingGeometry.h"
 
 int main() {
-	CameraAndProjections App;
+	RenderingGeometry App;
 	App.startup();
 
 	while (App.update()){

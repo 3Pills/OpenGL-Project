@@ -1,8 +1,6 @@
 #include "CameraAndProjections.h"
 #include <iostream>
 
-using namespace glm;
-
 CameraAndProjections::CameraAndProjections(): m_oCamera(0.1){
 	Application::Application();
 }
@@ -19,7 +17,7 @@ bool CameraAndProjections::startup(){
 	//m_proj = glm::perspective(radians(90.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	//m_oCamera.setLookAt(m_pos, m_look, vec3(0, 1, 0));
-	m_oCamera.setPerspective(radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	Gizmos::create();
 	return true;
@@ -34,6 +32,7 @@ bool CameraAndProjections::update(){
 	//m_pos.x = sinf(m_fCurrTime) * 10;
 	//m_pos.z = cosf(m_fCurrTime) * 10;
 	//m_view = glm::lookAt(m_pos, m_look, vec3(0, 1, 0));
+	m_oCamera.update(m_fDeltaTime);
 
 	return true;
 }
@@ -51,7 +50,6 @@ void CameraAndProjections::draw(){
 		Gizmos::addLine(vec3(-10 + i, 0, -10), i != 10 ? vec3(-10 + i, 0, 10) : vec3(-10 + i, 0, 0), i != 10 ? black : white);
 		Gizmos::addLine(vec3(-10, 0, -10 + i), i != 10 ? vec3(10, 0, -10 + i) : vec3(0, 0, -10 + i), i != 10 ? black : white);
 	}
-	m_oCamera.update(m_fDeltaTime);
 
 	Gizmos::draw(m_oCamera.getProjectionView());
 	Application::draw();
