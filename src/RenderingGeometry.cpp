@@ -12,7 +12,7 @@ bool RenderingGeometry::startup(){
 		return false;
 	}
 
-	if (!LoadShader("vertex-wavy.glsl", "fragment.glsl", &m_programID)){
+	if (!LoadShader("shaders/vertex-wavy.glsl", "shaders/fragment.glsl", &m_programID)){
 		return false;
 	}
 	generateGrid(100,100);
