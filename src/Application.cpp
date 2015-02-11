@@ -40,9 +40,9 @@ bool Application::shutdown(){
 }
 bool Application::update(){
 	if (!glfwWindowShouldClose(m_window)) {
+		m_fPrevTime = m_fCurrTime;
 		m_fCurrTime = float(glfwGetTime());
 		m_fDeltaTime = m_fCurrTime - m_fPrevTime;
-		m_fPrevTime = 0;
 	}
 	return (!glfwWindowShouldClose(m_window));
 }

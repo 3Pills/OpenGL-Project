@@ -1,7 +1,7 @@
 #include "CameraAndProjections.h"
 #include <iostream>
 
-CameraAndProjections::CameraAndProjections(): m_oCamera(0.1){
+CameraAndProjections::CameraAndProjections(): m_oCamera(50){
 	Application::Application();
 }
 CameraAndProjections::~CameraAndProjections(){}

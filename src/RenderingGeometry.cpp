@@ -1,10 +1,8 @@
 #include "RenderingGeometry.h"
 #include "Vertex.h"
-#include <fstream>
-#include <string>
 #include "Utility.h"
 
-RenderingGeometry::RenderingGeometry() : m_oCamera(0.1){
+RenderingGeometry::RenderingGeometry() : m_oCamera(50){
 	Application::Application();
 }
 RenderingGeometry::~RenderingGeometry(){}
@@ -14,7 +12,9 @@ bool RenderingGeometry::startup(){
 		return false;
 	}
 
-	LoadShader("vertex-wavy.glsl", "fragment.glsl", &m_programID);
+	if (!LoadShader("vertex-wavy.glsl", "fragment.glsl", &m_programID)){
+		return false;
+	}
 	generateGrid(100,100);
 
 	Gizmos::create();
@@ -53,7 +53,7 @@ void RenderingGeometry::draw(){
 
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
-	glDrawElements(GL_LINES, m_indexCount, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_LINES, m_indexCount, GL_UNSIGNED_INT, 0);
 
 	vec4 white(1);
 	vec4 black(0, 0, 0, 1);
@@ -121,58 +121,4 @@ void RenderingGeometry::generateGrid(const unsigned int rows, const unsigned int
 
 	delete[] vertex_array;
 	delete[] index_array;
-}
-
-void RenderingGeometry::generateShader() {
-	/*
-	const char* vs_source =
-	*/
-	std::string vs_string, fs_string, filebuffer;
-	std::ifstream vs_file("vertex-wavy.glsl");
-	if (vs_file.is_open()){
-		while (std::getline(vs_file, filebuffer)){
-			vs_string += filebuffer + "\n";
-		}
-		vs_file.close();
-	}
-	std::ifstream fs_file("fragment.glsl");
-	if (fs_file.is_open()){
-		while (std::getline(fs_file, filebuffer)){
-			fs_string += filebuffer + "\n";
-		}
-		fs_file.close();
-	}
-
-	const char* vs_source = vs_string.c_str();
-	const char* fs_source = fs_string.c_str();
-
-	unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-
-	glShaderSource(vertex_shader, 1, &vs_source, 0);
-	glCompileShader(vertex_shader);
-
-	glShaderSource(fragment_shader, 1, &fs_source, 0);
-	glCompileShader(fragment_shader);
-
-	m_programID = glCreateProgram();
-	glAttachShader(m_programID, vertex_shader);
-	glAttachShader(m_programID, fragment_shader);
-	glLinkProgram(m_programID);
-
-	int success = GL_FALSE;
-	glGetProgramiv(m_programID, GL_LINK_STATUS, &success);
-	if (success == GL_FALSE){
-		int log_length = 0;
-		glGetProgramiv(m_programID, GL_INFO_LOG_LENGTH, &log_length);
-
-		char* log = new char[log_length];
-		glGetProgramInfoLog(m_programID, log_length, 0, log);
-		printf("Error: Failed to link shader program!\n");
-		printf("%s\n", log);
-		delete[] log;
-	}
-
-	glDeleteShader(fragment_shader);
-	glDeleteShader(vertex_shader);
 }

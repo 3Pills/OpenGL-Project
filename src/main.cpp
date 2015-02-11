@@ -3,7 +3,9 @@
 
 int main() {
 	RenderingGeometry App;
-	App.startup();
+	if (!App.startup()) {
+		return -1;
+	}
 
 	while (App.update()){
 		App.draw();

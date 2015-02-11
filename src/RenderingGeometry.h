@@ -16,7 +16,6 @@ public:
 	virtual void draw();
 
 	void generateGrid(const unsigned int rows, const unsigned int cols);
-	void generateShader();
 
 	unsigned int m_programID;
 	unsigned int m_indexCount;
