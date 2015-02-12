@@ -1,11 +1,8 @@
-#include "IntroToOpenGL.h"
-#include "RenderingGeometry.h"
+#include "Textures.h"
 
 int main() {
-	RenderingGeometry App;
-	if (!App.startup()) {
-		return -1;
-	}
+	Textures App;
+	App.startup();
 
 	while (App.update()){
 		App.draw();

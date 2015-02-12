@@ -6,7 +6,13 @@ unsigned int LoadShader(char* a_vertex_Filename, char* a_fragment_Filename, GLui
 	FILE* vs_file = fopen(a_vertex_Filename, "rb");
 	FILE* fs_file = fopen(a_fragment_Filename, "rb");
 
-	if (vs_file != 0 && fs_file != 0) {
+	if (vs_file == 0){
+		printf("%s", "Vertex shader not found!");
+	}
+	else if (fs_file == 0){
+		printf("%s", "Fragment shader not found!");
+	}
+	else {
 		fseek(vs_file, 0, SEEK_END);
 		long vs_file_len = ftell(vs_file);
 		rewind(vs_file);
@@ -59,9 +65,9 @@ unsigned int LoadShader(char* a_vertex_Filename, char* a_fragment_Filename, GLui
 
 		delete[] vs_source;
 		delete[] fs_source;
+		fclose(vs_file);
+		fclose(fs_file);
 	}
-	fclose(vs_file);
-	fclose(fs_file);
 
 	return succeeded;
 }

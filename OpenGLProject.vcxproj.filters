@@ -51,6 +51,9 @@
     <ClCompile Include="src\Utility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Textures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\gl_core_4_4.h">
@@ -86,15 +89,27 @@
     <ClInclude Include="src\Utility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Textures.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\fragment.glsl">
+    <None Include="data\shaders\textured_vertex.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="resources\vertex.glsl">
+    <None Include="data\shaders\textured_fragment.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="resources\vertex-wavy.glsl">
+    <None Include="data\shaders\fragment.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="data\shaders\vertex.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="data\shaders\vertex-wavy.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

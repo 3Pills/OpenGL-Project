@@ -27,7 +27,7 @@ bool Application::startup(){
 	int major_version = ogl_GetMajorVersion();
 	int minor_version = ogl_GetMinorVersion();
 
-	printf("OpenGL V%d.%d successfully loaded.", major_version, minor_version);
+	printf("OpenGL V%d.%d successfully loaded.\n", major_version, minor_version);
 
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
