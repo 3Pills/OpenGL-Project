@@ -57,7 +57,9 @@ FlyCamera::FlyCamera(float a_fSpeed):m_fSpeed(a_fSpeed),Camera(){
 }
 
 void FlyCamera::setSpeed(float a_fSpeed){
-	m_fSpeed = a_fSpeed;
+	if (m_fSpeed != a_fSpeed){
+		m_fSpeed = a_fSpeed;
+	}
 }
 
 void FlyCamera::update(const float a_fdt){
@@ -83,8 +85,19 @@ void FlyCamera::update(const float a_fdt){
 	if (glfwGetKey(curr_window, GLFW_KEY_E)){
 		m_mWorldTransform[3] += vec4(0, 1, 0, 0) * a_fdt * m_fSpeed;
 	}
-	//m_vTo = glm::rotate(m_vEye, 1.0f, glm::normalize(m_vLastMousePos - CurrMosePos));
 
+	if (glfwGetKey(curr_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS){
+		setSpeed(85);
+	}
+	else if (glfwGetKey(curr_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS && glfwGetKey(curr_window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS){
+		setSpeed(10);
+	}
+	else if (glfwGetKey(curr_window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS){
+		setSpeed(20);
+	}
+	else{
+		setSpeed(50);
+	}
 
 	if (glfwGetMouseButton(curr_window, GLFW_MOUSE_BUTTON_LEFT)){
 		double x, y;
@@ -100,10 +113,8 @@ void FlyCamera::update(const float a_fdt){
 			x *= -1;
 			y *= -1;
 
-			vec3 camera_right = (vec3)m_mWorldTransform[0];
-
 			mat4 yaw = glm::rotate((float)x, vec3(0, 1, 0));
-			mat4 pitch = glm::rotate((float)y, camera_right);
+			mat4 pitch = glm::rotate((float)y, side);
 			mat4 rot = yaw * pitch;
 
 			mat4 temp = m_mWorldTransform;

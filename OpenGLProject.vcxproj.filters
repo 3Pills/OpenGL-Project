@@ -1,116 +1,169 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Header Files\Camera">
-      <UniqueIdentifier>{42befe7e-7103-408d-ad27-e63e39a942e9}</UniqueIdentifier>
+    <Filter Include="Application">
+      <UniqueIdentifier>{bd18a62e-b4bc-426c-877f-2a1724768984}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Camera">
+    <Filter Include="Textures">
+      <UniqueIdentifier>{c830dbbb-1f57-4362-bf7b-48405b579dc1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Lighting">
+      <UniqueIdentifier>{e9c13b9b-0173-4ef9-9349-bf45fbb987b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderingGeometry">
+      <UniqueIdentifier>{1ef019ad-0bbe-487a-ad18-ffddc82550b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IntroToOpenGL">
+      <UniqueIdentifier>{2ce7e9d0-0a9b-4d6d-903f-56c011f91b6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AdvancedTextures">
+      <UniqueIdentifier>{5d37d0ea-1006-44a4-9ecb-0c18ce394e95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AppBase">
+      <UniqueIdentifier>{35340bcc-efca-4afa-99c1-22a1b3416b64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CameraAndProjections">
       <UniqueIdentifier>{abe2a673-7c9b-42e1-9ec2-6f8f67734715}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{16e09529-2f86-4f56-ab32-a6110ad0376c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\gl_core_4_4.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Gizmos.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="src\CameraAndProjections.cpp">
+      <Filter>CameraAndProjections</Filter>
     </ClCompile>
     <ClCompile Include="src\Application.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\IntroToOpenGL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\CameraAndProjections.cpp">
-      <Filter>Source Files\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Camera.cpp">
-      <Filter>Source Files\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="src\AppBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\RenderingGeometry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Utility.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Application</Filter>
     </ClCompile>
     <ClCompile Include="src\Textures.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Textures</Filter>
     </ClCompile>
+    <ClCompile Include="src\Lighting.cpp">
+      <Filter>Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderingGeometry.cpp">
+      <Filter>RenderingGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IntroToOpenGL.cpp">
+      <Filter>IntroToOpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AdvancedTextures.cpp">
+      <Filter>AdvancedTextures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AppBase.cpp">
+      <Filter>AppBase</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Gizmos.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="src\gl_core_4_4.c">
+      <Filter>Utility</Filter>
+    </ClCompile>
+<<<<<<< HEAD
+    <ClCompile Include="src\tiny_obj_loader.cc">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Utility.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp" />
+=======
+>>>>>>> parent of 035ea57... Began work on model lighting.
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\gl_core_4_4.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Gizmos.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Application.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\IntroToOpenGL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CameraAndProjections.h">
-      <Filter>Header Files\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Camera.h">
-      <Filter>Header Files\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="src\RenderingGeometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AppBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Vertex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\glm_header.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Utility.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\stb_image.h">
-      <Filter>Header Files</Filter>
+      <Filter>Application</Filter>
     </ClInclude>
     <ClInclude Include="src\Textures.h">
-      <Filter>Header Files</Filter>
+      <Filter>Textures</Filter>
     </ClInclude>
+    <ClInclude Include="src\Lighting.h">
+      <Filter>Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RenderingGeometry.h">
+      <Filter>RenderingGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IntroToOpenGL.h">
+      <Filter>IntroToOpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AdvancedTextures.h">
+      <Filter>AdvancedTextures</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AppBase.h">
+      <Filter>AppBase</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CameraAndProjections.h">
+      <Filter>CameraAndProjections</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Gizmos.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gl_core_4_4.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\glm_header.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stb_image.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\tiny_obj_loader.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+<<<<<<< HEAD
+    <ClInclude Include="src\Utility.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Vertex.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+=======
+>>>>>>> parent of 035ea57... Began work on model lighting.
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\shaders\textured_vertex.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="data\shaders\textured_fragment.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="data\shaders\fragment.glsl">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="data\shaders\vertex.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="data\shaders\vertex-wavy.glsl">
-      <Filter>Resource Files</Filter>
+    <None Include="data\shaders\lighting_fragment.glsl">
+      <Filter>Lighting</Filter>
     </None>
+<<<<<<< HEAD
+    <None Include="data\shaders\lighting_vertex.glsl">
+      <Filter>Lighting</Filter>
+    </None>
+    <None Include="data\shaders\geometry_fragment.glsl">
+      <Filter>RenderingGeometry</Filter>
+    </None>
+    <None Include="data\shaders\geometry_vertex.glsl">
+      <Filter>RenderingGeometry</Filter>
+    </None>
+    <None Include="data\shaders\textures_vertex.glsl">
+      <Filter>Textures</Filter>
+    </None>
+    <None Include="data\shaders\textures_fragment.glsl">
+      <Filter>Textures</Filter>
+    </None>
+    <None Include="data\shaders\normal_mapped_vertex.glsl">
+      <Filter>AdvancedTextures</Filter>
+    </None>
+    <None Include="data\shaders\normal_mapped_fragment.glsl">
+      <Filter>AdvancedTextures</Filter>
+    </None>
+=======
+>>>>>>> parent of 035ea57... Began work on model lighting.
   </ItemGroup>
 </Project>

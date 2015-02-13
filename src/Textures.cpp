@@ -1,5 +1,4 @@
 #include "Textures.h"
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "Vertex.h"
 #include "Utility.h"
@@ -21,7 +20,7 @@ bool Textures::startup(){
 	LoadTexture("./textures/crate.png", 0);
 	LoadTexture("./textures/planets/earth_cloud.jpg", 1);
 	GenerateQuad(5.0f);
-	LoadShader("./shaders/textured_vertex.glsl", "./shaders/textured_fragment.glsl", &m_programID);
+	LoadShader("./shaders/textures_vertex.glsl", "./shaders/textures_fragment.glsl", &m_programID);
 
 	Gizmos::create();
 

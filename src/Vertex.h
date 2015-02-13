@@ -12,4 +12,18 @@ struct VertexTexCoord {
 	vec2 tex_coord;
 };
 
+struct VertexNormal {
+	vec4 position;
+	vec4 normal;
+	vec4 tangent;
+	vec2 tex_coord;
+};
+
+struct OpenGLInfo {
+	unsigned int m_VAO;
+	unsigned int m_VBO;
+	unsigned int m_IBO;
+	unsigned int m_indexCount;
+};
+
 #endif//_VERTEX_H_
