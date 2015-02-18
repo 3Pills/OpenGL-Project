@@ -43,9 +43,6 @@
     <ClCompile Include="src\Textures.cpp">
       <Filter>Textures</Filter>
     </ClCompile>
-    <ClCompile Include="src\Lighting.cpp">
-      <Filter>Lighting</Filter>
-    </ClCompile>
     <ClCompile Include="src\RenderingGeometry.cpp">
       <Filter>RenderingGeometry</Filter>
     </ClCompile>
@@ -67,7 +64,6 @@
     <ClCompile Include="src\gl_core_4_4.c">
       <Filter>Utility</Filter>
     </ClCompile>
-<<<<<<< HEAD
     <ClCompile Include="src\tiny_obj_loader.cc">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -75,8 +71,9 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
-=======
->>>>>>> parent of 035ea57... Began work on model lighting.
+    <ClCompile Include="src\Lighting.cpp">
+      <Filter>Lighting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h">
@@ -84,9 +81,6 @@
     </ClInclude>
     <ClInclude Include="src\Textures.h">
       <Filter>Textures</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Lighting.h">
-      <Filter>Lighting</Filter>
     </ClInclude>
     <ClInclude Include="src\RenderingGeometry.h">
       <Filter>RenderingGeometry</Filter>
@@ -121,15 +115,15 @@
     <ClInclude Include="src\tiny_obj_loader.h">
       <Filter>Utility</Filter>
     </ClInclude>
-<<<<<<< HEAD
     <ClInclude Include="src\Utility.h">
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="src\Vertex.h">
       <Filter>Utility</Filter>
     </ClInclude>
-=======
->>>>>>> parent of 035ea57... Began work on model lighting.
+    <ClInclude Include="src\Lighting.h">
+      <Filter>Lighting</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\fragment.glsl">
@@ -141,7 +135,6 @@
     <None Include="data\shaders\lighting_fragment.glsl">
       <Filter>Lighting</Filter>
     </None>
-<<<<<<< HEAD
     <None Include="data\shaders\lighting_vertex.glsl">
       <Filter>Lighting</Filter>
     </None>
@@ -163,7 +156,5 @@
     <None Include="data\shaders\normal_mapped_fragment.glsl">
       <Filter>AdvancedTextures</Filter>
     </None>
-=======
->>>>>>> parent of 035ea57... Began work on model lighting.
   </ItemGroup>
 </Project>

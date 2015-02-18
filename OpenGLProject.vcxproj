@@ -88,6 +88,7 @@
     <ClCompile Include="src\Gizmos.cpp" />
     <ClCompile Include="src\gl_core_4_4.c" />
     <ClCompile Include="src\IntroToOpenGL.cpp" />
+    <ClCompile Include="src\Lighting.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\AppBase.cpp" />
     <ClCompile Include="src\RenderingGeometry.cpp" />
@@ -96,10 +97,7 @@
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
-<<<<<<< HEAD
     <ClInclude Include="src\AdvancedTextures.h" />
-=======
->>>>>>> parent of 035ea57... Began work on model lighting.
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\CameraAndProjections.h" />
@@ -107,6 +105,7 @@
     <ClInclude Include="src\glm_header.h" />
     <ClInclude Include="src\gl_core_4_4.h" />
     <ClInclude Include="src\IntroToOpenGL.h" />
+    <ClInclude Include="src\Lighting.h" />
     <ClInclude Include="src\RenderingGeometry.h" />
     <ClInclude Include="src\AppBase.h" />
     <ClInclude Include="src\stb_image.h" />
@@ -119,18 +118,12 @@
     <None Include="data\shaders\normal_mapped_fragment.glsl" />
     <None Include="data\shaders\normal_mapped_vertex.glsl" />
     <None Include="data\shaders\fragment.glsl" />
-<<<<<<< HEAD
     <None Include="data\shaders\geometry_fragment.glsl" />
     <None Include="data\shaders\lighting_fragment.glsl" />
     <None Include="data\shaders\lighting_vertex.glsl" />
     <None Include="data\shaders\textures_fragment.glsl" />
     <None Include="data\shaders\textures_vertex.glsl" />
     <None Include="data\shaders\geometry_vertex.glsl" />
-=======
-    <None Include="data\shaders\textured_fragment.glsl" />
-    <None Include="data\shaders\textured_vertex.glsl" />
-    <None Include="data\shaders\vertex-wavy.glsl" />
->>>>>>> parent of 035ea57... Began work on model lighting.
     <None Include="data\shaders\vertex.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
