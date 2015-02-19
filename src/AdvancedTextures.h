@@ -4,6 +4,8 @@
 #include "Camera.h"
 #include "Vertex.h"
 
+#include "AntTweakBar.h"
+
 class AdvancedTextures : public Application {
 	FlyCamera m_oCamera;
 	OpenGLInfo m_glData;
@@ -11,7 +13,8 @@ class AdvancedTextures : public Application {
 	unsigned int m_programID, m_LastKey;
 	unsigned int m_diffTex, m_normTex, m_specTex;
 	vec3 m_vAmbCol, m_vLightCol, m_vLightPos;
-	float m_fSpecPow;
+	vec4 m_vBgCol;
+	float m_fSpecPow, m_fFPS;
 public:
 	AdvancedTextures();
 	virtual ~AdvancedTextures();

@@ -23,14 +23,14 @@
     <Filter Include="AdvancedTextures">
       <UniqueIdentifier>{5d37d0ea-1006-44a4-9ecb-0c18ce394e95}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AppBase">
-      <UniqueIdentifier>{35340bcc-efca-4afa-99c1-22a1b3416b64}</UniqueIdentifier>
-    </Filter>
     <Filter Include="CameraAndProjections">
       <UniqueIdentifier>{abe2a673-7c9b-42e1-9ec2-6f8f67734715}</UniqueIdentifier>
     </Filter>
     <Filter Include="Utility">
       <UniqueIdentifier>{16e09529-2f86-4f56-ab32-a6110ad0376c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Quaternions">
+      <UniqueIdentifier>{7883af00-2ec0-459d-9511-26c1d560eff2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -52,9 +52,6 @@
     <ClCompile Include="src\AdvancedTextures.cpp">
       <Filter>AdvancedTextures</Filter>
     </ClCompile>
-    <ClCompile Include="src\AppBase.cpp">
-      <Filter>AppBase</Filter>
-    </ClCompile>
     <ClCompile Include="src\Camera.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -74,6 +71,9 @@
     <ClCompile Include="src\Lighting.cpp">
       <Filter>Lighting</Filter>
     </ClCompile>
+    <ClCompile Include="src\Quaternions.cpp">
+      <Filter>Quaternions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h">
@@ -90,9 +90,6 @@
     </ClInclude>
     <ClInclude Include="src\AdvancedTextures.h">
       <Filter>AdvancedTextures</Filter>
-    </ClInclude>
-    <ClInclude Include="src\AppBase.h">
-      <Filter>AppBase</Filter>
     </ClInclude>
     <ClInclude Include="src\CameraAndProjections.h">
       <Filter>CameraAndProjections</Filter>
@@ -123,6 +120,9 @@
     </ClInclude>
     <ClInclude Include="src\Lighting.h">
       <Filter>Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Quaternions.h">
+      <Filter>Quaternions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

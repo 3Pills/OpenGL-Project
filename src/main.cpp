@@ -1,8 +1,8 @@
-#include "AdvancedTextures.h"
+#include "Quaternions.h"
 
 int main() {
-	AdvancedTextures App;
-	App.startup();
+	Quaternions App;
+	if (App.startup() == false) return -1;
 
 	while (App.update()){
 		App.draw();

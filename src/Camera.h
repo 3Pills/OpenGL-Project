@@ -7,6 +7,7 @@ class Camera {
 private:
 	float m_fFoV, m_fAspect, m_fNearZ, m_fFarZ;
 protected:
+	vec2 m_vMouseInitPos;
 	vec3 m_vEye, m_vTo, m_vUp;
 	mat4 m_mWorldTransform, m_mViewTransform, m_mProjTransform, m_mProjViewTransform;
 	void UpdateProjectionViewTransform();

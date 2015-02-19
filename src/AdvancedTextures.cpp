@@ -3,7 +3,33 @@
 #include "stb_image.h"
 #include "Utility.h"
 
-AdvancedTextures::AdvancedTextures() : m_oCamera(50), m_vAmbCol(vec3(0.4)), m_vLightCol(vec3(0.85)), m_vLightPos(vec3(0, 10, 0)), m_fSpecPow(16) {
+void OnMouseButton(GLFWwindow* window, int button, int pressed, int altKeys) {
+	TwEventMouseButtonGLFW(button, pressed);
+}
+
+void OnMousePosition(GLFWwindow* window, double x, double y) {
+	TwEventMousePosGLFW((int)x, (int)y);
+}
+
+void OnMouseScroll(GLFWwindow* window, double x, double y) {
+	TwEventMouseWheelGLFW((int)y);
+}
+
+void OnKey(GLFWwindow* window, int key, int scanCode, int pressed, int modKeys) {
+	TwEventKeyGLFW(key, pressed);
+}
+
+void OnChar(GLFWwindow* window, unsigned int c) {
+	TwEventCharGLFW(c, GLFW_PRESS);
+}
+
+void OnWindowResize(GLFWwindow* window, int width, int height) {
+	TwWindowSize(width, height);
+	glViewport(0, 0, width, height);
+}
+
+AdvancedTextures::AdvancedTextures() : m_oCamera(50), m_vAmbCol(vec3(0.4)), m_vLightCol(vec3(0.85)), m_vLightPos(vec3(0, 10, 0)), m_fSpecPow(16),
+									   m_vBgCol(vec4(0.3,0.3,0.3,1)) {
 	Application::Application();
 }
 AdvancedTextures::~AdvancedTextures(){}
@@ -13,7 +39,18 @@ bool AdvancedTextures::startup(){
 		return false;
 	}
 	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+
+	TwInit(TW_OPENGL_CORE, nullptr);
+	TwWindowSize(1280, 720);
+
+	glfwSetMouseButtonCallback(m_window, OnMouseButton);
+	glfwSetCursorPosCallback(m_window, OnMousePosition);
+	glfwSetScrollCallback(m_window, OnMouseScroll);
+
+	glfwSetKeyCallback(m_window, OnKey);
+	glfwSetCharCallback(m_window, OnChar);
+
+	glfwSetWindowSizeCallback(m_window, OnWindowResize);
 
 	LoadTextures();
 	GenerateQuad(5.0f);
@@ -21,17 +58,28 @@ bool AdvancedTextures::startup(){
 
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	Gizmos::create();
+	
+	TwBar* m_bar = TwNewBar("Mars Bar");
+	TwAddVarRW(m_bar, "Clear Color", TW_TYPE_COLOR4F, &m_vBgCol, "");
+	TwAddVarRW(m_bar, "Direction", TW_TYPE_DIR3F, &m_vLightPos, "group=Light");
+	TwAddVarRW(m_bar, "Color", TW_TYPE_COLOR3F, &m_vLightCol, "group=Light");
+	TwAddVarRW(m_bar, "Specular Power", TW_TYPE_FLOAT, &m_fSpecPow, "group=Light min=0.05 step=0.05 max=1000.0");
+
+	TwAddVarRO(m_bar, "FPS", TW_TYPE_FLOAT, &m_fFPS, "");
 
 	return true;
 }
 bool AdvancedTextures::shutdown(){
 	Gizmos::destroy();
+	TwTerminate();
 	return Application::shutdown();
 }
 bool AdvancedTextures::update(){
 	if (!Application::update()){
 		return false;
 	}
+	m_fFPS = 1 / m_fDeltaTime;
+	glClearColor(m_vBgCol.x, m_vBgCol.y, m_vBgCol.z, m_vBgCol.w);
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS && m_LastKey != GLFW_PRESS){
 		ReloadShader();
 	}
@@ -62,7 +110,6 @@ bool AdvancedTextures::update(){
 	}
 
 	m_oCamera.update(m_fDeltaTime);
-
 	return true;
 }
 void AdvancedTextures::draw(){
@@ -132,6 +179,7 @@ void AdvancedTextures::draw(){
 	}
 
 	Gizmos::draw(m_oCamera.getProjectionView());
+	TwDraw();
 	Application::draw();
 }
 
