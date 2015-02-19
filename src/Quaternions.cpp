@@ -20,13 +20,42 @@ bool Quaternions::startup() {
 	glm::quat boringQuaternion(1, 0, 0, 0);
 	glm::quat eulerQuat(vec3(3, 5, 7));
 
-	m_vPositions[0] = vec3(10, 5, 10);
-	m_vPositions[1] = vec3(-10, 0, -10);
-	
-	m_qRotations[0] = quat(vec3(-1, -1, -1));
-	m_qRotations[1] = quat(vec3(1, 1, 1));
+	float PI = 3.14159;
+
+	m_hipFrames[0].position = vec3(0, 5, 0);
+	m_hipFrames[0].rotation = quat(vec3(-1, 0, 0));
+
+	m_kneeFrames[0].position = vec3(0, -2.5, 0);
+	m_kneeFrames[0].rotation = quat(vec3(-1, 0, 0));
+
+	m_ankleFrames[0].position = vec3(0, -2.5, 0);
+	m_ankleFrames[0].rotation = quat(vec3(0, 0, 0));
+
+	m_hipFrames[1].position = vec3(0, 5, 0);
+	m_hipFrames[1].rotation = quat(vec3(1, 0, 0));
+
+	m_kneeFrames[1].position = vec3(0, -2.5, 0);
+	m_kneeFrames[1].rotation = quat(vec3(0, 0, 0));
+
+	m_ankleFrames[1].position = vec3(0, -2.5, 0);
+	m_ankleFrames[1].rotation = quat(vec3(0, 0, 0));
+
+	m_hipFrames[2].position = vec3(0, 5, 0);
+	m_hipFrames[2].rotation = quat(vec3(0, 0, 0));
+
+	m_kneeFrames[2].position = vec3(0, -2.5, 0);
+	m_kneeFrames[2].rotation = quat(vec3(0, 0, 0));
+
+	m_ankleFrames[2].position = vec3(0, -2.5, 0);
+	m_ankleFrames[2].rotation = quat(vec3(0, 0, 0));
 
 	return true;
+}
+
+mat4 EvaluateKeyframes(KeyFrame start, KeyFrame end, float t){
+	vec3 pos = glm::mix(start.position, end.position, t);
+	quat rot = glm::slerp(start.rotation, end.rotation, t);
+	return (glm::translate(pos) * glm::toMat4(rot));
 }
 
 bool Quaternions::shutdown() {
@@ -50,13 +79,32 @@ void Quaternions::draw() {
 	vec4 white(1);
 	vec4 black(0, 0, 0, 1);
 
-	float fSinWave = sinf(m_fCurrTime) * 0.5f + 0.5f;
-	vec3 vFinalPos = glm::mix(m_vPositions[0], m_vPositions[1], fSinWave);
-	quat qFinatRot = glm::slerp(m_qRotations[0], m_qRotations[1], fSinWave);
-	mat4 transform = glm::translate(vFinalPos) * glm::toMat4(qFinatRot);
+	float fSinWave = sinf(m_fCurrTime*4) + 0.5f;
 
-	Gizmos::addTransform(transform);
-	Gizmos::addAABBFilled(vFinalPos, vec3(1), vec4(0, 0, 1, 1), &transform);
+	if (fSinWave > 0) {
+		m_hipBone = EvaluateKeyframes(m_hipFrames[0], m_hipFrames[1], fSinWave);
+		m_kneeBone = EvaluateKeyframes(m_kneeFrames[0], m_kneeFrames[1], fSinWave);
+		m_ankleBone = EvaluateKeyframes(m_ankleFrames[0], m_ankleFrames[1], fSinWave);
+	}
+	else{
+		m_hipBone = EvaluateKeyframes(m_hipFrames[1], m_hipFrames[2], fSinWave);
+		m_kneeBone = EvaluateKeyframes(m_kneeFrames[1], m_kneeFrames[2], fSinWave);
+		m_ankleBone = EvaluateKeyframes(m_ankleFrames[1], m_ankleFrames[2], fSinWave);
+	}
+
+	mat4 global_knee = m_hipBone * m_kneeBone;
+	mat4 global_ankle = global_knee * m_ankleBone;
+
+	vec3 hip_pos = m_hipBone[3].xyz;
+	vec3 knee_pos = global_knee[3].xyz;
+	vec3 ankle_pos = global_ankle[3].xyz;
+
+	Gizmos::addSphere(hip_pos, 0.35, 8, 8, vec4(0, 0, 1, 1), &m_hipBone);
+	Gizmos::addSphere(knee_pos, 0.35, 8, 8, vec4(1, 0, 0, 1), &global_knee);
+	Gizmos::addSphere(ankle_pos, 0.35, 8, 8, vec4(0, 1, 0, 1), &global_ankle);
+
+	Gizmos::addLine(hip_pos, knee_pos, vec4(1, 1, 1, 1));
+	Gizmos::addLine(ankle_pos, knee_pos, vec4(1, 1, 1, 1));
 
 	for (int i = 0; i <= 20; ++i) {
 		Gizmos::addLine(vec3(-10 + i, 0, -10), i != 10 ? vec3(-10 + i, 0, 10) : vec3(-10 + i, 0, 0), i != 10 ? black : white);
