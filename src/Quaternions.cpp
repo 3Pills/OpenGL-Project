@@ -79,17 +79,16 @@ void Quaternions::draw() {
 	vec4 white(1);
 	vec4 black(0, 0, 0, 1);
 
-	float fSinWave = sinf(m_fCurrTime*4) + 0.5f;
-
-	if (fSinWave > 0) {
-		m_hipBone = EvaluateKeyframes(m_hipFrames[0], m_hipFrames[1], fSinWave);
-		m_kneeBone = EvaluateKeyframes(m_kneeFrames[0], m_kneeFrames[1], fSinWave);
-		m_ankleBone = EvaluateKeyframes(m_ankleFrames[0], m_ankleFrames[1], fSinWave);
+	
+	if ((int)m_fCurrTime % 2 == 0) {
+		m_hipBone = EvaluateKeyframes(m_hipFrames[0], m_hipFrames[1], m_fCurrTime);
+		m_kneeBone = EvaluateKeyframes(m_kneeFrames[0], m_kneeFrames[1], m_fCurrTime);
+		m_ankleBone = EvaluateKeyframes(m_ankleFrames[0], m_ankleFrames[1], m_fCurrTime);
 	}
 	else{
-		m_hipBone = EvaluateKeyframes(m_hipFrames[1], m_hipFrames[2], fSinWave);
-		m_kneeBone = EvaluateKeyframes(m_kneeFrames[1], m_kneeFrames[2], fSinWave);
-		m_ankleBone = EvaluateKeyframes(m_ankleFrames[1], m_ankleFrames[2], fSinWave);
+		m_hipBone = EvaluateKeyframes(m_hipFrames[0], m_hipFrames[2], m_fCurrTime);
+		m_kneeBone = EvaluateKeyframes(m_kneeFrames[0], m_kneeFrames[2], m_fCurrTime);
+		m_ankleBone = EvaluateKeyframes(m_ankleFrames[0], m_ankleFrames[2], m_fCurrTime);
 	}
 
 	mat4 global_knee = m_hipBone * m_kneeBone;
