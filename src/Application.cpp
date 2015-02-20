@@ -7,6 +7,10 @@ Application::Application(){
 }
 Application::~Application(){}
 
+void WindowResize(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height);
+}
+
 bool Application::startup(){
 	if (!glfwInit()){
 		return false;
@@ -26,6 +30,8 @@ bool Application::startup(){
 
 	int major_version = ogl_GetMajorVersion();
 	int minor_version = ogl_GetMinorVersion();
+
+	glfwSetWindowSizeCallback(m_window, WindowResize);
 
 	printf("OpenGL V%d.%d successfully loaded.\n", major_version, minor_version);
 

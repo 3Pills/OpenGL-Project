@@ -11,11 +11,6 @@ protected:
 	GLFWwindow* m_window;
 
 	float m_fCurrTime, m_fDeltaTime, m_fPrevTime;
-
-	vec3 m_pos;
-	vec3 m_look;
-	mat4 m_view;
-	mat4 m_proj;
 public:
 	Application();
 	virtual ~Application();

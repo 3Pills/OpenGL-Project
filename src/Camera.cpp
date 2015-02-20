@@ -1,8 +1,11 @@
 #include "Camera.h"
 #include <GLFW\glfw3.h>
 
-Camera::Camera():m_fFoV(glm::radians(90.0f)), m_fAspect(1280.0f/720.0f), m_fNearZ(0.1f), m_fFarZ(20000.0f), m_vEye(vec3(10,0,0)), m_vTo(vec3(0,0,0)), m_vUp(vec3(0,1,0)),
-				 m_vMouseInitPos(vec2(0,0)){}
+Camera::Camera():m_fFoV(glm::radians(90.0f)), m_fAspect(1280.0f/720.0f), m_fNearZ(0.1f), m_fFarZ(20000.0f), m_vEye(vec3(0,10,10)), m_vTo(vec3(0,0,0)), m_vUp(vec3(0,1,0)),
+				 m_vMouseInitPos(vec2(0,0)){
+	setPos(m_vEye);
+	setLookAt(m_vEye, m_vTo, m_vUp);
+}
 
 void Camera::UpdateProjectionViewTransform(){
 	m_mViewTransform = glm::inverse(m_mWorldTransform);
@@ -17,6 +20,7 @@ void Camera::setPerspective(const float a_fFoV, const float a_fAspect, const flo
 	m_fFarZ = a_fFarZ;
 }
 
+// does nothing :(
 void Camera::setLookAt(const vec3 a_vFrom, const vec3 a_vTo, const vec3 a_vUp){
 	m_vEye = a_vFrom;
 	m_vTo = glm::normalize(a_vTo - a_vFrom);
@@ -53,9 +57,7 @@ float Camera::getFoV(){
 	return m_fFoV;
 }
 
-FlyCamera::FlyCamera(float a_fSpeed):m_fSpeed(a_fSpeed),Camera(){
-	m_mWorldTransform[3] = vec4(0, 10, 10, 1);
-}
+FlyCamera::FlyCamera(float a_fSpeed):m_fSpeed(a_fSpeed),Camera(){}
 
 void FlyCamera::setSpeed(float a_fSpeed){
 	if (m_fSpeed != a_fSpeed){
@@ -64,7 +66,6 @@ void FlyCamera::setSpeed(float a_fSpeed){
 }
 
 void FlyCamera::update(const float a_fdt){
-	vec3 forward = (vec3)m_mWorldTransform[2];
 	vec3 side = (vec3)m_mWorldTransform[0];
 	GLFWwindow* curr_window = glfwGetCurrentContext();
 
@@ -99,7 +100,6 @@ void FlyCamera::update(const float a_fdt){
 	else{
 		setSpeed(50);
 	}
-
 	if (glfwGetKey(curr_window, GLFW_KEY_SPACE) == GLFW_PRESS){
 		if (m_bMousePress) {
 			int width, height;
@@ -120,7 +120,7 @@ void FlyCamera::update(const float a_fdt){
 			x *= -1;
 			y *= -1;
 
-			mat4 yaw = glm::rotate((float)x, vec3(0, 1, 0));
+			mat4 yaw = glm::rotate((float)x, m_vUp);
 			mat4 pitch = glm::rotate((float)y, side);
 			mat4 rot = yaw * pitch;
 			
@@ -142,5 +142,9 @@ void FlyCamera::update(const float a_fdt){
 		glfwSetInputMode(curr_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 
+	int width, height;
+	glfwGetWindowSize(curr_window, &width, &height);
+
+	setPerspective(m_fFoV, width / height >= 1 ? (float)width/height : (float)height/width, m_fNearZ, m_fFarZ);
 	UpdateProjectionViewTransform();
 }

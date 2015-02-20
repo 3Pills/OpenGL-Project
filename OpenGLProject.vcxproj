@@ -39,17 +39,17 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>./deps/atb/include;./deps/glfw/include;./deps/glm;$(IncludePath)</IncludePath>
+    <IncludePath>./deps/fbxloader/;./deps/atb/include;./deps/glfw/include;./deps/glm;$(IncludePath)</IncludePath>
     <SourcePath>./src;$(VC_SourcePath);</SourcePath>
-    <LibraryPath>./deps/atb/lib;./deps/glfw/lib-vc2013;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <LibraryPath>./deps/fbxloader/;./deps/atb/lib;./deps/glfw/lib-vc2013;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)obj\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>./deps/atb/include;./deps/glfw/include;./deps/glm;$(IncludePath)</IncludePath>
+    <IncludePath>./deps/fbxloader/;./deps/atb/include;./deps/glfw/include;./deps/glm;$(IncludePath)</IncludePath>
     <SourcePath>./src;$(VC_SourcePath);</SourcePath>
-    <LibraryPath>./deps/atb/lib;./deps/glfw/lib-vc2013;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <LibraryPath>./deps/fbxloader/;./deps/atb/lib;./deps/glfw/lib-vc2013;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)obj\</IntDir>
   </PropertyGroup>
@@ -58,14 +58,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;./deps/atb/include;./deps/glfw/include;./deps/glm</AdditionalIncludeDirectories>
-      <AdditionalUsingDirectories>$(ProjectDir)src;./deps/atb/include;./deps/glfw/include;./deps/glm</AdditionalUsingDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;./deps/fbxloader/;./deps/atb/include;./deps/glfw/include;./deps/glm</AdditionalIncludeDirectories>
+      <AdditionalUsingDirectories>$(ProjectDir)src;./deps/fbxloader/;./deps/atb/include;./deps/glfw/include;./deps/glm</AdditionalUsingDirectories>
       <PreprocessorDefinitions>WIN32;GLM_FORCE_PURE;_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>AntTweakBar.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>./deps/atb/lib;./deps/glfw/lib-vc2013</AdditionalLibraryDirectories>
+      <AdditionalDependencies>FBXLoader_d.lib;AntTweakBar.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./deps/fbxloader;./deps/atb/lib;./deps/glfw/lib-vc2013</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -75,20 +75,21 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;./deps/atb/include;./deps/glfw/include;./deps/glm</AdditionalIncludeDirectories>
-      <AdditionalUsingDirectories>$(ProjectDir)src;./deps/atb/include;./deps/glfw/include;./deps/glm</AdditionalUsingDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;./deps/fbxloader/;./deps/atb/include;./deps/glfw/include;./deps/glm</AdditionalIncludeDirectories>
+      <AdditionalUsingDirectories>$(ProjectDir)src;./deps/fbxloader/;./deps/atb/include;./deps/glfw/include;./deps/glm</AdditionalUsingDirectories>
       <PreprocessorDefinitions>WIN32;GLM_FORCE_PURE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>./deps/atb/lib;./deps/glfw/lib-vc2013</AdditionalLibraryDirectories>
-      <AdditionalDependencies>AntTweakBar.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./deps/fbxloader;./deps/atb/lib;./deps/glfw/lib-vc2013</AdditionalLibraryDirectories>
+      <AdditionalDependencies>FBXLoader.lib;AntTweakBar.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\AdvancedTextures.cpp" />
+    <ClCompile Include="src\Animation.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\CameraAndProjections.cpp" />
@@ -104,7 +105,9 @@
     <ClCompile Include="src\Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="deps\fbxloader\FBXFile.h" />
     <ClInclude Include="src\AdvancedTextures.h" />
+    <ClInclude Include="src\Animation.h" />
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\CameraAndProjections.h" />
@@ -128,6 +131,8 @@
     <None Include="data\shaders\geometry_fragment.glsl" />
     <None Include="data\shaders\lighting_fragment.glsl" />
     <None Include="data\shaders\lighting_vertex.glsl" />
+    <None Include="data\shaders\skinned_fragment.glsl" />
+    <None Include="data\shaders\skinned_vertex.glsl" />
     <None Include="data\shaders\textures_fragment.glsl" />
     <None Include="data\shaders\textures_vertex.glsl" />
     <None Include="data\shaders\geometry_vertex.glsl" />

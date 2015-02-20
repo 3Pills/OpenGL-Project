@@ -11,9 +11,6 @@ bool Quaternions::startup() {
 	if (!Application::startup()) 
 		return false;
 
-	m_pos = vec3(5, 5, 0);
-	m_look = vec3(0, 0, 0);
-
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	Gizmos::create();

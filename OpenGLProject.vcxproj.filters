@@ -32,6 +32,9 @@
     <Filter Include="Quaternions">
       <UniqueIdentifier>{7883af00-2ec0-459d-9511-26c1d560eff2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Animation">
+      <UniqueIdentifier>{12b241d2-4b98-45c4-b055-242a07d7908e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -73,6 +76,9 @@
     </ClCompile>
     <ClCompile Include="src\Quaternions.cpp">
       <Filter>Quaternions</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Animation.cpp">
+      <Filter>Animation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +130,12 @@
     <ClInclude Include="src\Quaternions.h">
       <Filter>Quaternions</Filter>
     </ClInclude>
+    <ClInclude Include="src\Animation.h">
+      <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="deps\fbxloader\FBXFile.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\fragment.glsl">
@@ -155,6 +167,12 @@
     </None>
     <None Include="data\shaders\normal_mapped_fragment.glsl">
       <Filter>AdvancedTextures</Filter>
+    </None>
+    <None Include="data\shaders\skinned_fragment.glsl">
+      <Filter>Animation</Filter>
+    </None>
+    <None Include="data\shaders\skinned_vertex.glsl">
+      <Filter>Animation</Filter>
     </None>
   </ItemGroup>
 </Project>
