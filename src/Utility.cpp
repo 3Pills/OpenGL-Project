@@ -1,5 +1,8 @@
 #include <iostream>
 #include "gl_core_4_4.h"
+#include <GLFW\glfw3.h>
+#include "glm_header.h"
+#include "AntTweakBar.h"
 
 unsigned int LoadShader(char* a_vertex_Filename, char* a_fragment_Filename, GLuint* result){
 	bool succeeded = false;
@@ -70,4 +73,29 @@ unsigned int LoadShader(char* a_vertex_Filename, char* a_fragment_Filename, GLui
 	}
 
 	return succeeded;
+}
+
+void OnMouseButton(GLFWwindow* window, int button, int pressed, int altKeys) {
+	TwEventMouseButtonGLFW(button, pressed);
+}
+
+void OnMousePosition(GLFWwindow* window, double x, double y) {
+	TwEventMousePosGLFW((int)x, (int)y);
+}
+
+void OnMouseScroll(GLFWwindow* window, double x, double y) {
+	TwEventMouseWheelGLFW((int)y);
+}
+
+void OnKey(GLFWwindow* window, int key, int scanCode, int pressed, int modKeys) {
+	TwEventKeyGLFW(key, pressed);
+}
+
+void OnChar(GLFWwindow* window, unsigned int c) {
+	TwEventCharGLFW(c, GLFW_PRESS);
+}
+
+void OnWindowResize(GLFWwindow* window, int width, int height) {
+	TwWindowSize(width, height);
+	glViewport(0, 0, width, height);
 }

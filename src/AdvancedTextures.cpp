@@ -3,31 +3,6 @@
 #include "stb_image.h"
 #include "Utility.h"
 
-void OnMouseButton(GLFWwindow* window, int button, int pressed, int altKeys) {
-	TwEventMouseButtonGLFW(button, pressed);
-}
-
-void OnMousePosition(GLFWwindow* window, double x, double y) {
-	TwEventMousePosGLFW((int)x, (int)y);
-}
-
-void OnMouseScroll(GLFWwindow* window, double x, double y) {
-	TwEventMouseWheelGLFW((int)y);
-}
-
-void OnKey(GLFWwindow* window, int key, int scanCode, int pressed, int modKeys) {
-	TwEventKeyGLFW(key, pressed);
-}
-
-void OnChar(GLFWwindow* window, unsigned int c) {
-	TwEventCharGLFW(c, GLFW_PRESS);
-}
-
-void OnWindowResize(GLFWwindow* window, int width, int height) {
-	TwWindowSize(width, height);
-	glViewport(0, 0, width, height);
-}
-
 AdvancedTextures::AdvancedTextures() : m_oCamera(50), m_vAmbCol(vec3(0.4)), m_vLightCol(vec3(0.85)), m_vLightPos(vec3(0, 10, 0)), m_fSpecPow(16),
 									   m_vBgCol(vec4(0.3,0.3,0.3,1)) {
 	Application::Application();

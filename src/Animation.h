@@ -5,6 +5,7 @@
 
 #include "FBXFile.h"
 #include "Vertex.h"
+#include "AntTweakBar.h"
 
 class Animation : public Application
 {
@@ -14,6 +15,8 @@ class Animation : public Application
 	
 	std::vector<OpenGLInfo> m_meshes;
 	unsigned int m_programID;
+	vec3 m_vAmbCol, m_vLightCol, m_vLightPos;
+	float m_fSpecPow;
 public:
 	Animation();
 	virtual ~Animation();
@@ -27,6 +30,7 @@ public:
 	void GenerateGLMeshes(FBXFile* fbx);
 	void EvaluateSkeleton(FBXAnimation* anim, FBXSkeleton* skeleton, float time);
 	void UpdateBones(FBXSkeleton* skeleton);
+	void ReloadShader();
 };
 
 #endif//ANIMATION_H_
