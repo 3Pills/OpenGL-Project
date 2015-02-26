@@ -1,7 +1,7 @@
 #include "Lighting.h"
 #include "Utility.h"
 
-Lighting::Lighting() :m_oCamera(50), m_vAmbCol(vec3(0.4)), m_vMatCol(vec3(1)), m_vLightCol(vec3(0.5)), m_vLightPos(vec3(0, 10, 0)), m_fSpecPow(16) {
+Lighting::Lighting() :m_oCamera(50), m_vAmbCol(vec3(0.4f)), m_vMatCol(vec3(1)), m_vLightCol(vec3(0.5f)), m_vLightPos(vec3(0, 10, 0)), m_fSpecPow(16) {
 	Application::Application();
 }
 Lighting::~Lighting(){}
@@ -81,26 +81,26 @@ bool Lighting::update(){
 
 	if (glfwGetKey(m_window, GLFW_KEY_KP_5) == GLFW_PRESS){
 		m_vLightPos = vec3(0, 10, 0);
-		m_vLightCol = vec3(0.5);
-		m_vAmbCol = vec3(0.35);
+		m_vLightCol = vec3(0.5f);
+		m_vAmbCol = vec3(0.35f);
 		m_fSpecPow = 16;
 	}
 
 	if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS){
-		m_vLightCol = vec3(0.5);
-		m_vAmbCol = vec3(0.35);
+		m_vLightCol = vec3(0.5f);
+		m_vAmbCol = vec3(0.35f);
 	}
 	else if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS){
-		m_vLightCol = vec3(0.5, 0, 0);
-		m_vAmbCol = vec3(0.35, 0, 0);
+		m_vLightCol = vec3(0.5f, 0, 0);
+		m_vAmbCol = vec3(0.35f, 0, 0);
 	}
 	else if(glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS){
-		m_vLightCol = vec3(0, 0.5, 0);
-		m_vAmbCol = vec3(0, 0.35, 0);
+		m_vLightCol = vec3(0, 0.5f, 0);
+		m_vAmbCol = vec3(0, 0.35f, 0);
 	}
 	else if(glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS){
-		m_vLightCol = vec3(0, 0, 0.5);
-		m_vAmbCol = vec3(0, 0, 0.35);
+		m_vLightCol = vec3(0, 0, 0.5f);
+		m_vAmbCol = vec3(0, 0, 0.35f);
 	}
 
 	m_oCamera.update(m_fDeltaTime);

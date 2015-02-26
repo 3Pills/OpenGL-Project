@@ -1,7 +1,7 @@
-#include "Animation.h"
+#include "Particles.h"
 
 int main() {
-	Animation App;
+	Particles App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

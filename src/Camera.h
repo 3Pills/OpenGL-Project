@@ -7,10 +7,10 @@ class Camera {
 protected:
 	float m_fFoV, m_fAspect, m_fNearZ, m_fFarZ;
 	vec2 m_vMouseInitPos;
-	vec3 m_vEye, m_vTo, m_vUp;
 	mat4 m_mWorldTransform, m_mViewTransform, m_mProjTransform, m_mProjViewTransform;
 	void UpdateProjectionViewTransform();
 public:
+	vec3 m_vEye, m_vTo, m_vUp;
 	Camera();
 	virtual void update(const float a_fdt) = 0;
 	void setPerspective(const float a_fFoV, const float a_fAspect, const float a_fNearZ, const float a_fFarZ);

@@ -17,7 +17,7 @@ bool Quaternions::startup() {
 	glm::quat boringQuaternion(1, 0, 0, 0);
 	glm::quat eulerQuat(vec3(3, 5, 7));
 
-	float PI = 3.14159;
+	float PI = 3.14159f;
 
 	m_hipFrames[0].position = vec3(0, 5, 0);
 	m_hipFrames[0].rotation = quat(vec3(-1, 0, 0));
@@ -95,9 +95,9 @@ void Quaternions::draw() {
 	vec3 knee_pos = global_knee[3].xyz;
 	vec3 ankle_pos = global_ankle[3].xyz;
 
-	Gizmos::addSphere(hip_pos, 0.35, 8, 8, vec4(0, 0, 1, 1), &m_hipBone);
-	Gizmos::addSphere(knee_pos, 0.35, 8, 8, vec4(1, 0, 0, 1), &global_knee);
-	Gizmos::addSphere(ankle_pos, 0.35, 8, 8, vec4(0, 1, 0, 1), &global_ankle);
+	Gizmos::addSphere(hip_pos, 0.35f, 8, 8, vec4(0, 0, 1, 1), &m_hipBone);
+	Gizmos::addSphere(knee_pos, 0.35f, 8, 8, vec4(1, 0, 0, 1), &global_knee);
+	Gizmos::addSphere(ankle_pos, 0.35f, 8, 8, vec4(0, 1, 0, 1), &global_ankle);
 
 	Gizmos::addLine(hip_pos, knee_pos, vec4(1, 1, 1, 1));
 	Gizmos::addLine(ankle_pos, knee_pos, vec4(1, 1, 1, 1));

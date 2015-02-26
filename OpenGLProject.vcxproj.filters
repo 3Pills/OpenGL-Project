@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Application">
       <UniqueIdentifier>{bd18a62e-b4bc-426c-877f-2a1724768984}</UniqueIdentifier>
     </Filter>
@@ -34,6 +30,9 @@
     </Filter>
     <Filter Include="Animation">
       <UniqueIdentifier>{12b241d2-4b98-45c4-b055-242a07d7908e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Particles">
+      <UniqueIdentifier>{88d4c2bb-b637-4a58-83f9-0598a4c93547}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -79,6 +78,12 @@
     </ClCompile>
     <ClCompile Include="src\Animation.cpp">
       <Filter>Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Particles.cpp">
+      <Filter>Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Emitter.cpp">
+      <Filter>Particles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -136,14 +141,14 @@
     <ClInclude Include="deps\fbxloader\FBXFile.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="src\Particles.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Emitter.h">
+      <Filter>Particles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\shaders\fragment.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="data\shaders\vertex.glsl">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="data\shaders\lighting_fragment.glsl">
       <Filter>Lighting</Filter>
     </None>
@@ -173,6 +178,18 @@
     </None>
     <None Include="data\shaders\skinned_vertex.glsl">
       <Filter>Animation</Filter>
+    </None>
+    <None Include="data\shaders\particles_fragment.glsl">
+      <Filter>Particles</Filter>
+    </None>
+    <None Include="data\shaders\particles_vertex.glsl">
+      <Filter>Particles</Filter>
+    </None>
+    <None Include="data\shaders\fragment.glsl">
+      <Filter>Application</Filter>
+    </None>
+    <None Include="data\shaders\vertex.glsl">
+      <Filter>Application</Filter>
     </None>
   </ItemGroup>
 </Project>

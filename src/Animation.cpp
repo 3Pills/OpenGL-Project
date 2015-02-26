@@ -2,7 +2,7 @@
 #include <iostream>
 #include "Utility.h"
 
-Animation::Animation() : m_oCamera(50), m_vAmbCol(vec3(0.4)), m_vLightCol(vec3(0.85)), m_vLightPos(vec3(0, 10, 0)), m_fSpecPow(16){
+Animation::Animation() : m_oCamera(50), m_vAmbCol(vec3(0.4f)), m_vLightCol(vec3(0.85f)), m_vLightPos(vec3(0, 10, 0)), m_fSpecPow(16){
 	Application::Application();
 }
 Animation::~Animation(){}
@@ -225,7 +225,7 @@ void Animation::EvaluateSkeleton(FBXAnimation* anim, FBXSkeleton* skeleton, floa
 
 		//set the fbxnodes local transforms to match
 		mat4 transform = glm::translate(newPos) * glm::toMat4(newRot) * glm::scale(newScale);
-		int boneIndex = anim->m_tracks[i].m_boneIndex;
+		unsigned int boneIndex = anim->m_tracks[i].m_boneIndex;
 
 		if (boneIndex < skeleton->m_boneCount)
 			skeleton->m_nodes[boneIndex]->m_localTransform = transform;

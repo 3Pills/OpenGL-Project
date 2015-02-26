@@ -8,7 +8,7 @@
 
 class AdvancedTextures : public Application {
 	FlyCamera m_oCamera;
-	OpenGLInfo m_glData;
+	OpenGLData m_glData;
 
 	unsigned int m_programID, m_LastKey;
 	unsigned int m_diffTex, m_normTex, m_specTex;

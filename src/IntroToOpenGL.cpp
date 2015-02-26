@@ -14,6 +14,7 @@ bool IntroToOpenGL::startup(){
 	m_proj = glm::perspective(glm::radians(90.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	Gizmos::create();
+	return true;
 }
 
 bool IntroToOpenGL::shutdown(){

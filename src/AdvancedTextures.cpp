@@ -3,8 +3,8 @@
 #include "stb_image.h"
 #include "Utility.h"
 
-AdvancedTextures::AdvancedTextures() : m_oCamera(50), m_vAmbCol(vec3(0.4)), m_vLightCol(vec3(0.85)), m_vLightPos(vec3(0, 10, 0)), m_fSpecPow(16),
-									   m_vBgCol(vec4(0.3,0.3,0.3,1)) {
+AdvancedTextures::AdvancedTextures() : m_oCamera(50), m_vAmbCol(vec3(0.4f)), m_vLightCol(vec3(0.85f)), m_vLightPos(vec3(0, 10, 0)), m_fSpecPow(16),
+									   m_vBgCol(vec4(0.3f,0.3f,0.3f,1)) {
 	Application::Application();
 }
 AdvancedTextures::~AdvancedTextures(){}

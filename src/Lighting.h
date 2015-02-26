@@ -15,7 +15,7 @@ class Lighting : public Application {
 	vec3 m_vAmbCol, m_vLightCol, m_vLightPos, m_vMatCol;
 	float m_fSpecPow;
 
-	std::vector<OpenGLInfo> m_glData;
+	std::vector<OpenGLData> m_glData;
 public:
 	Lighting();
 	virtual ~Lighting();

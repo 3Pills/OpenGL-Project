@@ -13,7 +13,7 @@ class Animation : public Application
 
 	FBXFile* m_file;
 	
-	std::vector<OpenGLInfo> m_meshes;
+	std::vector<OpenGLData> m_meshes;
 	unsigned int m_programID;
 	vec3 m_vAmbCol, m_vLightCol, m_vLightPos;
 	float m_fSpecPow;
