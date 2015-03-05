@@ -31,7 +31,7 @@ bool Animation::startup(){
 	m_file->load("./models/characters/Enemytank/Enemytank.fbx");
 	m_file->initialiseOpenGLTextures();
 	GenerateGLMeshes(m_file);
-	LoadShader("./shaders/skinned_vertex.glsl", "./shaders/skinned_fragment.glsl", &m_programID);
+	LoadShader("./shaders/skinned_vertex.glsl", "", "./shaders/skinned_fragment.glsl", &m_programID);
 
 	TwBar* m_bar = TwNewBar("Settings");
 	TwAddVarRW(m_bar, "Ambient", TW_TYPE_COLOR3F, &m_vAmbCol, "group=Light");
@@ -251,5 +251,5 @@ void Animation::UpdateBones(FBXSkeleton* skeleton){
 
 void Animation::ReloadShader(){
 	glDeleteProgram(m_programID);
-	LoadShader("./shaders/skinned_vertex.glsl", "./shaders/skinned_fragment.glsl", &m_programID);
+	LoadShader("./shaders/skinned_vertex.glsl", "", "./shaders/skinned_fragment.glsl", &m_programID);
 }

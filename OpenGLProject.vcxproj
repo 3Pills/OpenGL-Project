@@ -96,6 +96,8 @@
     <ClCompile Include="src\Emitter.cpp" />
     <ClCompile Include="src\Gizmos.cpp" />
     <ClCompile Include="src\gl_core_4_4.c" />
+    <ClCompile Include="src\GPUEmitter.cpp" />
+    <ClCompile Include="src\GPUParticles.cpp" />
     <ClCompile Include="src\IntroToOpenGL.cpp" />
     <ClCompile Include="src\Lighting.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -117,6 +119,8 @@
     <ClInclude Include="src\Gizmos.h" />
     <ClInclude Include="src\glm_header.h" />
     <ClInclude Include="src\gl_core_4_4.h" />
+    <ClInclude Include="src\GPUEmitter.h" />
+    <ClInclude Include="src\GPUParticles.h" />
     <ClInclude Include="src\IntroToOpenGL.h" />
     <ClInclude Include="src\Lighting.h" />
     <ClInclude Include="src\Particles.h" />
@@ -129,6 +133,10 @@
     <ClInclude Include="src\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\shaders\gpuparticles_fragment.glsl" />
+    <None Include="data\shaders\gpuparticles_geometry.glsl" />
+    <None Include="data\shaders\gpuparticles_update_vertex.glsl" />
+    <None Include="data\shaders\gpuparticles_vertex.glsl" />
     <None Include="data\shaders\normal_mapped_fragment.glsl" />
     <None Include="data\shaders\normal_mapped_vertex.glsl" />
     <None Include="data\shaders\fragment.glsl" />

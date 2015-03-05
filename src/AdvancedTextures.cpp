@@ -29,7 +29,7 @@ bool AdvancedTextures::startup(){
 
 	LoadTextures();
 	GenerateQuad(5.0f);
-	LoadShader("./shaders/normal_mapped_vertex.glsl", "./shaders/normal_mapped_fragment.glsl", &m_programID);
+	LoadShader("./shaders/normal_mapped_vertex.glsl", "", "./shaders/normal_mapped_fragment.glsl", &m_programID);
 
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	Gizmos::create();
@@ -244,5 +244,5 @@ void AdvancedTextures::GenerateQuad(const float a_fSize){
 
 void AdvancedTextures::ReloadShader(){
 	glDeleteProgram(m_programID);
-	LoadShader("./shaders/normal_mapped_vertex.glsl", "./shaders/normal_mapped_fragment.glsl", &m_programID);
+	LoadShader("./shaders/normal_mapped_vertex.glsl", "", "./shaders/normal_mapped_fragment.glsl", &m_programID);
 }

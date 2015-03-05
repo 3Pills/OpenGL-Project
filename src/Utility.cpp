@@ -1,77 +1,105 @@
-#include <iostream>
-#include "gl_core_4_4.h"
-#include <GLFW\glfw3.h>
 #include "glm_header.h"
 #include "AntTweakBar.h"
+#include "gl_core_4_4.h"
+#include <GLFW\glfw3.h>
 
-unsigned int LoadShader(char* a_vertex_Filename, char* a_fragment_Filename, GLuint* result){
-	bool succeeded = false;
-	FILE* vs_file = fopen(a_vertex_Filename, "rb");
-	FILE* fs_file = fopen(a_fragment_Filename, "rb");
+bool LoadShader(char* a_filename, GLenum a_shaderType, unsigned int* a_output) {
+	bool succeeded = true;
 
-	if (vs_file == 0){
-		printf("%s", "Vertex shader not found!");
-	}
-	else if (fs_file == 0){
-		printf("%s", "Fragment shader not found!");
-	}
+	FILE* shaderFile = fopen(a_filename, "r");
+
+	//did it open successfully
+	if (shaderFile == 0)
+		return false;
 	else {
-		fseek(vs_file, 0, SEEK_END);
-		long vs_file_len = ftell(vs_file);
-		rewind(vs_file);
+		// find out how long the file is
+		fseek(shaderFile, 0, SEEK_END);
+		int shaderFileLen = ftell(shaderFile);
+		fseek(shaderFile, 0, SEEK_SET);
 
-		fseek(fs_file, 0, SEEK_END);
-		long fs_file_len = ftell(fs_file);
-		rewind(fs_file);
+		//allocate enough space for the shader
+		char *shaderSource = new char[shaderFileLen];
+		//read the file anmd update the length to be accurate
+		shaderFileLen = fread(shaderSource, 1, shaderFileLen, shaderFile);
 
-		char* vs_source = new char[vs_file_len+1];
-		char* fs_source = new char[fs_file_len+1];
 
-		fread(vs_source, 1, vs_file_len, vs_file);
-		fread(fs_source, 1, fs_file_len, fs_file);
+		int logLength = 0;
 
-		vs_source[vs_file_len] = '\0';
-		fs_source[fs_file_len] = '\0';
-
-		succeeded = true;
-
-		unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-		unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-
-		glShaderSource(vertex_shader, 1, &vs_source, 0);
-		glCompileShader(vertex_shader);
-
-		glShaderSource(fragment_shader, 1, &fs_source, 0);
-		glCompileShader(fragment_shader);
-
-		*result = glCreateProgram();
-		glAttachShader(*result, vertex_shader);
-		glAttachShader(*result, fragment_shader);
-		glLinkProgram(*result);
-
+		//create the shader handle
+		unsigned int shaderHandle = glCreateShader(a_shaderType);
+		//compile the shader
+		glShaderSource(shaderHandle, 1, &shaderSource, &shaderFileLen);
+		glCompileShader(shaderHandle);
+		//catch for errors
 		int success = GL_FALSE;
-		glGetProgramiv(*result, GL_LINK_STATUS, &success);
-		if (success == GL_FALSE){
-			int log_length = 0;
-			glGetProgramiv(*result, GL_INFO_LOG_LENGTH, &log_length);
-
-			char* log = new char[log_length];
-			glGetProgramInfoLog(*result, log_length, 0, log);
-			printf("Error: Failed to link shader program!\n");
+		glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &success);
+		if (success == GL_FALSE)
+		{
+			glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH, &logLength);
+			char* log = new char[logLength];
+			glGetShaderInfoLog(shaderHandle, logLength, NULL, log);
 			printf("%s\n", log);
 			delete[] log;
 			succeeded = false;
 		}
+		if (succeeded)
+			*a_output = shaderHandle;
 
-		glDeleteShader(fragment_shader);
-		glDeleteShader(vertex_shader);
-
-		delete[] vs_source;
-		delete[] fs_source;
-		fclose(vs_file);
-		fclose(fs_file);
+		delete[] shaderSource;
+		fclose(shaderFile);
 	}
+	return succeeded;
+}
 
+bool LoadShader(char* a_vertexFileName, char* a_geometryFileName, char* a_fragmentFileName, GLuint* a_result) {
+	bool succeeded = true;
+
+	*a_result = glCreateProgram();
+
+	if (a_vertexFileName != nullptr) {
+		unsigned int vertexShader;
+		LoadShader(a_vertexFileName, GL_VERTEX_SHADER, &vertexShader);
+		glAttachShader(*a_result, vertexShader);
+		glDeleteShader(vertexShader);
+	}
+	else printf("Vertex Shader file not found!\n");
+
+	if (a_geometryFileName != nullptr) {
+		unsigned int geometryShader;
+		LoadShader(a_geometryFileName, GL_GEOMETRY_SHADER, &geometryShader);
+		glAttachShader(*a_result, geometryShader);
+		glDeleteShader(geometryShader);
+	}
+	else printf("Geometry Shader file not found!\n");
+
+	if (a_fragmentFileName != nullptr) {
+		unsigned int fragmentShader;
+		LoadShader(a_fragmentFileName, GL_FRAGMENT_SHADER, &fragmentShader);
+		glAttachShader(*a_result, fragmentShader);
+		glDeleteShader(fragmentShader);
+	}
+	else printf("Fragment Shader file not found!\n");
+
+	glLinkProgram(*a_result);
+
+	GLint success;
+
+	glGetProgramiv(*a_result, GL_LINK_STATUS, &success);
+
+	if (success == GL_FALSE)
+	{
+		GLint log_length;
+		glGetProgramiv(*a_result, GL_INFO_LOG_LENGTH, &log_length);
+
+		char* log = new char[log_length];
+		glGetProgramInfoLog(*a_result, log_length, 0, log);
+
+		printf("Error: Failed to link shader program!\n");
+		printf("%s\n", log);
+
+		delete[] log;
+		succeeded = false;
+	}
 	return succeeded;
 }
 

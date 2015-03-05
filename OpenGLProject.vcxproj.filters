@@ -34,6 +34,9 @@
     <Filter Include="Particles">
       <UniqueIdentifier>{88d4c2bb-b637-4a58-83f9-0598a4c93547}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GPUParticles">
+      <UniqueIdentifier>{3d534604-2f57-476d-a69d-40f1b4603c1b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -84,6 +87,12 @@
     </ClCompile>
     <ClCompile Include="src\Emitter.cpp">
       <Filter>Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUEmitter.cpp">
+      <Filter>GPUParticles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GPUParticles.cpp">
+      <Filter>GPUParticles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -147,6 +156,12 @@
     <ClInclude Include="src\Emitter.h">
       <Filter>Particles</Filter>
     </ClInclude>
+    <ClInclude Include="src\GPUEmitter.h">
+      <Filter>GPUParticles</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GPUParticles.h">
+      <Filter>GPUParticles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\lighting_fragment.glsl">
@@ -190,6 +205,18 @@
     </None>
     <None Include="data\shaders\vertex.glsl">
       <Filter>Application</Filter>
+    </None>
+    <None Include="data\shaders\gpuparticles_fragment.glsl">
+      <Filter>GPUParticles</Filter>
+    </None>
+    <None Include="data\shaders\gpuparticles_geometry.glsl">
+      <Filter>GPUParticles</Filter>
+    </None>
+    <None Include="data\shaders\gpuparticles_update_vertex.glsl">
+      <Filter>GPUParticles</Filter>
+    </None>
+    <None Include="data\shaders\gpuparticles_vertex.glsl">
+      <Filter>GPUParticles</Filter>
     </None>
   </ItemGroup>
 </Project>

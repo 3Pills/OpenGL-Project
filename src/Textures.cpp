@@ -20,7 +20,7 @@ bool Textures::startup(){
 	LoadTexture("./textures/crate.png", 0);
 	LoadTexture("./textures/planets/earth_cloud.jpg", 1);
 	GenerateQuad(5.0f);
-	LoadShader("./shaders/textures_vertex.glsl", "./shaders/textures_fragment.glsl", &m_programID);
+	LoadShader("./shaders/textures_vertex.glsl", "", "./shaders/textures_fragment.glsl", &m_programID);
 
 	Gizmos::create();
 
