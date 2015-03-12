@@ -37,6 +37,9 @@
     <Filter Include="GPUParticles">
       <UniqueIdentifier>{3d534604-2f57-476d-a69d-40f1b4603c1b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene Management">
+      <UniqueIdentifier>{d2df0ad6-c32c-4940-9e5a-9a29298f0691}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -93,6 +96,12 @@
     </ClCompile>
     <ClCompile Include="src\GPUParticles.cpp">
       <Filter>GPUParticles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BoundingVolumes.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SceneManagement.cpp">
+      <Filter>Scene Management</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +170,12 @@
     </ClInclude>
     <ClInclude Include="src\GPUParticles.h">
       <Filter>GPUParticles</Filter>
+    </ClInclude>
+    <ClInclude Include="src\BoundingVolumes.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SceneManagement.h">
+      <Filter>Scene Management</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

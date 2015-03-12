@@ -52,6 +52,41 @@ mat4 Camera::getProjection(){
 mat4 Camera::getProjectionView(){
 	return m_mProjViewTransform;
 }
+void Camera::getFrustumPlanes(vec4* planes){
+	// right side
+	planes[0] = vec4(m_mProjViewTransform[0][3] - m_mProjViewTransform[1][0], 
+					 m_mProjViewTransform[1][3] - m_mProjViewTransform[1][0],
+					 m_mProjViewTransform[2][3] - m_mProjViewTransform[2][0], 
+					 m_mProjViewTransform[3][3] - m_mProjViewTransform[3][0]);
+	// left side
+	planes[1] = vec4(m_mProjViewTransform[0][3] + m_mProjViewTransform[0][0], 
+					 m_mProjViewTransform[1][3] + m_mProjViewTransform[1][0],
+					 m_mProjViewTransform[2][3] + m_mProjViewTransform[2][0], 
+					 m_mProjViewTransform[3][3] + m_mProjViewTransform[3][0]);
+	// top
+	planes[2] = vec4(m_mProjViewTransform[0][3] - m_mProjViewTransform[0][1], 
+					 m_mProjViewTransform[1][3] - m_mProjViewTransform[1][1],
+					 m_mProjViewTransform[2][3] - m_mProjViewTransform[2][1], 
+					 m_mProjViewTransform[3][3] - m_mProjViewTransform[3][1]);
+	// bottom
+	planes[3] = vec4(m_mProjViewTransform[0][3] + m_mProjViewTransform[0][1], 
+					 m_mProjViewTransform[1][3] + m_mProjViewTransform[1][1],
+					 m_mProjViewTransform[2][3] + m_mProjViewTransform[2][1], 
+					 m_mProjViewTransform[3][3] + m_mProjViewTransform[3][1]);
+	// far
+	planes[4] = vec4(m_mProjViewTransform[0][3] - m_mProjViewTransform[0][2], 
+					 m_mProjViewTransform[1][3] - m_mProjViewTransform[1][2],
+					 m_mProjViewTransform[2][3] - m_mProjViewTransform[2][2], 
+					 m_mProjViewTransform[3][3] - m_mProjViewTransform[3][2]);
+	// near
+	planes[5] = vec4(m_mProjViewTransform[0][3] + m_mProjViewTransform[0][2], 
+					 m_mProjViewTransform[1][3] + m_mProjViewTransform[1][2], 
+					 m_mProjViewTransform[2][3] + m_mProjViewTransform[2][2], 
+					 m_mProjViewTransform[3][3] + m_mProjViewTransform[3][2]);
+
+	for (int i = 0; i < 6; i++)
+		planes[i] = glm::normalize(planes[i]);
+}
 
 float Camera::getFoV(){
 	return m_fFoV;

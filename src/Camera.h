@@ -21,6 +21,7 @@ public:
 	mat4 getView();
 	mat4 getProjection();
 	mat4 getProjectionView();
+	void getFrustumPlanes(vec4* planes);
 	float getFoV();
 };
 

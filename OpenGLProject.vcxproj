@@ -91,6 +91,7 @@
     <ClCompile Include="src\AdvancedTextures.cpp" />
     <ClCompile Include="src\Animation.cpp" />
     <ClCompile Include="src\Application.cpp" />
+    <ClCompile Include="src\BoundingVolumes.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\CameraAndProjections.cpp" />
     <ClCompile Include="src\Emitter.cpp" />
@@ -104,6 +105,7 @@
     <ClCompile Include="src\Particles.cpp" />
     <ClCompile Include="src\Quaternions.cpp" />
     <ClCompile Include="src\RenderingGeometry.cpp" />
+    <ClCompile Include="src\SceneManagement.cpp" />
     <ClCompile Include="src\Textures.cpp" />
     <ClCompile Include="src\tiny_obj_loader.cc" />
     <ClCompile Include="src\Utility.cpp" />
@@ -113,6 +115,7 @@
     <ClInclude Include="src\AdvancedTextures.h" />
     <ClInclude Include="src\Animation.h" />
     <ClInclude Include="src\Application.h" />
+    <ClInclude Include="src\BoundingVolumes.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\CameraAndProjections.h" />
     <ClInclude Include="src\Emitter.h" />
@@ -126,6 +129,7 @@
     <ClInclude Include="src\Particles.h" />
     <ClInclude Include="src\Quaternions.h" />
     <ClInclude Include="src\RenderingGeometry.h" />
+    <ClInclude Include="src\SceneManagement.h" />
     <ClInclude Include="src\stb_image.h" />
     <ClInclude Include="src\Textures.h" />
     <ClInclude Include="src\tiny_obj_loader.h" />
