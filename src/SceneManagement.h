@@ -7,6 +7,12 @@
 class SceneManagement : public Application
 {
 	FlyCamera m_oCamera;
+	std::vector<MeshObject> m_meshes;
+
+	vec3 m_ambCol, m_lightCol, m_matCol, m_lightDir;
+	float m_specPow;
+
+	unsigned int m_programID;
 public:
 	SceneManagement();
 	virtual ~SceneManagement();
@@ -17,8 +23,8 @@ public:
 	virtual bool update();
 	virtual void draw();
 
-	MeshObject LoadMesh(const char* obj_filename);
-	void DrawMesh();
+	void LoadMesh(const char* obj_filename);
+	void DrawMesh(MeshObject a_mesh);
 };
 
 #endif//SCENE_MANAGEMENT_H_

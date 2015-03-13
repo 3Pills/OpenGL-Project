@@ -12,6 +12,7 @@ void OnMouseScroll(GLFWwindow* window, double x, double y);
 void OnKey(GLFWwindow* window, int key, int scanCode, int pressed, int modKeys);
 void OnChar(GLFWwindow* window, unsigned int c);
 void OnWindowResize(GLFWwindow* window, int width, int height);
+void RenderPlane(vec4 a_plane);
 
 typedef enum EmitType {
 	EMIT_POINT = 0,

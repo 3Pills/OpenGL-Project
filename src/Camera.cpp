@@ -5,6 +5,15 @@ Camera::Camera():m_fFoV(glm::radians(90.0f)), m_fAspect(1280.0f/720.0f), m_fNear
 				 m_vMouseInitPos(vec2(0,0)){
 	setPos(m_vEye);
 	setLookAt(m_vEye, m_vTo, m_vUp);
+	GLFWwindow* curr_window = glfwGetCurrentContext();
+	glfwGetWindowSize(curr_window, &m_iWidth, &m_iHeight);
+}
+
+void Camera::update(float a_fdt) {
+	GLFWwindow* curr_window = glfwGetCurrentContext();
+	glfwGetWindowSize(curr_window, &m_iWidth, &m_iHeight);
+	setPerspective(m_fFoV, m_iWidth / m_iHeight >= 1 ? (float)m_iWidth / m_iHeight : (float)m_iHeight / m_iWidth, m_fNearZ, m_fFarZ);
+	UpdateProjectionViewTransform();
 }
 
 void Camera::UpdateProjectionViewTransform(){
@@ -25,6 +34,8 @@ void Camera::setLookAt(const vec3 a_vFrom, const vec3 a_vTo, const vec3 a_vUp){
 	m_vEye = a_vFrom;
 	m_vTo = glm::normalize(a_vTo - a_vFrom);
 	m_vUp = a_vUp;
+
+	m_mViewTransform = glm::lookAt(m_vEye, m_vTo, m_vUp);
 }
 
 void Camera::setPos(const vec3 a_vPos){
@@ -91,8 +102,17 @@ void Camera::getFrustumPlanes(vec4* planes){
 float Camera::getFoV(){
 	return m_fFoV;
 }
+float Camera::getAspectRatio(){
+	return m_fAspect;
+}
+float Camera::getNearZ(){
+	return m_fNearZ;
+}
+float Camera::getFarZ(){
+	return m_fFarZ;
+}
 
-FlyCamera::FlyCamera(float a_fSpeed):m_fSpeed(a_fSpeed),Camera(){}
+FlyCamera::FlyCamera(float a_fSpeed):m_fSpeed(a_fSpeed){}
 
 void FlyCamera::setSpeed(float a_fSpeed){
 	if (m_fSpeed != a_fSpeed){
@@ -176,10 +196,5 @@ void FlyCamera::update(const float a_fdt){
 		m_bMousePress = true;
 		glfwSetInputMode(curr_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
-
-	int width, height;
-	glfwGetWindowSize(curr_window, &width, &height);
-
-	setPerspective(m_fFoV, width / height >= 1 ? (float)width/height : (float)height/width, m_fNearZ, m_fFarZ);
-	UpdateProjectionViewTransform();
+	Camera::update(a_fdt);
 }

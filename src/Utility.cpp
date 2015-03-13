@@ -2,6 +2,7 @@
 #include "AntTweakBar.h"
 #include "gl_core_4_4.h"
 #include <GLFW\glfw3.h>
+#include "Gizmos.h"
 
 bool LoadShader(char* a_filename, GLenum a_shaderType, unsigned int* a_output) {
 	bool succeeded = true;
@@ -62,7 +63,6 @@ bool LoadShader(char* a_vertexFileName, char* a_geometryFileName, char* a_fragme
 		glAttachShader(*a_result, vertexShader);
 		glDeleteShader(vertexShader);
 	}
-	else printf("Vertex Shader file not found!\n");
 
 	if (a_geometryFileName != nullptr) {
 		unsigned int geometryShader;
@@ -70,7 +70,6 @@ bool LoadShader(char* a_vertexFileName, char* a_geometryFileName, char* a_fragme
 		glAttachShader(*a_result, geometryShader);
 		glDeleteShader(geometryShader);
 	}
-	else printf("Geometry Shader file not found!\n");
 
 	if (a_fragmentFileName != nullptr) {
 		unsigned int fragmentShader;
@@ -78,7 +77,6 @@ bool LoadShader(char* a_vertexFileName, char* a_geometryFileName, char* a_fragme
 		glAttachShader(*a_result, fragmentShader);
 		glDeleteShader(fragmentShader);
 	}
-	else printf("Fragment Shader file not found!\n");
 
 	glLinkProgram(*a_result);
 
@@ -101,6 +99,29 @@ bool LoadShader(char* a_vertexFileName, char* a_geometryFileName, char* a_fragme
 		succeeded = false;
 	}
 	return succeeded;
+}
+
+void RenderPlane(vec4 a_plane) {
+	vec3 up = vec3(0, 1, 0);
+	if (a_plane.xyz() == vec3(0, 1, 0))
+	{
+		up = vec3(1, 0, 0);
+	}
+
+	vec3 tangent = glm::normalize(glm::cross(a_plane.xyz(), up));
+	vec3 bitangent = glm::normalize(glm::cross(a_plane.xyz(), tangent));
+
+	vec3 p = a_plane.xyz() * a_plane.w;
+
+	vec3 v0 = p + tangent + bitangent;
+	vec3 v1 = p + tangent - bitangent;
+	vec3 v2 = p - tangent - bitangent;
+	vec3 v3 = p - tangent + bitangent;
+
+	Gizmos::addTri(v0, v1, v2, vec4(1, 1, 0, 1));
+	Gizmos::addTri(v0, v2, v3, vec4(1, 1, 0, 1));
+
+	//Gizmos::addLine(p, p + a_plane.xyz() * 2, vec4(0, 1, 1, 1));
 }
 
 void OnMouseButton(GLFWwindow* window, int button, int pressed, int altKeys) {

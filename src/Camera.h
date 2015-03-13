@@ -5,6 +5,7 @@
 
 class Camera {
 protected:
+	int m_iWidth, m_iHeight;
 	float m_fFoV, m_fAspect, m_fNearZ, m_fFarZ;
 	vec2 m_vMouseInitPos;
 	mat4 m_mWorldTransform, m_mViewTransform, m_mProjTransform, m_mProjViewTransform;
@@ -23,6 +24,9 @@ public:
 	mat4 getProjectionView();
 	void getFrustumPlanes(vec4* planes);
 	float getFoV();
+	float getAspectRatio();
+	float getNearZ();
+	float getFarZ();
 };
 
 class FlyCamera : public Camera {

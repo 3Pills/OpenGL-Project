@@ -1,7 +1,7 @@
-#include "SceneManagement.h"
+#include "PostProcessing.h"
 
 int main() {
-	SceneManagement App;
+	PostProcessing App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

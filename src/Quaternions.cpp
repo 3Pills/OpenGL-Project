@@ -1,5 +1,4 @@
 #include "Quaternions.h"
-#include <iostream>
 
 Quaternions::Quaternions() : m_oCamera(50) {
 	Application::Application();

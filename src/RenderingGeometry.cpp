@@ -38,7 +38,7 @@ void RenderingGeometry::draw(){
 	glUseProgram(m_programID);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	int proj_view_handle = glGetUniformLocation(m_programID, "ProjectionView");
+	int proj_view_handle = glGetUniformLocation(m_programID, "projView");
 	if (proj_view_handle > -1){
 		glUniformMatrix4fv(proj_view_handle, 1, false, (float*)&m_oCamera.getProjectionView());
 	}

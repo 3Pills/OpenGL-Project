@@ -7,10 +7,10 @@ in vec2 fTexCoord;
 
 out vec4 FragColor;
 
-uniform vec3 ambientColor;
-uniform vec3 lightColor;
+uniform vec3 ambCol;
+uniform vec3 lightCol;
 uniform vec3 lightDir;
-uniform vec3 cameraPos;
+uniform vec3 camPos;
 uniform float specPow;
 
 uniform sampler2D diffTex;
@@ -25,23 +25,23 @@ void main() {
 
 	vec3 N = normalize(TBN * adjustedNormal);
 
-	vec3 materialColor = texture(diffTex, fTexCoord).xyz;
+	vec3 matCol = texture(diffTex, fTexCoord).xyz;
 	vec3 materialSpec = texture(specTex, fTexCoord).xyz;
 
 	vec3 L = normalize(lightDir);
 
-	vec3 A = materialColor * ambientColor;
+	vec3 A = matCol * ambCol;
 
 	float d = max(0.0, dot(-L, N));
 
-	vec3 E = normalize(cameraPos - fPos);
+	vec3 E = normalize(camPos - fPos);
 	vec3 R = reflect(L, N);
 	float s = max(0, dot(R,E));
 	s = pow(s, specPow);
 	
 
-	vec3 D = vec3(d) * lightColor * materialColor;
-	vec3 S = vec3(s) * lightColor * materialSpec;
+	vec3 D = vec3(d) * lightCol * matCol;
+	vec3 S = vec3(s) * lightCol * materialSpec;
 
 	FragColor = vec4(A + D + S,1);
 }

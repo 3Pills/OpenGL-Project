@@ -3,29 +3,29 @@ in vec4 vNormal;
 in vec4 vPos;
 out vec4 FragColor;
 
-uniform vec3 AmbientColor;
-uniform vec3 MaterialColor;
-uniform vec3 LightColor;
-uniform vec3 LightDir;
-uniform vec3 CameraPos;
-uniform float SpecPow;
+uniform vec3 ambCol;
+uniform vec3 matCol;
+uniform vec3 lightCol;
+uniform vec3 lightDir;
+uniform vec3 camPos;
+uniform float specPow;
 
 void main() {
 	vec3 N = normalize(vNormal.xyz);
-	vec3 L = normalize(LightDir);
+	vec3 L = normalize(lightDir);
 
-	vec3 A = MaterialColor * AmbientColor;
+	vec3 A = matCol * ambCol;
 
 	float d = max(0.0, dot(-L, N));
 
-	vec3 D = vec3(d) * LightColor * MaterialColor;
+	vec3 D = vec3(d) * lightCol * matCol;
 
-	vec3 E = normalize(CameraPos - vPos.xyz);
+	vec3 E = normalize(camPos - vPos.xyz);
 	vec3 R = reflect(L, N);
 	float s = max(0, dot(R,E));
-	s = pow(s, SpecPow);
+	s = pow(s, specPow);
 
-	vec3 S = vec3(s) * LightColor * MaterialColor;
+	vec3 S = vec3(s) * lightCol * matCol;
 
 	FragColor = vec4(A + D + S,1);
 }

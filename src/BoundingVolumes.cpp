@@ -1,4 +1,5 @@
 #include "BoundingVolumes.h"
+#include <Gizmos.h>
 
 AABB::AABB(){ reset(); }
 AABB::~AABB() {}
@@ -34,8 +35,10 @@ void BoundingSphere::fit(const std::vector<glm::vec3>& a_points) {
 	m_fRadius = glm::distance(min, m_vCentre);
 }
 
-AABB GenerateAABB(vec3* a_positions, const unsigned int a_count, const unsigned int a_stride = 0){
+AABB GenerateAABB(vec3* a_positions, const unsigned int a_count, unsigned int a_stride) {
 	AABB result = {};
+	if (a_stride == 0) a_stride = sizeof(vec3);
+
 	result.m_vMin = a_positions[0];
 	result.m_vMax = a_positions[0];
 
@@ -47,22 +50,49 @@ AABB GenerateAABB(vec3* a_positions, const unsigned int a_count, const unsigned 
 		if (a_positions->x < result.m_vMax.x) result.m_vMax.x = a_positions->x;
 		if (a_positions->y < result.m_vMax.y) result.m_vMax.y = a_positions->y;
 		if (a_positions->z < result.m_vMax.z) result.m_vMax.z = a_positions->z;
+
+		a_positions = (vec3*)((char*)a_positions + a_stride);
 	}
+
+	return result;
 }
 
-int ComparePlane(const vec4 a_plane, const AABB a_box) {
-	vec3 plane_testA, plane_testB;
-	vec3 normal = vec3(a_plane);
+void RenderAABB(AABB a_aabb, mat4 transform)
+{
+	vec3 center = ((a_aabb.m_vMin + transform[3].xyz()) + (a_aabb.m_vMax + transform[3].xyz())) * 0.5f;
+	vec3 extents = ((a_aabb.m_vMax + transform[3].xyz()) - (a_aabb.m_vMax + transform[3].xyz())) * 0.5f;
 
-	plane_testA.x = (a_plane.x >= 0) ? a_box.m_vMin.x : a_box.m_vMax.x;
-	plane_testA.y = (a_plane.y >= 0) ? a_box.m_vMin.y : a_box.m_vMax.y;
-	plane_testA.z = (a_plane.z >= 0) ? a_box.m_vMin.z : a_box.m_vMax.z;
-	plane_testB.x = (a_plane.x >= 0) ? a_box.m_vMax.x : a_box.m_vMin.x;
-	plane_testB.y = (a_plane.y >= 0) ? a_box.m_vMax.y : a_box.m_vMin.y;
-	plane_testB.z = (a_plane.z >= 0) ? a_box.m_vMax.z : a_box.m_vMin.z;
+	Gizmos::addAABB(center, extents, vec4(1, 1, 1, 1), &transform);
+}
 
-	float dA = glm::dot(vec3(a_plane), plane_testA) + a_plane.w;
-	float dB = glm::dot(vec3(a_plane), plane_testB) + a_plane.w;
+bool OnPlanePositive(const vec4 a_plane, const AABB a_aabb, mat4 a_transform) {
+	vec3 points[8];
 
-	return (dA > dB || dB < dA);
+	vec3 center = (a_aabb.m_vMin + a_aabb.m_vMax) * 0.5f;
+	vec3 extents = (a_aabb.m_vMax - a_aabb.m_vMin) * 0.5f;
+
+	for (unsigned int point = 0; point < 8; ++point) 
+		points[point] = center;
+
+	points[0] += vec3( extents.x,  extents.y,  extents.z);
+	points[1] += vec3(-extents.x,  extents.y,  extents.z);
+	points[2] += vec3(-extents.x, -extents.y,  extents.z);
+	points[3] += vec3( extents.x, -extents.y,  extents.z);
+	points[4] += vec3( extents.x,  extents.y, -extents.z);
+	points[5] += vec3(-extents.x,  extents.y, -extents.z);
+	points[6] += vec3(-extents.x, -extents.y, -extents.z);
+	points[7] += vec3( extents.x, -extents.y, -extents.z);
+
+	for (unsigned int point = 0; point < 8;	++point) {
+		vec4 transformed_point = a_transform * vec4(points[point], 1);
+		float d = glm::dot(a_plane.xyz(), transformed_point.xyz()) + a_plane.w;
+
+		if (d > 0) return true;
+	}
+
+	return false;
+}
+
+bool OnPlanePositive(const vec4 a_plane, const BoundingSphere a_sphere, mat4 a_transform){
+	return false;
 }

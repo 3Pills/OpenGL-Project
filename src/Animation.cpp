@@ -1,5 +1,4 @@
 #include "Animation.h"
-#include <iostream>
 #include "Utility.h"
 
 Animation::Animation() : m_oCamera(50), m_vAmbCol(vec3(0.4f)), m_vLightCol(vec3(0.85f)), m_vLightPos(vec3(0, 10, 0)), m_fSpecPow(16){
@@ -70,7 +69,7 @@ void Animation::draw(){
 	int bones_uniform = glGetUniformLocation(m_programID, "bones");
 
 	int amb_color_uniform = glGetUniformLocation(m_programID, "ambColor");
-	int dif_color_uniform = glGetUniformLocation(m_programID, "lightColor");
+	int dif_color_uniform = glGetUniformLocation(m_programID, "lightCol");
 	int light_dir_uniform = glGetUniformLocation(m_programID, "lightDir");
 	int cam_pos_uniform = glGetUniformLocation(m_programID, "camPos");
 	int spec_pow_uniform = glGetUniformLocation(m_programID, "specPow");

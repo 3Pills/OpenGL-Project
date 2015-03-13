@@ -111,31 +111,31 @@ void Lighting::draw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram(m_programID);
 
-	int view_proj_uniform = glGetUniformLocation(m_programID, "ProjectionView");
+	int view_proj_uniform = glGetUniformLocation(m_programID, "projView");
 	if (view_proj_uniform > -1) {
 		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
 	}
-	int amb_color_uniform = glGetUniformLocation(m_programID, "AmbientColor");
+	int amb_color_uniform = glGetUniformLocation(m_programID, "ambCol");
 	if (amb_color_uniform > -1) {
 		glUniform3fv(amb_color_uniform, 1, (float*)&m_vAmbCol);
 	}
-	int mat_color_uniform = glGetUniformLocation(m_programID, "MaterialColor");
+	int mat_color_uniform = glGetUniformLocation(m_programID, "matCol");
 	if (mat_color_uniform > -1) {
 		glUniform3fv(mat_color_uniform, 1, (float*)&m_vMatCol);
 	}
-	int dif_color_uniform = glGetUniformLocation(m_programID, "LightColor");
+	int dif_color_uniform = glGetUniformLocation(m_programID, "lightCol");
 	if (dif_color_uniform > -1) {
 		glUniform3fv(dif_color_uniform, 1, (float*)&m_vLightCol);
 	}
-	int light_dir_uniform = glGetUniformLocation(m_programID, "LightDir");
+	int light_dir_uniform = glGetUniformLocation(m_programID, "lightDir");
 	if (light_dir_uniform > -1) {
 		glUniform3fv(light_dir_uniform, 1, (float*)&(glm::normalize(-m_vLightPos)));
 	}
-	int cam_pos_uniform = glGetUniformLocation(m_programID, "CameraPos");
+	int cam_pos_uniform = glGetUniformLocation(m_programID, "camPos");
 	if (cam_pos_uniform > -1) {
 		glUniform3fv(cam_pos_uniform, 1, (float*)&m_oCamera.getWorldTransform()[3].xyz);
 	}
-	int spec_pow_uniform = glGetUniformLocation(m_programID, "SpecPow");
+	int spec_pow_uniform = glGetUniformLocation(m_programID, "specPow");
 	if (spec_pow_uniform > -1) {
 		glUniform1f(spec_pow_uniform, m_fSpecPow);
 	}

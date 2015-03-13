@@ -93,15 +93,15 @@ void AdvancedTextures::draw(){
 
 	glUseProgram(m_programID);
 
-	int view_proj_uniform = glGetUniformLocation(m_programID, "ProjectionView");
+	int view_proj_uniform = glGetUniformLocation(m_programID, "projView");
 	if (view_proj_uniform > -1) {
 		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
 	}
-	int amb_color_uniform = glGetUniformLocation(m_programID, "ambientColor");
+	int amb_color_uniform = glGetUniformLocation(m_programID, "ambCol");
 	if (amb_color_uniform > -1) {
 		glUniform3fv(amb_color_uniform, 1, (float*)&m_vAmbCol);
 	}
-	int dif_color_uniform = glGetUniformLocation(m_programID, "lightColor");
+	int dif_color_uniform = glGetUniformLocation(m_programID, "lightCol");
 	if (dif_color_uniform > -1) {
 		glUniform3fv(dif_color_uniform, 1, (float*)&m_vLightCol);
 	}
@@ -109,7 +109,7 @@ void AdvancedTextures::draw(){
 	if (light_dir_uniform > -1) {
 		glUniform3fv(light_dir_uniform, 1, (float*)&(glm::normalize(-m_vLightPos)));
 	}
-	int cam_pos_uniform = glGetUniformLocation(m_programID, "cameraPos");
+	int cam_pos_uniform = glGetUniformLocation(m_programID, "camPos");
 	if (cam_pos_uniform > -1) {
 		glUniform3fv(cam_pos_uniform, 1, (float*)&m_oCamera.getWorldTransform()[3].xyz);
 	}

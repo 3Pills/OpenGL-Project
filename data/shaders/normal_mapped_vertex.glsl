@@ -11,7 +11,7 @@ out vec3 fTangent;
 out vec3 fBiTangent;
 out vec2 fTexCoord;
 
-uniform mat4 ProjectionView;
+uniform mat4 projView;
 
 void main() { 
 	fPos = Position.xyz;
@@ -20,5 +20,5 @@ void main() {
 	fBiTangent = cross(Normal.xyz, Tangent.xyz);
 	fTexCoord = TexCoord;
 
-	gl_Position = ProjectionView * Position; 
+	gl_Position = projView * Position; 
 }

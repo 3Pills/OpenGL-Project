@@ -1,5 +1,4 @@
 #include "CameraAndProjections.h"
-#include <iostream>
 
 CameraAndProjections::CameraAndProjections(): m_oCamera(50){
 	Application::Application();

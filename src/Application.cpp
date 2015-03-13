@@ -1,5 +1,4 @@
 #include "Application.h"
-#include <iostream>
 
 Application::Application(){
 	m_fCurrTime = m_fPrevTime = m_fDeltaTime = 0.0f;
@@ -7,8 +6,12 @@ Application::Application(){
 }
 Application::~Application(){}
 
+Application* m_app;
+
 void WindowResize(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
+	m_app->m_iWidth = width;
+	m_app->m_iHeight = height;
 }
 
 bool Application::startup(){
@@ -30,7 +33,9 @@ bool Application::startup(){
 
 	int major_version = ogl_GetMajorVersion();
 	int minor_version = ogl_GetMinorVersion();
+	glfwGetWindowSize(m_window, &m_iWidth, &m_iHeight);
 
+	m_app = this;
 	glfwSetWindowSizeCallback(m_window, WindowResize);
 
 	printf("OpenGL V%d.%d successfully loaded.\n", major_version, minor_version);

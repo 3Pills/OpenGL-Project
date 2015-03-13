@@ -1,5 +1,4 @@
 #include "IntroToOpenGL.h"
-#include <iostream>
 
 IntroToOpenGL::IntroToOpenGL(){}
 IntroToOpenGL::~IntroToOpenGL(){}

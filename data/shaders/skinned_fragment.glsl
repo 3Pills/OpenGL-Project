@@ -8,7 +8,7 @@ in vec2 fTexCoord;
 out vec4 fragColor;
 
 uniform vec3 ambColor;
-uniform vec3 lightColor;
+uniform vec3 lightCol;
 uniform vec3 lightDir;
 uniform vec3 camPos;
 uniform float specPow;
@@ -40,8 +40,8 @@ void main() {
 	s = pow(s, specPow);
 	
 
-	vec3 D = vec3(d) * lightColor * matColor;
-	vec3 S = vec3(s) * lightColor * matSpec;
+	vec3 D = vec3(d) * lightCol * matColor;
+	vec3 S = vec3(s) * lightCol * matSpec;
 
 	fragColor = vec4(A + D + S,1);
 }

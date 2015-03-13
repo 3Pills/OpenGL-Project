@@ -1,6 +1,5 @@
 #include "GPUParticles.h"
 #include "Utility.h"
-#include <iostream>
 
 GPUParticles::GPUParticles(): m_oCamera(50){
 	Application::Application();

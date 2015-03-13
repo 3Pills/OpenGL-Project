@@ -40,6 +40,12 @@
     <Filter Include="Scene Management">
       <UniqueIdentifier>{d2df0ad6-c32c-4940-9e5a-9a29298f0691}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RenderTargets">
+      <UniqueIdentifier>{1f3115f6-622b-4dd6-bac4-176a6e3d6f33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PostProcessing">
+      <UniqueIdentifier>{23d7035b-4fea-44e1-a403-1b4ef3d475e6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -102,6 +108,12 @@
     </ClCompile>
     <ClCompile Include="src\SceneManagement.cpp">
       <Filter>Scene Management</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RenderTargets.cpp">
+      <Filter>RenderTargets</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PostProcessing.cpp">
+      <Filter>PostProcessing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -177,12 +189,15 @@
     <ClInclude Include="src\SceneManagement.h">
       <Filter>Scene Management</Filter>
     </ClInclude>
+    <ClInclude Include="src\RenderTargets.h">
+      <Filter>RenderTargets</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PostProcessing.h">
+      <Filter>PostProcessing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\lighting_fragment.glsl">
-      <Filter>Lighting</Filter>
-    </None>
-    <None Include="data\shaders\lighting_vertex.glsl">
       <Filter>Lighting</Filter>
     </None>
     <None Include="data\shaders\geometry_fragment.glsl">
@@ -232,6 +247,15 @@
     </None>
     <None Include="data\shaders\gpuparticles_vertex.glsl">
       <Filter>GPUParticles</Filter>
+    </None>
+    <None Include="data\shaders\lighting_vertex.glsl">
+      <Filter>Lighting</Filter>
+    </None>
+    <None Include="data\shaders\reflective_fragment.glsl">
+      <Filter>RenderTargets</Filter>
+    </None>
+    <None Include="data\shaders\reflective_vertex.glsl">
+      <Filter>RenderTargets</Filter>
     </None>
   </ItemGroup>
 </Project>

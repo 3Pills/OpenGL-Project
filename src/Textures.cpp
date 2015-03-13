@@ -41,7 +41,7 @@ void Textures::draw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glUseProgram(m_programID);
 
-	int view_proj_uniform = glGetUniformLocation(m_programID, "ProjectionView");
+	int view_proj_uniform = glGetUniformLocation(m_programID, "projView");
 	if (view_proj_uniform > -1) {
 		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
 	}

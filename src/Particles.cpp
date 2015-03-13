@@ -1,6 +1,5 @@
 #include "Particles.h"
 #include "Utility.h"
-#include <iostream>
 
 Particles::Particles(): m_oCamera(50){
 	Application::Application();
