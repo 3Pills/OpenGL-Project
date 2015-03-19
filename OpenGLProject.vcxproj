@@ -108,6 +108,7 @@
     <ClCompile Include="src\RenderingGeometry.cpp" />
     <ClCompile Include="src\RenderTargets.cpp" />
     <ClCompile Include="src\SceneManagement.cpp" />
+    <ClCompile Include="src\Shadows.cpp" />
     <ClCompile Include="src\Textures.cpp" />
     <ClCompile Include="src\tiny_obj_loader.cc" />
     <ClCompile Include="src\Utility.cpp" />
@@ -134,6 +135,7 @@
     <ClInclude Include="src\RenderingGeometry.h" />
     <ClInclude Include="src\RenderTargets.h" />
     <ClInclude Include="src\SceneManagement.h" />
+    <ClInclude Include="src\Shadows.h" />
     <ClInclude Include="src\stb_image.h" />
     <ClInclude Include="src\Textures.h" />
     <ClInclude Include="src\tiny_obj_loader.h" />
@@ -141,6 +143,8 @@
     <ClInclude Include="src\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\shaders\diffuse_shadowed_fragment.glsl" />
+    <None Include="data\shaders\diffuse_shadowed_vertex.glsl" />
     <None Include="data\shaders\gpuparticles_fragment.glsl" />
     <None Include="data\shaders\gpuparticles_geometry.glsl" />
     <None Include="data\shaders\gpuparticles_update_vertex.glsl" />
@@ -153,8 +157,12 @@
     <None Include="data\shaders\lighting_vertex.glsl" />
     <None Include="data\shaders\particles_fragment.glsl" />
     <None Include="data\shaders\particles_vertex.glsl" />
+    <None Include="data\shaders\post_fragment.glsl" />
+    <None Include="data\shaders\post_vertex.glsl" />
     <None Include="data\shaders\reflective_fragment.glsl" />
     <None Include="data\shaders\reflective_vertex.glsl" />
+    <None Include="data\shaders\shadowed_fragment.glsl" />
+    <None Include="data\shaders\shadowed_vertex.glsl" />
     <None Include="data\shaders\skinned_fragment.glsl" />
     <None Include="data\shaders\skinned_vertex.glsl" />
     <None Include="data\shaders\textures_fragment.glsl" />

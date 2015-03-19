@@ -1,7 +1,7 @@
-#include "PostProcessing.h"
+#include "Shadows.h"
 
 int main() {
-	PostProcessing App;
+	Shadows App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

@@ -10,6 +10,7 @@ class PostProcessing : public Application
 
 	unsigned int m_fbo, m_fboTexture, m_fboDepth;
 	unsigned int m_postProgramID;
+	unsigned int m_LastKey;
 	OpenGLData m_quad;
 public:
 	PostProcessing();
@@ -21,8 +22,11 @@ public:
 	virtual bool update();
 	virtual void draw();
 
+	virtual void resize(int a_width, int a_height);
+
 	void GenerateFramebuffer();
 	void GenerateQuad();
+	void ReloadShader();
 };
 
 #endif//POST_PROCESSING_H_

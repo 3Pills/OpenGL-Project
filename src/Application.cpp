@@ -10,8 +10,7 @@ Application* m_app;
 
 void WindowResize(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
-	m_app->m_iWidth = width;
-	m_app->m_iHeight = height;
+	m_app->resize(width, height);
 }
 
 bool Application::startup(){
@@ -60,4 +59,9 @@ bool Application::update(){
 void Application::draw(){
 	glfwSwapBuffers(m_window);
 	glfwPollEvents();
+}
+
+void Application::resize(int a_width, int a_height){
+	m_iWidth = a_width;
+	m_iHeight = a_height;
 }

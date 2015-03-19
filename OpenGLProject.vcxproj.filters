@@ -46,6 +46,9 @@
     <Filter Include="PostProcessing">
       <UniqueIdentifier>{23d7035b-4fea-44e1-a403-1b4ef3d475e6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shadows">
+      <UniqueIdentifier>{de90b12e-2838-4a77-bd71-c91a35dc2679}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -114,6 +117,9 @@
     </ClCompile>
     <ClCompile Include="src\PostProcessing.cpp">
       <Filter>PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shadows.cpp">
+      <Filter>Shadows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +201,9 @@
     <ClInclude Include="src\PostProcessing.h">
       <Filter>PostProcessing</Filter>
     </ClInclude>
+    <ClInclude Include="src\Shadows.h">
+      <Filter>Shadows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\lighting_fragment.glsl">
@@ -256,6 +265,24 @@
     </None>
     <None Include="data\shaders\reflective_vertex.glsl">
       <Filter>RenderTargets</Filter>
+    </None>
+    <None Include="data\shaders\post_fragment.glsl">
+      <Filter>PostProcessing</Filter>
+    </None>
+    <None Include="data\shaders\post_vertex.glsl">
+      <Filter>PostProcessing</Filter>
+    </None>
+    <None Include="data\shaders\diffuse_shadowed_fragment.glsl">
+      <Filter>Shadows</Filter>
+    </None>
+    <None Include="data\shaders\diffuse_shadowed_vertex.glsl">
+      <Filter>Shadows</Filter>
+    </None>
+    <None Include="data\shaders\shadowed_fragment.glsl">
+      <Filter>Shadows</Filter>
+    </None>
+    <None Include="data\shaders\shadowed_vertex.glsl">
+      <Filter>Shadows</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -12,6 +12,7 @@ Camera::Camera():m_fFoV(glm::radians(90.0f)), m_fAspect(1280.0f/720.0f), m_fNear
 void Camera::update(float a_fdt) {
 	GLFWwindow* curr_window = glfwGetCurrentContext();
 	glfwGetWindowSize(curr_window, &m_iWidth, &m_iHeight);
+	if (m_iWidth == 0 || m_iHeight == 0) return;
 	setPerspective(m_fFoV, m_iWidth / m_iHeight >= 1 ? (float)m_iWidth / m_iHeight : (float)m_iHeight / m_iWidth, m_fNearZ, m_fFarZ);
 	UpdateProjectionViewTransform();
 }

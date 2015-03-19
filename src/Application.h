@@ -20,6 +20,8 @@ public:
 
 	virtual bool update();
 	virtual void draw();
+	virtual void resize(int a_width, int a_height);
+
 	int m_iWidth, m_iHeight;
 };
 #endif//_APPLICATION_H_
