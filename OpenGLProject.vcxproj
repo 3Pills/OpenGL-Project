@@ -94,6 +94,7 @@
     <ClCompile Include="src\BoundingVolumes.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\CameraAndProjections.cpp" />
+    <ClCompile Include="src\DeferredRendering.cpp" />
     <ClCompile Include="src\Emitter.cpp" />
     <ClCompile Include="src\Gizmos.cpp" />
     <ClCompile Include="src\gl_core_4_4.c" />
@@ -121,6 +122,7 @@
     <ClInclude Include="src\BoundingVolumes.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\CameraAndProjections.h" />
+    <ClInclude Include="src\DeferredRendering.h" />
     <ClInclude Include="src\Emitter.h" />
     <ClInclude Include="src\Gizmos.h" />
     <ClInclude Include="src\glm_header.h" />
@@ -143,8 +145,13 @@
     <ClInclude Include="src\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="data\shaders\composite_fragment.glsl" />
+    <None Include="data\shaders\composite_vertex.glsl" />
     <None Include="data\shaders\diffuse_shadowed_fragment.glsl" />
     <None Include="data\shaders\diffuse_shadowed_vertex.glsl" />
+    <None Include="data\shaders\directional_light_fragment.glsl" />
+    <None Include="data\shaders\gbuffer_fragment.glsl" />
+    <None Include="data\shaders\gbuffer_vertex.glsl" />
     <None Include="data\shaders\gpuparticles_fragment.glsl" />
     <None Include="data\shaders\gpuparticles_geometry.glsl" />
     <None Include="data\shaders\gpuparticles_update_vertex.glsl" />
@@ -157,6 +164,8 @@
     <None Include="data\shaders\lighting_vertex.glsl" />
     <None Include="data\shaders\particles_fragment.glsl" />
     <None Include="data\shaders\particles_vertex.glsl" />
+    <None Include="data\shaders\point_light_fragment.glsl" />
+    <None Include="data\shaders\point_light_vertex.glsl" />
     <None Include="data\shaders\post_fragment.glsl" />
     <None Include="data\shaders\post_vertex.glsl" />
     <None Include="data\shaders\reflective_fragment.glsl" />

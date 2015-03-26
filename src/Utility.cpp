@@ -57,21 +57,21 @@ bool LoadShader(char* a_vertexFileName, char* a_geometryFileName, char* a_fragme
 
 	*a_result = glCreateProgram();
 
-	if (a_vertexFileName != nullptr) {
+	if (a_vertexFileName != nullptr && a_vertexFileName != 0) {
 		unsigned int vertexShader;
 		LoadShader(a_vertexFileName, GL_VERTEX_SHADER, &vertexShader);
 		glAttachShader(*a_result, vertexShader);
 		glDeleteShader(vertexShader);
 	}
 
-	if (a_geometryFileName != nullptr) {
+	if (a_geometryFileName != nullptr && a_geometryFileName != 0) {
 		unsigned int geometryShader;
 		LoadShader(a_geometryFileName, GL_GEOMETRY_SHADER, &geometryShader);
 		glAttachShader(*a_result, geometryShader);
 		glDeleteShader(geometryShader);
 	}
 
-	if (a_fragmentFileName != nullptr) {
+	if (a_fragmentFileName != nullptr && a_fragmentFileName != 0) {
 		unsigned int fragmentShader;
 		LoadShader(a_fragmentFileName, GL_FRAGMENT_SHADER, &fragmentShader);
 		glAttachShader(*a_result, fragmentShader);

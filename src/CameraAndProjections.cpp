@@ -16,6 +16,7 @@ bool CameraAndProjections::startup(){
 	return true;
 }
 bool CameraAndProjections::shutdown(){
+	Gizmos::destroy();
 	return Application::shutdown();
 }
 bool CameraAndProjections::update(){
@@ -23,11 +24,6 @@ bool CameraAndProjections::update(){
 		return false;
 	}
 	m_oCamera.update(m_fDeltaTime);
-
-	return true;
-}
-void CameraAndProjections::draw(){
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	Gizmos::clear();
 	Gizmos::addTransform(mat4(1), 10);
 
@@ -38,6 +34,11 @@ void CameraAndProjections::draw(){
 		Gizmos::addLine(vec3(-10 + i, 0, -10), i != 10 ? vec3(-10 + i, 0, 10) : vec3(-10 + i, 0, 0), i != 10 ? black : white);
 		Gizmos::addLine(vec3(-10, 0, -10 + i), i != 10 ? vec3(10, 0, -10 + i) : vec3(0, 0, -10 + i), i != 10 ? black : white);
 	}
+
+	return true;
+}
+void CameraAndProjections::draw(){
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	Gizmos::draw(m_oCamera.getProjectionView());
 	Application::draw();

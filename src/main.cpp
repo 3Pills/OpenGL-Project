@@ -1,7 +1,7 @@
-#include "Shadows.h"
+#include "DeferredRendering.h"
 
 int main() {
-	Shadows App;
+	DeferredRendering App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){
