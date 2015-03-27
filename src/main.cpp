@@ -1,7 +1,7 @@
-#include "DeferredRendering.h"
+#include "ProceduralGeneration.h"
 
 int main() {
-	DeferredRendering App;
+	ProceduralGeneration App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

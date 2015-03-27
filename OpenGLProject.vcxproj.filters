@@ -52,6 +52,9 @@
     <Filter Include="DeferredRendering">
       <UniqueIdentifier>{1eeecb9d-5ba2-475e-b461-8509395e0566}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ProceduralGeneration">
+      <UniqueIdentifier>{b2f5a4c3-b7fa-47c2-9708-2d92282dde89}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -126,6 +129,9 @@
     </ClCompile>
     <ClCompile Include="src\DeferredRendering.cpp">
       <Filter>DeferredRendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ProceduralGeneration.cpp">
+      <Filter>ProceduralGeneration</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -212,6 +218,9 @@
     </ClInclude>
     <ClInclude Include="src\DeferredRendering.h">
       <Filter>DeferredRendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ProceduralGeneration.h">
+      <Filter>ProceduralGeneration</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -313,6 +322,12 @@
     </None>
     <None Include="data\shaders\directional_light_fragment.glsl">
       <Filter>DeferredRendering</Filter>
+    </None>
+    <None Include="data\shaders\perlin_fragment.glsl">
+      <Filter>ProceduralGeneration</Filter>
+    </None>
+    <None Include="data\shaders\perlin_vertex.glsl">
+      <Filter>ProceduralGeneration</Filter>
     </None>
   </ItemGroup>
 </Project>
