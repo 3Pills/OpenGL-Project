@@ -125,24 +125,18 @@ void FlyCamera::update(const float a_fdt){
 	vec3 side = (vec3)m_mWorldTransform[0];
 	GLFWwindow* curr_window = glfwGetCurrentContext();
 
-	if (glfwGetKey(curr_window, GLFW_KEY_W)){
+	if (glfwGetKey(curr_window, GLFW_KEY_W))
 		m_mWorldTransform[3] -= m_mWorldTransform[2] * a_fdt * m_fSpeed;
-	}
-	if (glfwGetKey(curr_window, GLFW_KEY_S)){
+	if (glfwGetKey(curr_window, GLFW_KEY_S))
 		m_mWorldTransform[3] += m_mWorldTransform[2] * a_fdt * m_fSpeed;
-	}
-	if (glfwGetKey(curr_window, GLFW_KEY_A)){
+	if (glfwGetKey(curr_window, GLFW_KEY_A))
 		m_mWorldTransform[3] -= m_mWorldTransform[0] * a_fdt * m_fSpeed;
-	}
-	if (glfwGetKey(curr_window, GLFW_KEY_D)){
+	if (glfwGetKey(curr_window, GLFW_KEY_D))
 		m_mWorldTransform[3] += m_mWorldTransform[0] * a_fdt * m_fSpeed;
-	}
-	if (glfwGetKey(curr_window, GLFW_KEY_Q)){
+	if (glfwGetKey(curr_window, GLFW_KEY_Q))
 		m_mWorldTransform[3] -= vec4(0, 1, 0, 0) * a_fdt * m_fSpeed;
-	}
-	if (glfwGetKey(curr_window, GLFW_KEY_E)){
+	if (glfwGetKey(curr_window, GLFW_KEY_E))
 		m_mWorldTransform[3] += vec4(0, 1, 0, 0) * a_fdt * m_fSpeed;
-	}
 
 	if (glfwGetKey(curr_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS){
 		setSpeed(85);
@@ -175,6 +169,15 @@ void FlyCamera::update(const float a_fdt){
 			
 			x *= -1;
 			y *= -1;
+
+			if (glfwGetKey(curr_window, GLFW_KEY_UP))
+				y += 0.025;
+			if (glfwGetKey(curr_window, GLFW_KEY_DOWN))
+				y -= 0.025;
+			if (glfwGetKey(curr_window, GLFW_KEY_LEFT))
+				x += 0.025;
+			if (glfwGetKey(curr_window, GLFW_KEY_RIGHT))
+				x -= 0.025;
 
 			mat4 yaw = glm::rotate((float)x, m_vUp);
 			mat4 pitch = glm::rotate((float)y, side);

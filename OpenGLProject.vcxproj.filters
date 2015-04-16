@@ -55,6 +55,9 @@
     <Filter Include="ProceduralGeneration">
       <UniqueIdentifier>{b2f5a4c3-b7fa-47c2-9708-2d92282dde89}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AdvancedNavigation">
+      <UniqueIdentifier>{048e4756-4467-4cde-a065-709a606b5c7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -132,6 +135,9 @@
     </ClCompile>
     <ClCompile Include="src\ProceduralGeneration.cpp">
       <Filter>ProceduralGeneration</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AdvancedNavigation.cpp">
+      <Filter>AdvancedNavigation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -221,6 +227,9 @@
     </ClInclude>
     <ClInclude Include="src\ProceduralGeneration.h">
       <Filter>ProceduralGeneration</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AdvancedNavigation.h">
+      <Filter>AdvancedNavigation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -328,6 +337,12 @@
     </None>
     <None Include="data\shaders\perlin_vertex.glsl">
       <Filter>ProceduralGeneration</Filter>
+    </None>
+    <None Include="data\shaders\navmesh_vertex.glsl">
+      <Filter>AdvancedNavigation</Filter>
+    </None>
+    <None Include="data\shaders\navmesh_fragment.glsl">
+      <Filter>AdvancedNavigation</Filter>
     </None>
   </ItemGroup>
 </Project>

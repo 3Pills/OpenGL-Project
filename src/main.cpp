@@ -1,7 +1,7 @@
-#include "ProceduralGeneration.h"
+#include "AdvancedNavigation.h"
 
 int main() {
-	ProceduralGeneration App;
+	AdvancedNavigation App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

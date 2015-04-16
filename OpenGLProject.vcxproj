@@ -88,6 +88,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\AdvancedNavigation.cpp" />
     <ClCompile Include="src\AdvancedTextures.cpp" />
     <ClCompile Include="src\Animation.cpp" />
     <ClCompile Include="src\Application.cpp" />
@@ -117,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="deps\fbxloader\FBXFile.h" />
+    <ClInclude Include="src\AdvancedNavigation.h" />
     <ClInclude Include="src\AdvancedTextures.h" />
     <ClInclude Include="src\Animation.h" />
     <ClInclude Include="src\Application.h" />
@@ -158,6 +160,8 @@
     <None Include="data\shaders\gpuparticles_geometry.glsl" />
     <None Include="data\shaders\gpuparticles_update_vertex.glsl" />
     <None Include="data\shaders\gpuparticles_vertex.glsl" />
+    <None Include="data\shaders\navmesh_fragment.glsl" />
+    <None Include="data\shaders\navmesh_vertex.glsl" />
     <None Include="data\shaders\normal_mapped_fragment.glsl" />
     <None Include="data\shaders\normal_mapped_vertex.glsl" />
     <None Include="data\shaders\fragment.glsl" />

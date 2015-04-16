@@ -3,6 +3,8 @@
 #include "gl_core_4_4.h"
 #include <GLFW\glfw3.h>
 #include "Gizmos.h"
+#include "tiny_obj_loader.h"
+#include "Vertex.h"
 
 bool LoadShader(char* a_filename, GLenum a_shaderType, unsigned int* a_output) {
 	bool succeeded = true;
@@ -99,6 +101,49 @@ bool LoadShader(char* a_vertexFileName, char* a_geometryFileName, char* a_fragme
 		succeeded = false;
 	}
 	return succeeded;
+}
+
+
+OpenGLData LoadOBJ(const char* filename){
+	OpenGLData result = {};
+
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+
+	tinyobj::LoadObj(shapes, materials, filename);
+
+	result.m_indexCount = shapes[0].mesh.indices.size();
+
+	tinyobj::mesh_t* mesh = &shapes[0].mesh;
+
+	std::vector<float> vertexData;
+	vertexData.reserve(mesh->positions.size() + mesh->normals.size());
+
+	vertexData.insert(vertexData.begin(), mesh->positions.begin(), mesh->positions.end());
+	vertexData.insert(vertexData.begin(), mesh->normals.begin(), mesh->normals.end());
+
+	glGenVertexArrays(1, &result.m_VAO);
+	glGenBuffers(1, &result.m_VBO);
+	glGenBuffers(1, &result.m_IBO);
+	glBindVertexArray(result.m_VAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, result.m_VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)* vertexData.size(), vertexData.data(), GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, result.m_IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)* mesh->indices.size(), mesh->indices.data(), GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float)* mesh->positions.size()));
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	return result;
 }
 
 void RenderPlane(vec4 a_plane) {

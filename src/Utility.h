@@ -14,6 +14,8 @@ void OnChar(GLFWwindow* window, unsigned int c);
 void OnWindowResize(GLFWwindow* window, int width, int height);
 void RenderPlane(vec4 a_plane);
 
+OpenGLData LoadOBJ(const char* filename);
+
 typedef enum EmitType {
 	EMIT_POINT = 0,
 	EMIT_LINE = 1,
