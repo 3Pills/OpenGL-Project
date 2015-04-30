@@ -18,6 +18,7 @@ public:
 	void setLookAt(const vec3 a_vFrom, const vec3 a_vTo, const vec3 a_vUp);
 	void setPos(const vec3 a_vPos);
 	void setFoV(const float a_fFoV);
+	vec3 pickAgainstPlane(float x, float y, vec4 plane);
 	mat4 getWorldTransform();
 	mat4 getView();
 	mat4 getProjection();

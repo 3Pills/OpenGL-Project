@@ -58,6 +58,9 @@
     <Filter Include="AdvancedNavigation">
       <UniqueIdentifier>{048e4756-4467-4cde-a065-709a606b5c7d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameTreeSearch">
+      <UniqueIdentifier>{589448d1-703b-4d5e-b169-2b5e0835a389}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -138,6 +141,15 @@
     </ClCompile>
     <ClCompile Include="src\AdvancedNavigation.cpp">
       <Filter>AdvancedNavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GameTreeSearch.cpp">
+      <Filter>GameTreeSearch</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ConnectFour.cpp">
+      <Filter>GameTreeSearch</Filter>
+    </ClCompile>
+    <ClCompile Include="src\AIMCTS.cpp">
+      <Filter>GameTreeSearch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -230,6 +242,18 @@
     </ClInclude>
     <ClInclude Include="src\AdvancedNavigation.h">
       <Filter>AdvancedNavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GameTreeSearch.h">
+      <Filter>GameTreeSearch</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ConnectFour.h">
+      <Filter>GameTreeSearch</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AIBase.h">
+      <Filter>GameTreeSearch</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AIMCTS.h">
+      <Filter>GameTreeSearch</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

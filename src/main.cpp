@@ -1,7 +1,7 @@
-#include "AdvancedNavigation.h"
+#include "GameTreeSearch.h"
 
 int main() {
-	AdvancedNavigation App;
+	GameTreeSearch App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

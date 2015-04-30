@@ -90,13 +90,16 @@
   <ItemGroup>
     <ClCompile Include="src\AdvancedNavigation.cpp" />
     <ClCompile Include="src\AdvancedTextures.cpp" />
+    <ClCompile Include="src\AIMCTS.cpp" />
     <ClCompile Include="src\Animation.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\BoundingVolumes.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\CameraAndProjections.cpp" />
+    <ClCompile Include="src\ConnectFour.cpp" />
     <ClCompile Include="src\DeferredRendering.cpp" />
     <ClCompile Include="src\Emitter.cpp" />
+    <ClCompile Include="src\GameTreeSearch.cpp" />
     <ClCompile Include="src\Gizmos.cpp" />
     <ClCompile Include="src\gl_core_4_4.c" />
     <ClCompile Include="src\GPUEmitter.cpp" />
@@ -120,13 +123,17 @@
     <ClInclude Include="deps\fbxloader\FBXFile.h" />
     <ClInclude Include="src\AdvancedNavigation.h" />
     <ClInclude Include="src\AdvancedTextures.h" />
+    <ClInclude Include="src\AIBase.h" />
+    <ClInclude Include="src\AIMCTS.h" />
     <ClInclude Include="src\Animation.h" />
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\BoundingVolumes.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\CameraAndProjections.h" />
+    <ClInclude Include="src\ConnectFour.h" />
     <ClInclude Include="src\DeferredRendering.h" />
     <ClInclude Include="src\Emitter.h" />
+    <ClInclude Include="src\GameTreeSearch.h" />
     <ClInclude Include="src\Gizmos.h" />
     <ClInclude Include="src\glm_header.h" />
     <ClInclude Include="src\gl_core_4_4.h" />

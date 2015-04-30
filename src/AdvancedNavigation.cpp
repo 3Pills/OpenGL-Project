@@ -14,7 +14,7 @@ bool AdvancedNavigation::startup(){
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	m_sponzaMesh = LoadOBJ("./models/sponza/SponzaSimple.obj");
 
-	LoadShader()
+	//LoadShader();
 
 	Gizmos::create();
 	return true;

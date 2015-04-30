@@ -52,6 +52,31 @@ void Camera::setFoV(const float a_fFoV){
 	m_fFoV = a_fFoV;
 }
 
+vec3 Camera::pickAgainstPlane(float x, float y, vec4 plane) {
+	float nxPos = x / m_iWidth;
+	float nyPos = y / m_iHeight;
+
+	float sxPos = nxPos - 0.5;
+	float syPos = nyPos - 0.5;
+
+	float fxPos = sxPos * 2;
+	float fyPos = syPos * 2;
+
+	mat4 invViewProj = glm::inverse(m_mProjViewTransform);
+
+	vec4 mousePos(fxPos, fyPos, 1, 1);
+	vec4 worldPos = invViewProj * mousePos;
+
+	worldPos /= worldPos.w;
+
+	vec3 camPos = m_mWorldTransform[3].xyz();
+	vec3 dir = worldPos.xyz() - camPos;
+
+	float t = -(glm::dot(camPos, plane.xyz()) + plane.w) / (glm::dot(dir, plane.xyz()));
+
+	return(camPos + dir * t);
+}
+
 mat4 Camera::getWorldTransform(){
 	return m_mWorldTransform;
 }
@@ -150,7 +175,7 @@ void FlyCamera::update(const float a_fdt){
 	else{
 		setSpeed(50);
 	}
-	if (glfwGetKey(curr_window, GLFW_KEY_SPACE) == GLFW_PRESS){
+	if (glfwGetMouseButton(curr_window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS){
 		if (m_bMousePress) {
 			int width, height;
 			glfwGetWindowSize(curr_window, &width, &height);
