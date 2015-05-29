@@ -11,6 +11,7 @@ in float lifespan[];
 
 // output to fragment shader
 out vec4 vColor;
+out vec2 fragTexCoord;
 
 uniform mat4 projView;
 uniform mat4 camTransform;
@@ -40,13 +41,20 @@ void main() {
 	vec3 yAxis = cross( zAxis, xAxis );
 	mat3 billboard = mat3(xAxis,yAxis,zAxis);
 
-	// emit he 4 vertices for the quad
+	//Assign values to each vertex.
 	gl_Position = projView*vec4(billboard*corners[0]+position[0], 1);
+	fragTexCoord = vec2(1,0);
 	EmitVertex();
+
 	gl_Position = projView*vec4(billboard*corners[1]+position[0], 1);
+	fragTexCoord = vec2(1,1);
 	EmitVertex();
+
 	gl_Position = projView*vec4(billboard*corners[2]+position[0], 1);
+	fragTexCoord = vec2(0,0);
 	EmitVertex();
+
 	gl_Position = projView*vec4(billboard*corners[3]+position[0], 1);
+	fragTexCoord = vec2(0,1);
 	EmitVertex();
 }

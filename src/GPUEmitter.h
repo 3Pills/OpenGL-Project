@@ -17,15 +17,17 @@ public:
 	GPUEmitter();
 	~GPUEmitter();
 
-	void Init(unsigned int a_maxParticles, vec3 a_pos, EmitType a_emitType, float a_emitRate,
-			  float a_lifespanMin, float a_lifespanMax, float a_velocityMin, float a_velocityMax,
-			  float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor);
+	void Init(vec3 a_pos = vec3(0, 0, 0), unsigned int a_maxParticles = 100, float a_emitRate = 50.0f,
+		float a_lifespanMin = 1.0f, float a_lifespanMax = 2.0f, float a_velocityMin = 1.0f, float a_velocityMax = 2.0f,
+		float a_startSize = 1.0f, float a_endSize = 0.5f, vec4 a_startColor = vec4(1, 1, 1, 1), vec4 a_endColor = vec4(1, 1, 1, 1), 
+		EmitType a_emitType = EmitType(0), char* a_szFilename = "./textures/white.png");
 
 	void Render(float a_dt, mat4 a_camTransform, mat4 a_projView);
 
 	void CreateBuffers();
 	void CreateUpdateShader();
 	void CreateDrawShader();
+	void CreateTexture();
 
 	//Particle data
 	GPUParticle* m_particles;
@@ -43,6 +45,9 @@ public:
 	unsigned int m_activeBuffer;
 	unsigned int m_VAO[2], m_VBO[2];
 	unsigned int m_drawShader, m_updateShader;
+	unsigned int m_texture;
+
+	char* m_szFilename;
 
 	float m_lastDrawTime;
 

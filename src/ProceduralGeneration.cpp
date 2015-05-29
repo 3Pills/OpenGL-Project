@@ -63,10 +63,10 @@ bool ProceduralGeneration::update(){
 		Gizmos::addLine(vec3(-10 + i, 0, -10), i != 10 ? vec3(-10 + i, 0, 10) : vec3(-10 + i, 0, 0), i != 10 ? black : white);
 		Gizmos::addLine(vec3(-10, 0, -10 + i), i != 10 ? vec3(10, 0, -10 + i) : vec3(0, 0, -10 + i), i != 10 ? black : white);
 	}
-	if (glfwGetKey(m_window, GLFW_KEY_R)){
+	if (glfwGetKey(m_window, GLFW_KEY_R)) {
 		ReloadShader();
 	}
-	if (glfwGetKey(m_window, GLFW_KEY_T)){
+	if (glfwGetKey(m_window, GLFW_KEY_T)) {
 		BuildPerlinTexture(glm::ivec2(64, 64), m_pOct, m_pAmp, m_pPers);
 	}
 

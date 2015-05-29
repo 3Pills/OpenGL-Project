@@ -118,6 +118,7 @@
     <ClCompile Include="src\Textures.cpp" />
     <ClCompile Include="src\tiny_obj_loader.cc" />
     <ClCompile Include="src\Utility.cpp" />
+    <ClCompile Include="src\VirtualWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="deps\fbxloader\FBXFile.h" />
@@ -154,6 +155,7 @@
     <ClInclude Include="src\tiny_obj_loader.h" />
     <ClInclude Include="src\Utility.h" />
     <ClInclude Include="src\Vertex.h" />
+    <ClInclude Include="src\VirtualWorld.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="data\shaders\composite_fragment.glsl" />

@@ -52,7 +52,7 @@ int MCTS::makeDecision(const Game& game){
 							Game* clone = game.clone();
 							clone->performAction(actions.at(i));
 							while (clone->getCurrentGameState() == Game::UNKNOWN) {
-								clone->getValidActions(nextActions);
+								clone->getValidActions(nextActions); //--
 								clone->performAction(nextActions[rand() % nextActions.size()]);
 							}
 							if (clone->getCurrentGameState() == Game::PLAYER_ONE)

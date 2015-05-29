@@ -1,12 +1,14 @@
 #include "GPUEmitter.h"
 #include "gl_core_4_4.h"
+#include "stb_image.h"
+#include <string>
 
 GPUEmitter::GPUEmitter() :
 	m_particles(nullptr), m_maxParticles(0), m_pos(0),
 	m_emitRate(0), m_emitTimer(0), m_lifespanMin(0), m_lifespanMax(0),
 	m_velocityMin(0), m_velocityMax(0), m_startSize(0), m_endSize(0),
 	m_startColor(0), m_endColor(0), m_drawShader(0), m_updateShader(0),
-	m_lastDrawTime(0), m_activeBuffer(0) {
+	m_lastDrawTime(0), m_activeBuffer(0), m_szFilename(nullptr) {
 	m_VAO[0] = 0;
 	m_VAO[1] = 0;
 	m_VBO[0] = 0;
@@ -23,9 +25,9 @@ GPUEmitter::~GPUEmitter(){
 	glDeleteProgram(m_updateShader);
 }
 
-void GPUEmitter::Init(unsigned int a_maxParticles, vec3 a_pos, EmitType a_emitType, 
-float a_emitRate, float a_lifespanMin, float a_lifespanMax, float a_velocityMin, float a_velocityMax,
-float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor) {
+void GPUEmitter::Init(vec3 a_pos, unsigned int a_maxParticles, float a_emitRate, float a_lifespanMin,
+	float a_lifespanMax, float a_velocityMin, float a_velocityMax,
+	float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor, EmitType a_emitType, char* a_szFilename) {
 	m_maxParticles = a_maxParticles;
 	m_pos = vec4(a_pos, 1);
 	m_emitRate = 1.0f / a_emitRate;
@@ -38,14 +40,16 @@ float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor) {
 	m_startColor = a_startColor;
 	m_endColor = a_endColor;
 	m_emitType = a_emitType;
-
-	m_particles = new GPUParticle[m_maxParticles];
+	m_szFilename = a_szFilename;
 
 	m_activeBuffer = 0;
+
+	m_particles = new GPUParticle[m_maxParticles];
 
 	CreateBuffers();
 	CreateUpdateShader();
 	CreateDrawShader();
+	CreateTexture();
 }
 
 void GPUEmitter::CreateBuffers() {
@@ -128,6 +132,52 @@ void GPUEmitter::CreateUpdateShader() {
 	location = glGetUniformLocation(m_updateShader, "lifeMax");
 	if (location > -1)
 		glUniform1f(location, m_lifespanMax);
+
+	int min_vel_uniform = glGetUniformLocation(m_updateShader, "min_velocity");
+	glUniform1f(min_vel_uniform, m_velocityMin);
+
+	int max_vel_uniform = glGetUniformLocation(m_updateShader, "max_velocity");
+	glUniform1f(max_vel_uniform, m_velocityMax);
+
+	int min_life_uniform = glGetUniformLocation(m_updateShader, "min_lifespan");
+	glUniform1f(min_life_uniform, m_lifespanMin);
+
+	int max_life_uniform = glGetUniformLocation(m_updateShader, "max_lifespan");
+	glUniform1f(max_life_uniform, m_lifespanMax);
+
+	int size_start_uniform = glGetUniformLocation(m_drawShader, "size_start");
+	glUniform1f(size_start_uniform, m_startSize);
+
+	int size_end_uniform = glGetUniformLocation(m_drawShader, "size_end");
+	glUniform1f(size_end_uniform, m_endSize);
+
+	int color_start_uniform = glGetUniformLocation(m_drawShader, "color_start");
+	glUniform4fv(color_start_uniform, 1, (float*)&m_startColor);
+
+	int color_end_uniform = glGetUniformLocation(m_drawShader, "color_end");
+	glUniform4fv(color_end_uniform, 1, (float*)&m_endColor);
+}
+
+void GPUEmitter::CreateTexture() {
+	std::string filename = m_szFilename;
+
+	int width, height, channels;
+	unsigned char* data = stbi_load(m_szFilename, &width, &height, &channels, STBI_default);
+
+	glGenTextures(1, &m_texture);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+
+	const char* extension = filename.substr(filename.find_last_of("."), +1).c_str();
+	if (extension == ".jpg") {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	}
+	else {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	stbi_image_free(data);
 }
 
 void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView) {
@@ -142,18 +192,6 @@ void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView) 
 
 	int emitterPos_uniform = glGetUniformLocation(m_updateShader, "emitterPos");
 	glUniform3fv(emitterPos_uniform, 1, &m_pos[0]);
-
-	int min_vel_uniform = glGetUniformLocation(m_updateShader, "min_velocity");
-	glUniform1f(min_vel_uniform, m_velocityMin);
-
-	int max_vel_uniform = glGetUniformLocation(m_updateShader, "max_velocity");
-	glUniform1f(max_vel_uniform, m_velocityMax);
-
-	int min_life_uniform = glGetUniformLocation(m_updateShader, "min_lifespan");
-	glUniform1f(min_life_uniform, m_lifespanMin);
-
-	int max_life_uniform = glGetUniformLocation(m_updateShader, "max_lifespan");
-	glUniform1f(max_life_uniform, m_lifespanMax);
 
 	glEnable(GL_RASTERIZER_DISCARD);
 
@@ -181,21 +219,18 @@ void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView) 
 	int camTransform_uniform = glGetUniformLocation(m_drawShader, "camTransform");
 	glUniformMatrix4fv(camTransform_uniform, 1, false, &a_camTransform[0][0]);
 
-	int size_start_uniform = glGetUniformLocation(m_drawShader, "size_start");
-	glUniform1f(size_start_uniform, m_startSize);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
 
-	int size_end_uniform = glGetUniformLocation(m_drawShader, "size_end");
-	glUniform1f(size_end_uniform, m_endSize);
+	int diffuse_location = glGetUniformLocation(m_drawShader, "diffuse");
+	glUniform1i(diffuse_location, 0);
 
-	int color_start_uniform = glGetUniformLocation(m_drawShader, "color_start");
-	glUniform4fv(color_start_uniform, 1, (float*)&m_startColor);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	int color_end_uniform = glGetUniformLocation(m_drawShader, "color_end");
-	glUniform4fv(color_end_uniform, 1, (float*)&m_endColor);
-
-	// draw particles in the "other" buffer
 	glBindVertexArray(m_VAO[otherBuffer]);
 	glDrawArrays(GL_POINTS, 0, m_maxParticles);
+
 
 	// swap for next frame
 	m_activeBuffer = otherBuffer;

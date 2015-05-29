@@ -1,7 +1,7 @@
-#include "GameTreeSearch.h"
+#include "VirtualWorld.h"
 
 int main() {
-	GameTreeSearch App;
+	VirtualWorld App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

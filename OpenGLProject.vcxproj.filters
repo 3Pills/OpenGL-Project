@@ -61,6 +61,9 @@
     <Filter Include="GameTreeSearch">
       <UniqueIdentifier>{589448d1-703b-4d5e-b169-2b5e0835a389}</UniqueIdentifier>
     </Filter>
+    <Filter Include="VirtualWorld">
+      <UniqueIdentifier>{c0ded35e-772a-4db3-a3b9-b74f400cdc05}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -150,6 +153,9 @@
     </ClCompile>
     <ClCompile Include="src\AIMCTS.cpp">
       <Filter>GameTreeSearch</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualWorld.cpp">
+      <Filter>VirtualWorld</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -254,6 +260,9 @@
     </ClInclude>
     <ClInclude Include="src\AIMCTS.h">
       <Filter>GameTreeSearch</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VirtualWorld.h">
+      <Filter>VirtualWorld</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
