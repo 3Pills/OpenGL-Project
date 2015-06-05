@@ -64,6 +64,9 @@
     <Filter Include="VirtualWorld">
       <UniqueIdentifier>{c0ded35e-772a-4db3-a3b9-b74f400cdc05}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{35a1c7cc-5079-40cf-930a-9f806e9fbb11}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -156,6 +159,12 @@
     </ClCompile>
     <ClCompile Include="src\VirtualWorld.cpp">
       <Filter>VirtualWorld</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Physics.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsObject.cpp">
+      <Filter>Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -263,6 +272,12 @@
     </ClInclude>
     <ClInclude Include="src\VirtualWorld.h">
       <Filter>VirtualWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Physics.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsObject.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

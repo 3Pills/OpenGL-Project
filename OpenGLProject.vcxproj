@@ -108,6 +108,8 @@
     <ClCompile Include="src\Lighting.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Particles.cpp" />
+    <ClCompile Include="src\Physics.cpp" />
+    <ClCompile Include="src\PhysicsObject.cpp" />
     <ClCompile Include="src\PostProcessing.cpp" />
     <ClCompile Include="src\ProceduralGeneration.cpp" />
     <ClCompile Include="src\Quaternions.cpp" />
@@ -143,6 +145,8 @@
     <ClInclude Include="src\IntroToOpenGL.h" />
     <ClInclude Include="src\Lighting.h" />
     <ClInclude Include="src\Particles.h" />
+    <ClInclude Include="src\Physics.h" />
+    <ClInclude Include="src\PhysicsObject.h" />
     <ClInclude Include="src\PostProcessing.h" />
     <ClInclude Include="src\ProceduralGeneration.h" />
     <ClInclude Include="src\Quaternions.h" />

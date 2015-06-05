@@ -2,6 +2,7 @@
 #define _UTILITY_H_
 #include "gl_core_4_4.h"
 #include <GLFW\glfw3.h>
+#include "Vertex.h"	
 
 typedef unsigned int GLuint;
 bool LoadShader(char* a_filename, GLenum a_shaderType, unsigned int* a_output);
