@@ -67,6 +67,9 @@
     <Filter Include="Physics">
       <UniqueIdentifier>{35a1c7cc-5079-40cf-930a-9f806e9fbb11}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CollisionShapeHierarchies">
+      <UniqueIdentifier>{0f80ad8b-6df4-4fc5-a888-38d06e296655}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -165,6 +168,9 @@
     </ClCompile>
     <ClCompile Include="src\PhysicsObject.cpp">
       <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CollisionShapeHierarchies.cpp">
+      <Filter>CollisionShapeHierarchies</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -278,6 +284,9 @@
     </ClInclude>
     <ClInclude Include="src\PhysicsObject.h">
       <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CollisionShapeHierarchies.h">
+      <Filter>CollisionShapeHierarchies</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

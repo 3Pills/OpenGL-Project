@@ -104,10 +104,6 @@ void Animation::draw(){
 	if (spec_texture_uniform > -1)
 		glUniform1i(spec_texture_uniform, 2);
 
-	if (amb_color_uniform > -1){
-		glUniform3fv(amb_color_uniform, 1, (float*)&vec3(1));
-	}
-
 	for (unsigned int i = 0; i < m_meshes.size(); ++i){
 
 		FBXMeshNode* currMesh = m_file->getMeshByIndex(i);
@@ -181,10 +177,10 @@ void Animation::GenerateGLMeshes(FBXFile* fbx){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_meshes[i].m_IBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)* currMesh->m_indices.size(), currMesh->m_indices.data(), GL_STATIC_DRAW);
 
-		glEnableVertexAttribArray(0); //pos
-		glEnableVertexAttribArray(1); //texcoord
-		glEnableVertexAttribArray(2); //bone indices
-		glEnableVertexAttribArray(3); //bone weights
+		glEnableVertexAttribArray(0);//pos
+		glEnableVertexAttribArray(1);//texcoord
+		glEnableVertexAttribArray(2);//bone indices
+		glEnableVertexAttribArray(3);//bone weights
 		glEnableVertexAttribArray(4);//normal
 		glEnableVertexAttribArray(5);//tangent
 
