@@ -29,7 +29,7 @@ bool AdvancedTextures::startup(){
 
 	LoadTextures();
 	GenerateQuad(5.0f);
-	LoadShader("./shaders/normal_mapped_vertex.glsl", "", "./shaders/normal_mapped_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/normal_mapped_vertex.glsl", "", "./data/shaders/normal_mapped_fragment.glsl", &m_programID);
 
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	Gizmos::create();
@@ -160,7 +160,7 @@ void AdvancedTextures::draw(){
 
 void AdvancedTextures::LoadTextures(){
 	int width, height, channels;
-	unsigned char* data = stbi_load("./textures/rock_diffuse.tga", &width, &height, &channels, STBI_default);
+	unsigned char* data = stbi_load("./data/textures/rock_diffuse.tga", &width, &height, &channels, STBI_default);
 
 	glGenTextures(1, &m_diffTex);
 	glBindTexture(GL_TEXTURE_2D, m_diffTex);
@@ -170,7 +170,7 @@ void AdvancedTextures::LoadTextures(){
 
 	stbi_image_free(data);
 
-	data = stbi_load("./textures/rock_normal.tga", &width, &height, &channels, STBI_default);
+	data = stbi_load("./data/textures/rock_normal.tga", &width, &height, &channels, STBI_default);
 
 	glGenTextures(1, &m_normTex);
 	glBindTexture(GL_TEXTURE_2D, m_normTex);
@@ -180,7 +180,7 @@ void AdvancedTextures::LoadTextures(){
 
 	stbi_image_free(data);
 
-	data = stbi_load("./textures/rock_specular.tga", &width, &height, &channels, STBI_default);
+	data = stbi_load("./data/textures/rock_specular.tga", &width, &height, &channels, STBI_default);
 
 	glGenTextures(1, &m_specTex);
 	glBindTexture(GL_TEXTURE_2D, m_specTex);
@@ -244,5 +244,5 @@ void AdvancedTextures::GenerateQuad(const float a_fSize){
 
 void AdvancedTextures::ReloadShader(){
 	glDeleteProgram(m_programID);
-	LoadShader("./shaders/normal_mapped_vertex.glsl", "", "./shaders/normal_mapped_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/normal_mapped_vertex.glsl", "", "./data/shaders/normal_mapped_fragment.glsl", &m_programID);
 }

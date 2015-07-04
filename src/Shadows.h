@@ -13,6 +13,7 @@ class Shadows : public Application
 
 	vec3 m_lightDir;
 	mat4 m_lightMatrix;
+
 	unsigned int m_fbo, m_fboDepth;
 	unsigned int m_shadowProgramID, m_diffuseShadowProgramID;
 public:
@@ -26,6 +27,7 @@ public:
 
 	void BuildMeshes();
 	void BuildShadowMap();
+	void ReloadShader();
 };
 
 #endif//CAM_N_PROJ_H_

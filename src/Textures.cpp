@@ -17,10 +17,10 @@ bool Textures::startup(){
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
-	LoadTexture("./textures/crate.png", 0);
-	LoadTexture("./textures/planets/earth_cloud.jpg", 1);
+	LoadTexture("./data/textures/crate.png", 0);
+	LoadTexture("./data/textures/planets/earth_cloud.jpg", 1);
 	GenerateQuad(5.0f);
-	LoadShader("./shaders/textures_vertex.glsl", "", "./shaders/textures_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/textures_vertex.glsl", "", "./data/shaders/textures_fragment.glsl", &m_programID);
 
 	Gizmos::create();
 

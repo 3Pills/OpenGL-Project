@@ -8,9 +8,9 @@ uniform vec3 lightDir;
 uniform sampler2D shadowMap;
 
 void main() { 
-	float d = max(0, dot(-lightDir, normalize(fragNormal).xyz));
+	float d = max(0, dot(normalize(fragNormal).xyz, lightDir));
 
-	if (texture(shadowMap, vShadowCoord.xy).r < vShadowCoord.z) {
+	if (texture(shadowMap, shadowCoord.xy).r < shadowCoord.z) {
 		d = 0;
 	}
 

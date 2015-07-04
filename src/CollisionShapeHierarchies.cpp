@@ -36,10 +36,10 @@ bool CollisionShapeHierarchies::startup(){
 	m_physics_scene->addActor(*plane);
 	setupVisualDebugger();
 
-	LoadShader("./shaders/vertex.glsl", "", "./shaders/fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/vertex.glsl", "", "./data/shaders/fragment.glsl", &m_programID);
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
-	std::string err = tinyobj::LoadObj(shapes, materials, "./models/tank/tank_small.obj");
+	std::string err = tinyobj::LoadObj(shapes, materials, "./data/models/tank/tank_small.obj");
 
 	if (err.size() > 0){
 		printf("%s", err);

@@ -34,10 +34,10 @@ bool DeferredRendering::startup(){
 	BuildGBuffer();
 	BuildLightBuffer();
 
-	LoadShader("./shaders/gbuffer_vertex.glsl", 0, "./shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
-	LoadShader("./shaders/composite_vertex.glsl", 0, "./shaders/composite_fragment.glsl", &m_compositeProgram);
-	LoadShader("./shaders/composite_vertex.glsl", 0, "./shaders/directional_light_fragment.glsl", &m_directionalLightProgram);
-	LoadShader("./shaders/point_light_vertex.glsl", 0, "./shaders/point_light_fragment.glsl", &m_pointLightProgram);
+	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
+	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/composite_fragment.glsl", &m_compositeProgram);
+	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_directionalLightProgram);
+	LoadShader("./data/shaders/point_light_vertex.glsl", 0, "./data/shaders/point_light_fragment.glsl", &m_pointLightProgram);
 
 	TwBar* m_bar = TwNewBar("Settings");
 	//TwAddVarRW(m_bar, "Draw Albedo", TW_TYPE_COLOR3F &m_bLi, "");
@@ -246,7 +246,7 @@ void DeferredRendering::BuildMesh()
 {
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
-	tinyobj::LoadObj(shapes, materials, "./models/stanford/bunny.obj");
+	tinyobj::LoadObj(shapes, materials, "./data/models/stanford/bunny.obj");
 
 	m_bunny.m_indexCount = shapes[0].mesh.indices.size();
 
@@ -409,8 +409,8 @@ void DeferredRendering::RenderPointLight(vec3 a_lightPos, float a_radius, vec3 a
 
 void DeferredRendering::ReloadShader(){
 	glDeleteProgram(m_gBufferProgram);
-	LoadShader("./shaders/gbuffer_vertex.glsl", 0, "./shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
-	LoadShader("./shaders/composite_vertex.glsl", 0, "./shaders/composite_fragment.glsl", &m_compositeProgram);
-	LoadShader("./shaders/composite_vertex.glsl", 0, "./shaders/directional_light_fragment.glsl", &m_directionalLightProgram);
-	LoadShader("./shaders/point_light_vertex.glsl", 0, "./shaders/point_light_fragment.glsl", &m_pointLightProgram);
+	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
+	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/composite_fragment.glsl", &m_compositeProgram);
+	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_directionalLightProgram);
+	LoadShader("./data/shaders/point_light_vertex.glsl", 0, "./data/shaders/point_light_fragment.glsl", &m_pointLightProgram);
 }

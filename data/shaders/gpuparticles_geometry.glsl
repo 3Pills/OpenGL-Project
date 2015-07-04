@@ -16,18 +16,20 @@ out vec2 fragTexCoord;
 uniform mat4 projView;
 uniform mat4 camTransform;
 
-uniform float sizeStart;
-uniform float sizeEnd;
+uniform float startSize;
+uniform float endSize;
 
-uniform vec4 colorStart;
-uniform vec4 colorEnd;
+uniform vec4 startColor;
+uniform vec4 endColor;
+
+uniform float deltaTime;
 
 void main() {
 	// interpolate colour
-	vColor = mix(colorStart, colorEnd, lifetime[0] / lifespan[0] );
+	vColor = mix(startColor, endColor, lifetime[0] / lifespan[0] );
 
 	// calculate the size and create the corners of a quad
-	float halfSize = mix(sizeStart,sizeEnd,lifetime[0]/lifespan[0]) * 0.5f;
+	float halfSize = mix(startSize,endSize,lifetime[0]/lifespan[0]) * 0.5f;
 
 	vec3 corners[4];
 	corners[0] = vec3( halfSize, -halfSize, 0 );

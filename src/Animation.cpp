@@ -27,10 +27,10 @@ bool Animation::startup(){
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	m_file = new FBXFile;
-	m_file->load("./models/characters/Enemytank/Enemytank.fbx");
+	m_file->load("./data/models/characters/Pyro/pyro.fbx");
 	m_file->initialiseOpenGLTextures();
 	GenerateGLMeshes(m_file);
-	LoadShader("./shaders/skinned_vertex.glsl", "", "./shaders/skinned_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/skinned_vertex.glsl", "", "./data/shaders/skinned_fragment.glsl", &m_programID);
 
 	TwBar* m_bar = TwNewBar("Settings");
 	TwAddVarRW(m_bar, "Ambient", TW_TYPE_COLOR3F, &m_vAmbCol, "group=Light");
@@ -68,7 +68,7 @@ void Animation::draw(){
 	int world_uniform = glGetUniformLocation(m_programID, "world");
 	int bones_uniform = glGetUniformLocation(m_programID, "bones");
 
-	int amb_color_uniform = glGetUniformLocation(m_programID, "ambColor");
+	int amb_color_uniform = glGetUniformLocation(m_programID, "ambCol");
 	int dif_color_uniform = glGetUniformLocation(m_programID, "lightCol");
 	int light_dir_uniform = glGetUniformLocation(m_programID, "lightDir");
 	int cam_pos_uniform = glGetUniformLocation(m_programID, "camPos");
@@ -246,5 +246,5 @@ void Animation::UpdateBones(FBXSkeleton* skeleton){
 
 void Animation::ReloadShader(){
 	glDeleteProgram(m_programID);
-	LoadShader("./shaders/skinned_vertex.glsl", "", "./shaders/skinned_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/skinned_vertex.glsl", "", "./data/shaders/skinned_fragment.glsl", &m_programID);
 }

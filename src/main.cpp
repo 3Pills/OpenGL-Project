@@ -1,7 +1,7 @@
-#include "Physics.h"
+#include "GPUParticles.h"
 
 int main() {
-	Physics App;
+	GPUParticles App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

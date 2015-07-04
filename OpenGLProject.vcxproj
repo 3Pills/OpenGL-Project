@@ -39,17 +39,17 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)src;./deps/fbxloader/;./deps/atb/include;./deps/glfw/include;./deps/glm;./deps/physx/Include;$(IncludePath)</IncludePath>
-    <SourcePath>./src;$(VC_SourcePath);</SourcePath>
-    <LibraryPath>./deps/fbxloader/;./deps/atb/lib;./deps/glfw/lib-vc2013;./deps/physx/Lib/vc12win32;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <IncludePath>$(ProjectDir)src;$(ProjectDir)deps/fbxloader/;$(ProjectDir)deps/atb/include;$(ProjectDir)deps/glfw/include;$(ProjectDir)deps/glm;./deps/physx/Include;$(IncludePath)</IncludePath>
+    <SourcePath>$(ProjectDir)src;$(VC_SourcePath);</SourcePath>
+    <LibraryPath>$(ProjectDir)deps/fbxloader/;$(ProjectDir)deps/atb/lib;$(ProjectDir)deps/glfw/lib-vc2013;$(ProjectDir)deps/physx/Lib/vc12win32;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)obj\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir)src;./deps/fbxloader/;./deps/atb/include;./deps/glfw/include;./deps/glm;./deps/physx/Include;$(IncludePath)</IncludePath>
-    <SourcePath>./src;$(VC_SourcePath);</SourcePath>
-    <LibraryPath>./deps/fbxloader/;./deps/atb/lib;./deps/glfw/lib-vc2013;./deps/physx/Lib/vc12win32;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+    <IncludePath>$(ProjectDir)src;$(ProjectDir)deps/fbxloader/;$(ProjectDir)deps/atb/include;$(ProjectDir)deps/glfw/include;$(ProjectDir)deps/glm;./deps/physx/Include;$(IncludePath)</IncludePath>
+    <SourcePath>$(ProjectDir)src;$(VC_SourcePath);</SourcePath>
+    <LibraryPath>$(ProjectDir)deps/fbxloader/;$(ProjectDir)deps/atb/lib;$(ProjectDir)deps/glfw/lib-vc2013;$(ProjectDir)deps/physx/Lib/vc12win32;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);</LibraryPath>
     <OutDir>$(SolutionDir)bin\</OutDir>
     <IntDir>$(SolutionDir)obj\</IntDir>
   </PropertyGroup>

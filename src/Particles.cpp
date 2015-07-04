@@ -14,7 +14,7 @@ bool Particles::startup(){
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	m_emitter.Init(100000, vec3(-10, -10, -10), vec3(10, 10, 10), EMIT_OUTER_RING, 1000, 1, 2, 2, 4, 0.5f, 0.2f, vec4(1, 1, 0.65f, 1), vec4(1, 0.25f, 0, 1));
 
-	LoadShader("./shaders/particles_vertex.glsl", "", "./shaders/particles_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/particles_vertex.glsl", "", "./data/shaders/particles_fragment.glsl", &m_programID);
 
 	Gizmos::create();
 	return true;

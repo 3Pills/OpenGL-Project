@@ -15,9 +15,9 @@ bool VirtualWorld::startup(){
 	m_aParticleEmitters.push_back(new GPUEmitter);
 
 	for (GPUEmitter* particle : m_aParticleEmitters) {
-		particle->Init(vec3(0,0,0), 100, 50.0f, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, vec4(1,0.5,0.5,1), vec4(1,0,0,0), EMIT_POINT, "./textures/particles/glow.png");
+		particle->Init(vec3(0,0,0), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, vec4(1,0.5,0.5,1), vec4(1,0,0,0), EMIT_POINT, "./data/textures/particles/glow.png");
 	}
-	//LoadShader("./shaders/particles_vertex.glsl", "", "./shaders/particles_fragment.glsl", &m_programID);
+	//LoadShader("./data/shaders/particles_vertex.glsl", "", "./data/shaders/particles_fragment.glsl", &m_programID);
 
 	Gizmos::create();
 	return true;

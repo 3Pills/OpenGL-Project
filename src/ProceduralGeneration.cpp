@@ -31,7 +31,7 @@ bool ProceduralGeneration::startup(){
 	BuildGrid(vec2(40, 40), dims);
 	BuildPerlinTexture(dims, m_pOct, m_pAmp, m_pPers);
 
-	LoadShader("./shaders/perlin_vertex.glsl", 0, "./shaders/perlin_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/perlin_fragment.glsl", &m_programID);
 
 	TwBar* m_bar = TwNewBar("Settings");
 	TwAddVarRW(m_bar, "Scale", TW_TYPE_FLOAT, &m_pScale, "step=0.05");
@@ -44,6 +44,7 @@ bool ProceduralGeneration::startup(){
 }
 
 bool ProceduralGeneration::shutdown(){
+	TwTerminate();
 	Gizmos::destroy();
 	return Application::shutdown();
 }
@@ -215,5 +216,5 @@ void ProceduralGeneration::PerlinNoise(vec2 a_coords){
 
 void ProceduralGeneration::ReloadShader(){
 	glDeleteProgram(m_programID);
-	LoadShader("./shaders/perlin_vertex.glsl", 0, "./shaders/perlin_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/perlin_fragment.glsl", &m_programID);
 }
