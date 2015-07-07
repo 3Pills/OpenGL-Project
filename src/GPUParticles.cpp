@@ -25,7 +25,7 @@ bool GPUParticles::startup(){
 	glfwSetWindowSizeCallback(m_window, OnWindowResize);
 
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
-	m_emitter.Init(vec3(0), 100000, 1, 10, 10, 100, 0.05f, 0.2f, vec4(1, 1, 0.65f, 1), vec4(1, 0.25f, 0, 1), EMIT_OUTER_RING);
+	m_emitter.Init(vec3(0), 100000, 1, 10, 10, 100, 0.05f, 0.2f, vec4(1, 1, 0.65f, 1), vec4(1, 0.25f, 0, 1), EMIT_OUTER_RING, "./data/textures/particles/glow.png");
 
 	TwEnumVal emitTypes[] = { { EMIT_POINT, "Point" }, { EMIT_LINE, "Line" },
 	{ EMIT_PLANE, "Plane" }, { EMIT_RING, "Ring" }, { EMIT_OUTER_RING, "Outer Ring" },
@@ -73,10 +73,11 @@ bool GPUParticles::update(){
 }
 void GPUParticles::draw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	m_emitter.Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView());
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	TwDraw();
 	Gizmos::draw(m_oCamera.getProjectionView());
+
+	m_emitter.Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView());
 	Application::draw();
 }

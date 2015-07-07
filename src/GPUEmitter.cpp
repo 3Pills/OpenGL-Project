@@ -112,6 +112,10 @@ void GPUEmitter::CreateTexture() {
 
 void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView) {
 	glUseProgram(m_updateShader);
+	glEnable(GL_BLEND);
+	glDepthMask(GL_FALSE);
+	//Modify the Blend Func to make particles look a little better within the world.
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	int loc = glGetUniformLocation(m_updateShader, "time");
 	glUniform1f(loc, a_currTime);
@@ -138,18 +142,14 @@ void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView) 
 	glUniform1i(loc, (int)m_emitType);
 
 	glEnable(GL_RASTERIZER_DISCARD);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glBindVertexArray(m_VAO[m_activeBuffer]);
 	unsigned int otherBuffer = (m_activeBuffer + 1) % 2;
 	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_VBO[otherBuffer]);
-
 	glBeginTransformFeedback(GL_POINTS);
 	glDrawArrays(GL_POINTS, 0, m_maxParticles);
 	glEndTransformFeedback();
 
-	glDisable(GL_BLEND);
 	glDisable(GL_RASTERIZER_DISCARD);
 	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 0);
 
@@ -173,10 +173,17 @@ void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView) 
 	loc = glGetUniformLocation(m_drawShader, "camTransform");
 	glUniformMatrix4fv(loc, 1, false, &a_camTransform[0][0]);
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+	loc = glGetUniformLocation(m_drawShader, "diffuse");
+	glUniform1i(loc, 0);
+
 	glBindVertexArray(m_VAO[otherBuffer]);
 	glDrawArrays(GL_POINTS, 0, m_maxParticles);
 
 	// swap for next frame
 	m_activeBuffer = otherBuffer;
 	m_lastDrawTime = a_currTime;
+	glDisable(GL_BLEND);
+	glDepthMask(GL_TRUE);
 }

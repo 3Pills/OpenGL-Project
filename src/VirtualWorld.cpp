@@ -49,6 +49,7 @@ bool VirtualWorld::update(){
 }
 void VirtualWorld::draw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//glUseProgram(m_programID);
 	//int view_proj_uniform = glGetUniformLocation(m_programID, "ProjView");
@@ -56,12 +57,9 @@ void VirtualWorld::draw(){
 	//	glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
 	//}
 
-	glEnable(GL_BLEND);
+	Gizmos::draw(m_oCamera.getProjectionView());
 	for (GPUEmitter* particle : m_aParticleEmitters) {
 		particle->Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView());
 	}
-
-	Gizmos::draw(m_oCamera.getProjectionView());
-	glDisable(GL_BLEND);
 	Application::draw();
 }

@@ -8,6 +8,10 @@ in vec3 position;
 in float lifetime;
 in float lifespan;
 
+uniform sampler2D diffuse;
+
 void main() {
-	fragColor = vColor;
+	vec4 color = vColor * texture(diffuse, fragTexCoord);
+	color.a = vColor.a * texture(diffuse, fragTexCoord).a;
+	fragColor = color;
 }
