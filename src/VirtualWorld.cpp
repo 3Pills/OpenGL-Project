@@ -1,7 +1,7 @@
 #include "VirtualWorld.h"
 
 
-VirtualWorld::VirtualWorld(): m_oCamera(50){
+VirtualWorld::VirtualWorld(): m_oCamera(50), m_LastKey(0){
 	Application::Application();
 }
 VirtualWorld::~VirtualWorld(){}
@@ -15,7 +15,7 @@ bool VirtualWorld::startup(){
 	m_aParticleEmitters.push_back(new GPUEmitter);
 
 	for (GPUEmitter* particle : m_aParticleEmitters) {
-		particle->Init(vec3(0,0,0), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, vec4(1,0.5,0.5,1), vec4(1,0,0,0), EMIT_POINT, "./data/textures/particles/glow.png");
+		particle->Init(vec3(0), vec3(1), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 0), EMIT_POINT, PMOVE_WAVE, "./data/textures/particles/glow.png");
 	}
 	//LoadShader("./data/shaders/particles_vertex.glsl", "", "./data/shaders/particles_fragment.glsl", &m_programID);
 
@@ -33,6 +33,12 @@ bool VirtualWorld::update(){
 	if (!Application::update()){
 		return false;
 	}
+
+	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS && m_LastKey != GLFW_PRESS){
+		ReloadShaders();
+	}
+	m_LastKey = glfwGetKey(m_window, GLFW_KEY_R);
+
 	m_oCamera.update(m_fDeltaTime);
 	Gizmos::clear();
 	Gizmos::addTransform(mat4(1), 10);
@@ -57,9 +63,26 @@ void VirtualWorld::draw(){
 	//	glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
 	//}
 
+	//Opaque Drawing
 	Gizmos::draw(m_oCamera.getProjectionView());
+	
+	//Transparency Drawing
 	for (GPUEmitter* particle : m_aParticleEmitters) {
 		particle->Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView());
 	}
+
+	//GUI Drawing
 	Application::draw();
+}
+
+
+
+void VirtualWorld::ReloadShaders(){
+	printf("Reloading Shaders...\n");
+	//glDeleteProgram(m_programID);
+	//LoadShader("./data/shaders/normal_mapped_vertex.glsl", "", "./data/shaders/normal_mapped_fragment.glsl", &m_programID);
+
+	for (GPUEmitter* particle : m_aParticleEmitters) {
+		particle->Reload();
+	}
 }

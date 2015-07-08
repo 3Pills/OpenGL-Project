@@ -23,10 +23,15 @@ uniform vec4 startColor;
 uniform vec4 endColor;
 
 uniform float deltaTime;
+uniform float fadeIn;
+uniform float fadeOut;
 
 void main() {
 	// interpolate colour
-	vColor = mix(startColor, endColor, lifetime[0] / lifespan[0] );
+	vColor = mix(startColor, endColor, lifetime[0] / lifespan[0]);
+	
+	// interpolate alpha of particle, based on its current time alive.
+	vColor.a = min(lifetime[0] / fadeIn, min((lifespan[0] - lifetime[0]) / fadeOut, 1));
 
 	// calculate the size and create the corners of a quad
 	float halfSize = mix(startSize,endSize,lifetime[0]/lifespan[0]) * 0.5f;

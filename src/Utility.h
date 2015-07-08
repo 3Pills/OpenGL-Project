@@ -17,17 +17,4 @@ void RenderPlane(vec4 a_plane);
 
 OpenGLData LoadOBJ(const char* filename);
 
-typedef enum EmitType {
-	EMIT_POINT = 0,
-	EMIT_LINE = 1,
-	EMIT_PLANE = 2,
-	EMIT_RECTANGLE = 3,
-	EMIT_OUTER_RECTANGLE = 4,
-	EMIT_RING = 5,
-	EMIT_OUTER_RING = 6,
-	EMIT_SPHERE = 7,
-	EMIT_OUTER_SPHERE = 8,
-	EMIT_COUNT = 9
-};
-
 #endif//_UTILITY_H_

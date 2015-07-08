@@ -39,9 +39,6 @@ bool Application::startup(){
 
 	printf("OpenGL V%d.%d successfully loaded.\n", major_version, minor_version);
 	printf("GLSL V%s loaded.\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-	for (int i = 0; i < 6; i++) {
-		printf("%s\n", glGetStringi(GL_SHADING_LANGUAGE_VERSION, i));
-	}
 
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	glEnable(GL_DEPTH_TEST);

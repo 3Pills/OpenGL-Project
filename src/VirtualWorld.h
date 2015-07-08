@@ -9,7 +9,7 @@ class VirtualWorld : public Application
 {
 	FlyCamera m_oCamera;
 	std::vector<GPUEmitter*> m_aParticleEmitters;
-	unsigned int m_programID;
+	unsigned int m_programID, m_LastKey;
 public:
 	VirtualWorld();
 	virtual ~VirtualWorld();
@@ -19,6 +19,8 @@ public:
 
 	virtual bool update();
 	virtual void draw();
+
+	void ReloadShaders();
 };
 
 #endif//VIRTUAL_WORLD_H_
