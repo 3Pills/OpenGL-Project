@@ -172,6 +172,9 @@
     <ClCompile Include="src\CollisionShapeHierarchies.cpp">
       <Filter>CollisionShapeHierarchies</Filter>
     </ClCompile>
+    <ClCompile Include="src\FBXModel.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Application.h">
@@ -287,6 +290,9 @@
     </ClInclude>
     <ClInclude Include="src\CollisionShapeHierarchies.h">
       <Filter>CollisionShapeHierarchies</Filter>
+    </ClInclude>
+    <ClInclude Include="src\FBXModel.h">
+      <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

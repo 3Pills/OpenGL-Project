@@ -104,6 +104,7 @@
     <ClCompile Include="src\ConnectFour.cpp" />
     <ClCompile Include="src\DeferredRendering.cpp" />
     <ClCompile Include="src\Emitter.cpp" />
+    <ClCompile Include="src\FBXModel.cpp" />
     <ClCompile Include="src\GameTreeSearch.cpp" />
     <ClCompile Include="src\Gizmos.cpp" />
     <ClCompile Include="src\gl_core_4_4.c" />
@@ -142,6 +143,7 @@
     <ClInclude Include="src\ConnectFour.h" />
     <ClInclude Include="src\DeferredRendering.h" />
     <ClInclude Include="src\Emitter.h" />
+    <ClInclude Include="src\FBXModel.h" />
     <ClInclude Include="src\GameTreeSearch.h" />
     <ClInclude Include="src\Gizmos.h" />
     <ClInclude Include="src\glm_header.h" />

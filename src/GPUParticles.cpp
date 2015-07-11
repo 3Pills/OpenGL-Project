@@ -25,7 +25,9 @@ bool GPUParticles::startup(){
 	glfwSetWindowSizeCallback(m_window, OnWindowResize);
 
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
-	m_emitter.Init(vec3(0), vec3(5), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 0), EMIT_POINT, PMOVE_WAVE, "./data/textures/particles/glow.png");
+	m_emitter.Init(vec3(0), vec3(5), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_WAVE, "./data/textures/particles/glow.png");
+
+	m_emitterTwo.Init(vec3(5), vec3(5), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_WAVE, "./data/textures/particles/glow.png");
 
 	TwEnumVal emitTypes[] = { { EMIT_POINT, "Point" }, { EMIT_LINE, "Line" },
 	{ EMIT_PLANE, "Plane" }, { EMIT_RING, "Ring" }, { EMIT_OUTER_RING, "Outer Ring" },
@@ -72,6 +74,7 @@ bool GPUParticles::update(){
 	
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS){
 		m_emitter.Reload();
+		m_emitterTwo.Reload();
 	}
 
 
@@ -96,6 +99,7 @@ void GPUParticles::draw(){
 	Gizmos::draw(m_oCamera.getProjectionView());
 
 	m_emitter.Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView());
+	m_emitterTwo.Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView());
 
 	TwDraw();
 	Application::draw();

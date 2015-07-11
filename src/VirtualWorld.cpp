@@ -13,9 +13,10 @@ bool VirtualWorld::startup(){
 
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	m_aParticleEmitters.push_back(new GPUEmitter);
+	m_aParticleEmitters.push_back(new GPUEmitter);
 
-	for (GPUEmitter* particle : m_aParticleEmitters) {
-		particle->Init(vec3(0), vec3(1), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 0), EMIT_POINT, PMOVE_WAVE, "./data/textures/particles/glow.png");
+	for (int i = 0; i < m_aParticleEmitters.size(); i++) {
+		m_aParticleEmitters[i]->Init(vec3(i * 10), vec3(1), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_LINEAR, "./data/textures/particles/glow.png");
 	}
 	//LoadShader("./data/shaders/particles_vertex.glsl", "", "./data/shaders/particles_fragment.glsl", &m_programID);
 
@@ -67,8 +68,8 @@ void VirtualWorld::draw(){
 	Gizmos::draw(m_oCamera.getProjectionView());
 	
 	//Transparency Drawing
-	for (GPUEmitter* particle : m_aParticleEmitters) {
-		particle->Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView());
+	for (int i = 0; i < m_aParticleEmitters.size(); i++) {
+		m_aParticleEmitters[i]->Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView());
 	}
 
 	//GUI Drawing
