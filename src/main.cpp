@@ -1,7 +1,7 @@
-#include "GPUParticles.h"
+#include "DeferredRendering.h"
 
 int main() {
-	GPUParticles App;
+	DeferredRendering App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

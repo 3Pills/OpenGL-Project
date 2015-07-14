@@ -4,11 +4,14 @@
 #include "Camera.h"
 #include <vector>
 #include "GPUEmitter.h"
+#include "FBXModel.h"
 
 class VirtualWorld : public Application
 {
 	FlyCamera m_oCamera;
 	std::vector<GPUEmitter*> m_aParticleEmitters;
+	std::vector<FBXModel*> m_aFBXModels;
+
 	unsigned int m_programID, m_LastKey;
 public:
 	VirtualWorld();

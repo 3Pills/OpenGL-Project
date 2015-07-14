@@ -15,6 +15,8 @@ bool VirtualWorld::startup(){
 	m_aParticleEmitters.push_back(new GPUEmitter);
 	m_aParticleEmitters.push_back(new GPUEmitter);
 
+	m_aFBXModels.push_back(new FBXModel("./data/models/characters/Pyro/pyro.fbx"));
+
 	for (int i = 0; i < m_aParticleEmitters.size(); i++) {
 		m_aParticleEmitters[i]->Init(vec3(i * 10), vec3(1), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_LINEAR, "./data/textures/particles/glow.png");
 	}
@@ -27,12 +29,19 @@ bool VirtualWorld::shutdown(){
 	for (GPUEmitter* particle : m_aParticleEmitters) {
 		delete particle;
 	}
+	for (FBXModel* model : m_aFBXModels) {
+		delete model;
+	}
 	Gizmos::destroy();
 	return Application::shutdown();
 }
 bool VirtualWorld::update(){
 	if (!Application::update()){
 		return false;
+	}
+
+	for (FBXModel* model : m_aFBXModels) {
+		model->Update(m_fCurrTime);
 	}
 
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS && m_LastKey != GLFW_PRESS){
@@ -66,6 +75,10 @@ void VirtualWorld::draw(){
 
 	//Opaque Drawing
 	Gizmos::draw(m_oCamera.getProjectionView());
+
+	for (FBXModel* model : m_aFBXModels){
+		model->Render(m_oCamera);
+	}
 	
 	//Transparency Drawing
 	for (int i = 0; i < m_aParticleEmitters.size(); i++) {

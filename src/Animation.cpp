@@ -64,53 +64,47 @@ void Animation::draw(){
 
 	glUseProgram(m_programID);
 
-	int view_proj_uniform = glGetUniformLocation(m_programID, "projView");
-	int world_uniform = glGetUniformLocation(m_programID, "world");
-	int bones_uniform = glGetUniformLocation(m_programID, "bones");
-
-	int amb_color_uniform = glGetUniformLocation(m_programID, "ambCol");
-	int dif_color_uniform = glGetUniformLocation(m_programID, "lightCol");
-	int light_dir_uniform = glGetUniformLocation(m_programID, "lightDir");
-	int cam_pos_uniform = glGetUniformLocation(m_programID, "camPos");
-	int spec_pow_uniform = glGetUniformLocation(m_programID, "specPow");
-
-	int diff_texture_uniform = glGetUniformLocation(m_programID, "diffTex");
-	int norm_texture_uniform = glGetUniformLocation(m_programID, "normTex");
-	int spec_texture_uniform = glGetUniformLocation(m_programID, "specTex");
-
 	FBXSkeleton* skeleton = m_file->getSkeletonByIndex(0);
 	FBXAnimation* anim = m_file->getAnimationByIndex(0);
 	UpdateBones(skeleton);
 	EvaluateSkeleton(anim, skeleton, m_fCurrTime);
 
-	if (view_proj_uniform > -1)
-		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+	int loc = glGetUniformLocation(m_programID, "projView");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
 
-	if (amb_color_uniform > -1)
-		glUniform3fv(amb_color_uniform, 1, (float*)&m_vAmbCol);
-	if (dif_color_uniform > -1)
-		glUniform3fv(dif_color_uniform, 1, (float*)&m_vLightCol);
-	if (light_dir_uniform > -1)
-		glUniform3fv(light_dir_uniform, 1, (float*)&(glm::normalize(-m_vLightPos)));
-	if (cam_pos_uniform > -1)
-		glUniform3fv(cam_pos_uniform, 1, (float*)&m_oCamera.getWorldTransform()[3].xyz);
-	if (spec_pow_uniform > -1)
-		glUniform1f(spec_pow_uniform, m_fSpecPow);
+	loc = glGetUniformLocation(m_programID, "ambCol");
+	glUniform3fv(loc, 1, (float*)&m_vAmbCol);
 
-	if (diff_texture_uniform > -1)
-		glUniform1i(diff_texture_uniform, 0);
-	if (norm_texture_uniform > -1)
-		glUniform1i(norm_texture_uniform, 1);
-	if (spec_texture_uniform > -1)
-		glUniform1i(spec_texture_uniform, 2);
+	loc = glGetUniformLocation(m_programID, "lightCol");
+	glUniform3fv(loc, 1, (float*)&m_vLightCol);
+
+	loc = glGetUniformLocation(m_programID, "lightDir");
+	glUniform3fv(loc, 1, (float*)&(glm::normalize(-m_vLightPos)));
+
+	loc = glGetUniformLocation(m_programID, "camPos");
+	glUniform3fv(loc , 1, (float*)&m_oCamera.getWorldTransform()[3].xyz);
+	
+	loc = glGetUniformLocation(m_programID, "specPow");
+	glUniform1f(loc, m_fSpecPow);
+
+	loc = glGetUniformLocation(m_programID, "diffTex");
+	glUniform1i(loc, 0);
+
+	loc = glGetUniformLocation(m_programID, "normTex");
+	glUniform1i(loc, 1);
+
+	loc = glGetUniformLocation(m_programID, "specTex");
+	glUniform1i(loc, 2);
+
+	loc = glGetUniformLocation(m_programID, "bones");
+	glUniformMatrix4fv(loc, skeleton->m_boneCount, GL_FALSE, (float*)skeleton->m_bones);
 
 	for (unsigned int i = 0; i < m_meshes.size(); ++i){
 
 		FBXMeshNode* currMesh = m_file->getMeshByIndex(i);
 
-		if (world_uniform > -1) {
-			glUniformMatrix4fv(world_uniform, 1, GL_FALSE, (float*)&currMesh->m_globalTransform);
-		}
+		loc = glGetUniformLocation(m_programID, "world");
+		glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&currMesh->m_globalTransform);
 
 		FBXMaterial* meshMat = currMesh->m_material;
 		glActiveTexture(GL_TEXTURE0);
@@ -126,15 +120,10 @@ void Animation::draw(){
 		glDrawElements(GL_TRIANGLES, m_meshes[i].m_indexCount, GL_UNSIGNED_INT, 0);
 	}
 
-	if (bones_uniform > -1){
-		glUniformMatrix4fv(bones_uniform, skeleton->m_boneCount, GL_FALSE, (float*)skeleton->m_bones);
-	}
-
-	for (unsigned int i = 0; i < skeleton->m_boneCount; ++i){
+	for (unsigned int i = 0; i < skeleton->m_boneCount; ++i) {
 		skeleton->m_nodes[i]->updateGlobalTransform();
 		mat4 node_global = skeleton->m_nodes[i]->m_globalTransform;
 		vec3 node_pos = node_global[3].xyz;
-
 		Gizmos::addAABBFilled(node_pos, vec3(4.f), vec4(1, 0, 0, 1), &node_global);
 
 		if (skeleton->m_nodes[i]->m_parent != nullptr){

@@ -42,7 +42,7 @@ void main() {
 	lifespan = Lifespan;
 	
 	//Wont do anything if movetype is 0.
-	position += vec3(0, moveType * (cos(lifetime*7) / 200), 0);
+	position += vec3(0, moveType * (cos(lifetime*7) * deltaTime), 0);
 
 	// emit a new particle as soon as it dies
 	if (lifetime > lifespan) {
