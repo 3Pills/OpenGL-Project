@@ -99,11 +99,11 @@ void VirtualWorld::draw(){
 	}
 
 	//Transparency Drawing
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	for (int i = 0; i < m_aParticleEmitters.size(); i++) {
 		m_aParticleEmitters[i]->Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView(), true);
 	}
-	glBlendFunc(GL_ONE, GL_ONE);
+	//glBlendFunc(GL_ONE, GL_ONE);
 
 	//Light Rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, m_lightFBO);
@@ -113,24 +113,24 @@ void VirtualWorld::draw(){
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE);
 
-	//glUseProgram(m_dirLightProgram);
-	//
-	//loc = glGetUniformLocation(m_dirLightProgram, "positionTexture");
-	//glUniform1i(loc, 0);
-	//
-	//loc = glGetUniformLocation(m_dirLightProgram, "normalTexture");
-	//glUniform1i(loc, 1);
-	//
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, m_positionTexture);
-	//glActiveTexture(GL_TEXTURE1);
-	//glBindTexture(GL_TEXTURE_2D, m_normalTexture);
-	//
+	glUseProgram(m_dirLightProgram);
+	
+	loc = glGetUniformLocation(m_dirLightProgram, "positionTexture");
+	glUniform1i(loc, 0);
+	
+	loc = glGetUniformLocation(m_dirLightProgram, "normalTexture");
+	glUniform1i(loc, 1);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_positionTexture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
+	
 	//RenderDirectionalLight(vec3(1, 0, 0), vec3(1, 0, 0));
 	//RenderDirectionalLight(vec3(0, 1, 0), vec3(0, 1, 0));
 	//RenderDirectionalLight(vec3(0, 0, 1), vec3(0, 0, 1));
-	//RenderDirectionalLight(vec3(0, -1, 0), vec3(1));
-	//RenderDirectionalLight(vec3(0, 0, -1), vec3(0.7));
+	RenderDirectionalLight(vec3(0, -1, 0), vec3(1));
+	RenderDirectionalLight(vec3(0, 0, -1), vec3(0.7));
 
 	glUseProgram(m_pointLightProgram);
 	

@@ -3,6 +3,7 @@
 in vec3 fPosition;
 in vec3 fNormal;
 in vec2 fTexCoord;
+in vec4 fColor;
 
 layout(location = 0) out vec3 gPassAlbedo;
 layout(location = 1) out vec3 gPassPosition;
