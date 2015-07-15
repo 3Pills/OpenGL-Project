@@ -6,11 +6,11 @@ layout(location=3) in vec4 Weights;
 layout(location=4) in vec4 Normal;
 layout(location=5) in vec4 Tangent;
 
-out vec3 fPos;
-out vec2 fTexCoord;
+out vec3 fPosition;
 out vec3 fNormal;
 out vec3 fTangent;
 out vec3 fBiTangent;
+out vec2 fTexCoord;
 
 uniform mat4 projView;
 uniform mat4 world;
@@ -20,7 +20,7 @@ uniform mat4 bones[MAX_BONES];
 
 void main() 
 {
-	fPos = Position.xyz;
+	fPosition = Position.xyz;
 	fTexCoord = TexCoord;
 	fNormal = Normal.xyz;
 	fTangent = Tangent.xyz;

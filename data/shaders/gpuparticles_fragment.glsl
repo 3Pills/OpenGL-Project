@@ -1,16 +1,14 @@
 #version 410
 
-in vec4 vColor;
-out vec4 fragColor;
-in vec2 fragTexCoord;
+in vec3 fPosition;
+in vec3 fNormal;
+in vec2 fTexCoord;
+in vec4 fColor;
 
-in vec3 position;
-in float lifetime;
-in float lifespan;
+out vec4 fragColor;
 
 uniform sampler2D diffuse;
 
 void main() {
-	vec4 color = vColor * texture(diffuse, fragTexCoord);
-	fragColor = color;
+	fragColor = fColor * texture(diffuse, fTexCoord);
 }

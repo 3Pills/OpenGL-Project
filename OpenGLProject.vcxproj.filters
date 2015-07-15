@@ -70,6 +70,9 @@
     <Filter Include="CollisionShapeHierarchies">
       <UniqueIdentifier>{0f80ad8b-6df4-4fc5-a888-38d06e296655}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PhysicallyBasedRendering">
+      <UniqueIdentifier>{cd6aa32a-c041-487b-ac2c-d1f313aad8c7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -174,6 +177,9 @@
     </ClCompile>
     <ClCompile Include="src\FBXModel.cpp">
       <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PBR.cpp">
+      <Filter>PhysicallyBasedRendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -293,6 +299,9 @@
     </ClInclude>
     <ClInclude Include="src\FBXModel.h">
       <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PBR.h">
+      <Filter>PhysicallyBasedRendering</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

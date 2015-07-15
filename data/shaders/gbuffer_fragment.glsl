@@ -1,15 +1,21 @@
 #version 410
-in vec4 vPosition;
-in vec4 vNormal;
+
+in vec3 fPosition;
+in vec3 fNormal;
+in vec2 fTexCoord;
 
 layout(location = 0) out vec3 gPassAlbedo;
 layout(location = 1) out vec3 gPassPosition;
 layout(location = 2) out vec3 gPassNormal;
 
-out vec3 FragColor;
+uniform sampler2D diffuse;
+uniform bool textured;
 
 void main() {
 	gPassAlbedo = vec3(1);
-	gPassPosition = vPosition.xyz;
-	gPassNormal = vNormal.xyz;
+	if (textured) {
+		gPassAlbedo = texture(diffuse, fTexCoord).xyz;
+	}
+	gPassPosition = fPosition;
+	gPassNormal = fNormal;
 }

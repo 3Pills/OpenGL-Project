@@ -1,5 +1,5 @@
 #version 410
-in vec3 fPos;
+in vec3 fPosition;
 in vec3 fNormal;
 in vec3 fTangent;
 in vec3 fBiTangent;
@@ -35,7 +35,7 @@ void main() {
 
 	vec3 D = vec3(d) * lightCol * matCol;
 
-	vec3 E = normalize(camPos - fPos);
+	vec3 E = normalize(camPos - fPosition);
 	vec3 R = reflect(L, N);
 	float s = max(0, dot(R,E));
 	s = pow(s, specPow);

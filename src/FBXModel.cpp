@@ -9,7 +9,8 @@ FBXModel::FBXModel(const char* a_szModelPath) {
 
 	GenerateGLMeshes(m_file);
 
-	LoadShader("./data/shaders/skinned_vertex.glsl", "", "./data/shaders/skinned_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/skinned_vertex.glsl", 0, "./data/shaders/skinned_fragment.glsl", &m_instantRender);
+	LoadShader("./data/shaders/skinned_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_deferredRender);
 }
 
 FBXModel::~FBXModel(){
@@ -62,43 +63,44 @@ void FBXModel::Update(float dt) {
 	UpdateBones();
 }
 
+//Renders with individual shader data.
 void FBXModel::Render(FlyCamera a_camera) {
-	glUseProgram(m_programID);
+	glUseProgram(m_instantRender);
 
-	int loc = glGetUniformLocation(m_programID, "projView");
+	int loc = glGetUniformLocation(m_instantRender, "projView");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&a_camera.getProjectionView());
 
-	loc = glGetUniformLocation(m_programID, "ambCol");
+	loc = glGetUniformLocation(m_instantRender, "ambCol");
 	glUniform3fv(loc, 1, (float*)&vec3(1));
 	
-	loc = glGetUniformLocation(m_programID, "lightCol");
+	loc = glGetUniformLocation(m_instantRender, "lightCol");
 	glUniform3fv(loc, 1, (float*)&vec3(1));
 	
-	loc = glGetUniformLocation(m_programID, "lightDir");
+	loc = glGetUniformLocation(m_instantRender, "lightDir");
 	glUniform3fv(loc, 1, (float*)&(glm::normalize(-vec3(1))));
 
-	loc = glGetUniformLocation(m_programID, "camPos");
+	loc = glGetUniformLocation(m_instantRender, "camPos");
 	glUniform3fv(loc, 1, (float*)&a_camera.getWorldTransform()[3].xyz);
 
-	loc = glGetUniformLocation(m_programID, "specPow");
+	loc = glGetUniformLocation(m_instantRender, "specPow");
 	glUniform1f(loc, 1);
 
-	loc = glGetUniformLocation(m_programID, "diffTex");
+	loc = glGetUniformLocation(m_instantRender, "diffTex");
 	glUniform1i(loc, 0);
 
-	loc = glGetUniformLocation(m_programID, "normTex");
+	loc = glGetUniformLocation(m_instantRender, "normTex");
 	glUniform1i(loc, 1);
 
-	loc = glGetUniformLocation(m_programID, "specTex");
+	loc = glGetUniformLocation(m_instantRender, "specTex");
 	glUniform1i(loc, 2);
 
-	loc = glGetUniformLocation(m_programID, "bones");
+	loc = glGetUniformLocation(m_instantRender, "bones");
 	glUniformMatrix4fv(loc, m_skeleton->m_boneCount, GL_FALSE, (float*)m_skeleton->m_bones);
 
 	for (unsigned int i = 0; i < m_meshes.size(); ++i){
 		FBXMeshNode* currMesh = m_file->getMeshByIndex(i);
 
-		loc = glGetUniformLocation(m_programID, "world");
+		loc = glGetUniformLocation(m_instantRender, "world");
 		glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&currMesh->m_globalTransform);
 
 		FBXMaterial* meshMat = currMesh->m_material;
@@ -108,6 +110,41 @@ void FBXModel::Render(FlyCamera a_camera) {
 		glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::NormalTexture]->handle);
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::SpecularTexture]->handle);
+
+		glBindVertexArray(m_meshes[i].m_VAO);
+		glDrawElements(GL_TRIANGLES, m_meshes[i].m_indexCount, GL_UNSIGNED_INT, 0);
+	}
+}
+
+//Renders with deferred shader data.
+void FBXModel::RenderDeferred(FlyCamera a_camera) {
+	glUseProgram(m_deferredRender);
+
+	int loc = glGetUniformLocation(m_deferredRender, "projView");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&a_camera.getProjectionView());
+
+	loc = glGetUniformLocation(m_deferredRender, "bones");
+	glUniformMatrix4fv(loc, m_skeleton->m_boneCount, GL_FALSE, (float*)m_skeleton->m_bones);
+
+	loc = glGetUniformLocation(m_deferredRender, "textured");
+	glUniform1i(loc, true);
+
+	for (unsigned int i = 0; i < m_meshes.size(); ++i){
+		FBXMeshNode* currMesh = m_file->getMeshByIndex(i);
+
+		loc = glGetUniformLocation(m_deferredRender, "world");
+		glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&currMesh->m_globalTransform);
+
+		loc = glGetUniformLocation(m_instantRender, "diffTex");
+		glUniform1i(loc, 0);
+
+		FBXMaterial* meshMat = currMesh->m_material;
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::DiffuseTexture]->handle);
+		//glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::NormalTexture]->handle);
+		//glActiveTexture(GL_TEXTURE2);
+		//glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::SpecularTexture]->handle);
 
 		glBindVertexArray(m_meshes[i].m_VAO);
 		glDrawElements(GL_TRIANGLES, m_meshes[i].m_indexCount, GL_UNSIGNED_INT, 0);
@@ -167,6 +204,8 @@ void FBXModel::UpdateBones(){
 }
 
 void FBXModel::ReloadShader(){
-	glDeleteProgram(m_programID);
-	LoadShader("./data/shaders/skinned_vertex.glsl", "", "./data/shaders/skinned_fragment.glsl", &m_programID);
+	glDeleteProgram(m_deferredRender);
+	glDeleteProgram(m_instantRender);
+	LoadShader("./data/shaders/skinned_vertex.glsl", "", "./data/shaders/skinned_fragment.glsl", &m_instantRender);
+	LoadShader("./data/shaders/skinned_vertex.glsl", "", "./data/shaders/gbuffer_fragment.glsl", &m_deferredRender);
 }

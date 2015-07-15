@@ -7,7 +7,7 @@
 GPUEmitter::GPUEmitter() :
 	m_particles(nullptr), m_maxParticles(0), m_pos(0), m_lifespanMin(0), m_lifespanMax(0),
 	m_velocityMin(0), m_velocityMax(0), m_startSize(0), m_endSize(0),
-	m_startColor(0), m_endColor(0), m_drawShader(0), m_updateShader(0),
+	m_startColor(0), m_endColor(0), m_instantRender(0), m_deferredRender(0), m_updateShader(0),
 	m_lastDrawTime(0), m_activeBuffer(0), m_szFilename(nullptr) {
 	m_VAO[0] = 0;
 	m_VAO[1] = 0;
@@ -21,7 +21,7 @@ GPUEmitter::~GPUEmitter(){
 	glDeleteVertexArrays(2, m_VAO);
 	glDeleteBuffers(2, m_VBO);
 
-	glDeleteProgram(m_drawShader);
+	glDeleteProgram(m_instantRender);
 	glDeleteProgram(m_updateShader);
 }
 
@@ -30,7 +30,7 @@ void GPUEmitter::Init(vec3 a_pos, vec3 a_extents, unsigned int a_maxParticles, f
 	float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor, 
 	EmitType a_emitType, MoveType a_moveType, char* a_szFilename) {
 	m_maxParticles = a_maxParticles;
-	m_pos = vec4(a_pos, 1);
+	m_pos = a_pos;
 	m_extents = a_extents;
 	m_lifespanMin = a_lifespanMin;
 	m_lifespanMax = a_lifespanMax;
@@ -59,14 +59,15 @@ void GPUEmitter::Init(vec3 a_pos, vec3 a_extents, unsigned int a_maxParticles, f
 	m_updateShader = glCreateProgram();
 	glAttachShader(m_updateShader, vs);
 
-	const char* varyings[] = { "position", "velocity", "lifetime", "lifespan" };
+	const char* varyings[] = { "vPosition", "vVelocity", "vLifetime", "vLifespan" };
 
 	glTransformFeedbackVaryings(m_updateShader, 4, varyings, GL_INTERLEAVED_ATTRIBS);
 
 	glLinkProgram(m_updateShader);
 	glDeleteShader(vs);
 
-	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gpuparticles_fragment.glsl", &m_drawShader);
+	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gpuparticles_fragment.glsl", &m_instantRender);
+	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gbuffer_fragment.glsl", &m_deferredRender);
 }
 
 void GPUEmitter::CreateBuffers() {
@@ -116,7 +117,7 @@ void GPUEmitter::CreateTexture() {
 	stbi_image_free(data);
 }
 
-void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView) {
+void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView, bool a_deferred) {
 	glUseProgram(m_updateShader);
 	//Enable transparent rendering
 	glEnable(GL_BLEND);
@@ -167,36 +168,41 @@ void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView) 
 	glDisable(GL_RASTERIZER_DISCARD);
 	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 0);
 
-	glUseProgram(m_drawShader);
+	unsigned int renderer = (a_deferred) ? m_deferredRender : m_instantRender;
 
-	loc = glGetUniformLocation(m_drawShader, "startSize");
+	glUseProgram(renderer);
+
+	loc = glGetUniformLocation(renderer, "startSize");
 	glUniform1f(loc, m_startSize);
 
-	loc = glGetUniformLocation(m_drawShader, "endSize");
+	loc = glGetUniformLocation(renderer, "endSize");
 	glUniform1f(loc, m_endSize);
 
-	loc = glGetUniformLocation(m_drawShader, "startColor");
+	loc = glGetUniformLocation(renderer, "startColor");
 	glUniform4fv(loc, 1, &m_startColor[0]);
 
-	loc = glGetUniformLocation(m_drawShader, "endColor");
+	loc = glGetUniformLocation(renderer, "endColor");
 	glUniform4fv(loc, 1, &m_endColor[0]);
 
-	loc = glGetUniformLocation(m_drawShader, "fadeIn");
+	loc = glGetUniformLocation(renderer, "fadeIn");
 	glUniform1f(loc, m_fadeIn);
 
-	loc = glGetUniformLocation(m_drawShader, "fadeOut");
+	loc = glGetUniformLocation(renderer, "fadeOut");
 	glUniform1f(loc, m_fadeOut);
 
-	loc = glGetUniformLocation(m_drawShader, "projView");
+	loc = glGetUniformLocation(renderer, "projView");
 	glUniformMatrix4fv(loc, 1, false, &a_projView[0][0]);
 
-	loc = glGetUniformLocation(m_drawShader, "camTransform");
+	loc = glGetUniformLocation(renderer, "camTransform");
 	glUniformMatrix4fv(loc, 1, false, &a_camTransform[0][0]);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
-	loc = glGetUniformLocation(m_drawShader, "diffuse");
+	loc = glGetUniformLocation(renderer, "diffuse");
 	glUniform1i(loc, 0);
+
+	loc = glGetUniformLocation(m_deferredRender, "textured");
+	glUniform1i(loc, true);
 
 	glBindVertexArray(m_VAO[otherBuffer]);
 	glDrawArrays(GL_POINTS, 0, m_maxParticles);
@@ -209,7 +215,7 @@ void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView) 
 }
 
 void GPUEmitter::Reload() {
-	glDeleteProgram(m_drawShader);
+	glDeleteProgram(m_instantRender);
 	glDeleteProgram(m_updateShader);
 
 	unsigned int vs;
@@ -218,14 +224,15 @@ void GPUEmitter::Reload() {
 	m_updateShader = glCreateProgram();
 	glAttachShader(m_updateShader, vs);
 
-	const char* varyings[] = { "position", "velocity", "lifetime", "lifespan" };
+	const char* varyings[] = { "vPosition", "vVelocity", "vLifetime", "vLifespan" };
 
 	glTransformFeedbackVaryings(m_updateShader, 4, varyings, GL_INTERLEAVED_ATTRIBS);
 
 	glLinkProgram(m_updateShader);
 	glDeleteShader(vs);
 
-	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gpuparticles_fragment.glsl", &m_drawShader);
+	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gpuparticles_fragment.glsl", &m_instantRender);
+	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gbuffer_fragment.glsl", &m_deferredRender);
 }
 
 void GPUEmitter::DrawDebugGizmos(){
@@ -235,35 +242,35 @@ void GPUEmitter::DrawDebugGizmos(){
 		break;
 	}
 	case(EMIT_LINE) : {
-		Gizmos::addLine(m_pos.xyz, m_pos.xyz + m_extents, m_startColor);
+		Gizmos::addLine(m_pos, m_pos + m_extents, m_startColor);
 		break;
 	}
 	case(EMIT_PLANE) : {
-		Gizmos::addAABB(m_pos.xyz, vec3(m_extents.x, 0, m_extents.z), m_startColor);
+		Gizmos::addAABB(m_pos, vec3(m_extents.x, 0, m_extents.z), m_startColor);
 		break;
 	}
 	case(EMIT_RECTANGLE) : {
-		Gizmos::addAABB(m_pos.xyz, m_extents, m_startColor);
+		Gizmos::addAABB(m_pos, m_extents, m_startColor);
 		break;
 	}
 	case(EMIT_OUTER_RECTANGLE) : {
-		Gizmos::addAABB(m_pos.xyz, m_extents, m_startColor);
+		Gizmos::addAABB(m_pos, m_extents, m_startColor);
 		break;
 	}
 	case(EMIT_RING) : {
-		Gizmos::addRing(m_pos.xyz, m_extents.x, m_extents.x - 0.05f, 32, m_startColor);
+		Gizmos::addRing(m_pos, m_extents.x, m_extents.x - 0.05f, 32, m_startColor);
 		break;
 	}
 	case(EMIT_OUTER_RING) : {
-		Gizmos::addRing(m_pos.xyz, m_extents.x, m_extents.x - 0.05f, 32, m_startColor);
+		Gizmos::addRing(m_pos, m_extents.x, m_extents.x - 0.05f, 32, m_startColor);
 		break;
 	}
 	case(EMIT_SPHERE) : {
-		Gizmos::addSphere(m_pos.xyz, m_extents.x, 16, 16, vec4(m_startColor.xyz, 0.1f));
+		Gizmos::addSphere(m_pos, m_extents.x, 16, 16, vec4(m_startColor.xyz, 0.1f));
 		break;
 	}
 	case(EMIT_OUTER_SPHERE) : {
-		Gizmos::addSphere(m_pos.xyz, m_extents.x, 16, 16, vec4(m_startColor.xyz, 0.1f));
+		Gizmos::addSphere(m_pos, m_extents.x, 16, 16, vec4(m_startColor.xyz, 0.1f));
 		break;
 	}
 	}

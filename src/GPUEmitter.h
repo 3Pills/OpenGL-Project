@@ -42,7 +42,7 @@ public:
 		float a_startSize = 1.0f, float a_endSize = 0.5f, vec4 a_startColor = vec4(1), vec4 a_endColor = vec4(1), 
 		EmitType a_emitType = EmitType(0), MoveType a_moveType = MoveType(0), char* a_szFilename = "./data/textures/white.png");
 	
-	void Render(float a_dt, mat4 a_camTransform, mat4 a_projView);
+	void Render(float a_dt, mat4 a_camTransform, mat4 a_projView, bool a_deferred = false);
 	void DrawDebugGizmos();
 
 	void Reload();
@@ -55,7 +55,7 @@ public:
 	unsigned int m_maxParticles;
 
 	//Emitter data
-	vec4 m_pos;
+	vec3 m_pos;
 	float m_lifespanMin, m_lifespanMax;
 	float m_velocityMin, m_velocityMax;
 	float m_startSize, m_endSize;
@@ -65,7 +65,7 @@ public:
 
 	unsigned int m_activeBuffer;
 	unsigned int m_VAO[2], m_VBO[2];
-	unsigned int m_drawShader, m_updateShader;
+	unsigned int m_instantRender, m_deferredRender, m_updateShader;
 	unsigned int m_texture;
 
 	char* m_szFilename;

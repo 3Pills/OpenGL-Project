@@ -106,21 +106,21 @@ void DeferredRendering::draw(){
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE);
 
-	glUseProgram(m_directionalLightProgram);
-
-	int positionTexture_uniform = glGetUniformLocation(m_directionalLightProgram, "positionTexture");
-	int normalTexture_uniform = glGetUniformLocation(m_directionalLightProgram, "normalTexture");
-
-	if (positionTexture_uniform > -1)
-		glUniform1i(positionTexture_uniform, 0);
-	if (normalTexture_uniform > -1)
-		glUniform1i(normalTexture_uniform, 1);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_positionTexture);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
-
+	//glUseProgram(m_directionalLightProgram);
+	//
+	//int positionTexture_uniform = glGetUniformLocation(m_directionalLightProgram, "positionTexture");
+	//int normalTexture_uniform = glGetUniformLocation(m_directionalLightProgram, "normalTexture");
+	//
+	//if (positionTexture_uniform > -1)
+	//	glUniform1i(positionTexture_uniform, 0);
+	//if (normalTexture_uniform > -1)
+	//	glUniform1i(normalTexture_uniform, 1);
+	//
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, m_positionTexture);
+	//glActiveTexture(GL_TEXTURE1);
+	//glBindTexture(GL_TEXTURE_2D, m_normalTexture);
+	//
 	//RenderDirectionalLight(vec3(1, 0, 0), vec3(1, 0, 0));
 	//RenderDirectionalLight(vec3(0, 1, 0), vec3(0, 1, 0));
 	//RenderDirectionalLight(vec3(0, 0, 1), vec3(0, 0, 1));
@@ -128,8 +128,8 @@ void DeferredRendering::draw(){
 	glUseProgram(m_pointLightProgram);
 
 	projView_uniform = glGetUniformLocation(m_pointLightProgram, "projView");
-	positionTexture_uniform = glGetUniformLocation(m_pointLightProgram, "positionTexture");
-	normalTexture_uniform = glGetUniformLocation(m_pointLightProgram, "normalTexture");
+	int positionTexture_uniform = glGetUniformLocation(m_pointLightProgram, "positionTexture");
+	int normalTexture_uniform = glGetUniformLocation(m_pointLightProgram, "normalTexture");
 
 	if (projView_uniform > -1)
 		glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
@@ -140,13 +140,17 @@ void DeferredRendering::draw(){
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_positionTexture);
-
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
 
+
+	glCullFace(GL_FRONT);
+	RenderPointLight(vec3(0, 20, 0), 500, vec3(1));
 	//draw the point lights
-	RenderPointLight(vec3(0, -10, 0), 45, vec3(1, 0, 0));
-	RenderPointLight(vec3(0,  20, 0), 55, vec3(1, 1, 1));
+	//for (int i = 0; i < 500; i++) {
+	//	RenderPointLight(vec3(i / 2, i * 2, i % 4), 500, vec3((float)(i % 2) / 50, (float)((i + 1) % 2) / 50, 0));
+	//}
+	glCullFace(GL_BACK);
 
 	glDisable(GL_BLEND);
 
@@ -173,6 +177,8 @@ void DeferredRendering::draw(){
 
 	glBindVertexArray(m_screenspaceQuad.m_VAO);
 	glDrawElements(GL_TRIANGLES, m_screenspaceQuad.m_indexCount, GL_UNSIGNED_INT, 0);
+
+	glEnable(GL_DEPTH_TEST);
 
 	//Gizmos::draw(m_oCamera.getProjectionView());
 	TwDraw();

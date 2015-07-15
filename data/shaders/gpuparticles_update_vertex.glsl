@@ -5,10 +5,10 @@ layout(location=1) in vec3 Velocity;
 layout(location=2) in float Lifetime;
 layout(location=3) in float Lifespan;
 
-out vec3 position;
-out vec3 velocity;
-out float lifetime;
-out float lifespan;
+out vec3 vPosition;
+out vec3 vVelocity;
+out float vLifetime;
+out float vLifespan;
 
 uniform float deltaTime;
 
@@ -36,19 +36,18 @@ float rand(uint seed, float range) {
 } 
 
 void main() {
-	position = Position + Velocity * deltaTime;
-	velocity = Velocity;
-	lifetime = Lifetime + deltaTime;
-	lifespan = Lifespan;
+	vPosition = Position + Velocity * deltaTime;
+	vVelocity = Velocity;
+	vLifetime = Lifetime + deltaTime;
+	vLifespan = Lifespan;
 	
 	//Wont do anything if movetype is 0.
-	position += vec3(0, moveType * (cos(lifetime*7) * deltaTime), 0);
+	vPosition += vec3(0, moveType * (cos(vLifetime*7) * deltaTime), 0);
 
 	// emit a new particle as soon as it dies
-	if (lifetime > lifespan) {
+	if (vLifetime > vLifespan) {
 		uint seed = uint(time * 1000.0) + uint(gl_VertexID);
 
-		position = emitPos;
 		vec3 planeRand = vec3(0);
 
 		if (emitType == 1) {
@@ -98,20 +97,19 @@ void main() {
 		if (emitType == 6 || emitType == 8) {
 			planeRand *= length(extents.x);
 		}
-		position = planeRand;
+		vPosition = emitPos + planeRand;
 		
 		//set its velocity
 		float velLen = rand(seed++, maxVel - minVel) + minVel;
 
 		if (moveType == 1) {
-			velocity = vec3(rand(seed++, 2) - 1, 0, rand(seed++, 2) - 1);
+			vVelocity = normalize(vec3(rand(seed++, 2) - 1, 0, rand(seed++, 2) - 1)) * velLen;
 		}
 		else {
-			velocity = vec3(rand(seed++, 2) - 1, rand(seed++, 2) - 1, rand(seed++, 2) - 1);
+			vVelocity = normalize(vec3(rand(seed++, 2) - 1, rand(seed++, 2) - 1, rand(seed++, 2) - 1)) * velLen;
 		}
-		velocity = normalize(velocity) * velLen;
 
-		lifetime = 0;
-		lifespan = rand(seed++, maxLife - minLife) + minLife;
+		vLifetime = 0;
+		vLifespan = rand(seed++, maxLife - minLife) + minLife;
 	}
 }

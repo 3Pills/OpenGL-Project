@@ -9,7 +9,7 @@ class FBXModel {
 private:
 	std::vector<OpenGLData> m_meshes;
 
-	unsigned int m_programID;
+	unsigned int m_instantRender, m_deferredRender;
 
 	void EvaluateSkeleton(float dt);
 	void UpdateBones();
@@ -25,6 +25,7 @@ public:
 
 	void Update(float dt);
 	void Render(FlyCamera a_camera);
+	void RenderDeferred(FlyCamera a_camera);
 
 	void ReloadShader();
 };

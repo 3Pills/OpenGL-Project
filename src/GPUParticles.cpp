@@ -45,8 +45,8 @@ bool GPUParticles::startup(){
 	TwAddVarRW(m_bar, "SizeX", TW_TYPE_FLOAT, &m_emitter.m_extents[0], "step=0.1 min=0.0 group=Extents");
 	TwAddVarRW(m_bar, "SizeY", TW_TYPE_FLOAT, &m_emitter.m_extents[1], "step=0.1 min=0.0 group=Extents");
 	TwAddVarRW(m_bar, "SizeZ", TW_TYPE_FLOAT, &m_emitter.m_extents[2], "step=0.1 min=0.0 group=Extents");
-	TwAddVarRW(m_bar, "Emit Type", emitType, &m_emitter.m_emitType, "");
-	TwAddVarRW(m_bar, "Move Type", moveType, &m_emitter.m_moveType, "");
+	TwAddVarRW(m_bar, "Emit Type", emitType, &m_emitter.m_emitType, "group=Types");
+	TwAddVarRW(m_bar, "Move Type", moveType, &m_emitter.m_moveType, "group=Types");
 	TwAddVarRW(m_bar, "LMin", TW_TYPE_FLOAT, &m_emitter.m_lifespanMin, "step=0.05 min=0.0 group=Lifespan");
 	TwAddVarRW(m_bar, "LMax", TW_TYPE_FLOAT, &m_emitter.m_lifespanMax, "step=0.05 min=0.0 group=Lifespan");
 	TwAddVarRW(m_bar, "VMin", TW_TYPE_FLOAT, &m_emitter.m_velocityMin, "step=0.05 min=0.0 group=Velocity");
