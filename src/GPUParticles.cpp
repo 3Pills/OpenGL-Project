@@ -98,8 +98,8 @@ void GPUParticles::draw(){
 
 	Gizmos::draw(m_oCamera.getProjectionView());
 
-	m_emitter.Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView());
-	m_emitterTwo.Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView());
+	m_emitter.Render(m_fCurrTime, m_oCamera);
+	m_emitterTwo.Render(m_fCurrTime, m_oCamera);
 
 	TwDraw();
 	Application::draw();

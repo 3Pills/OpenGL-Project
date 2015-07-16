@@ -4,6 +4,7 @@
 #include "glm_header.h"
 #include "Vertex.h"
 #include "Utility.h"
+#include "Camera.h"
 
 typedef enum EmitType {
 	EMIT_POINT = 0,
@@ -42,7 +43,7 @@ public:
 		float a_startSize = 1.0f, float a_endSize = 0.5f, vec4 a_startColor = vec4(1), vec4 a_endColor = vec4(1), 
 		EmitType a_emitType = EmitType(0), MoveType a_moveType = MoveType(0), char* a_szFilename = "./data/textures/white.png");
 	
-	void Render(float a_dt, mat4 a_camTransform, mat4 a_projView, bool a_deferred = false);
+	void Render(float a_dt, FlyCamera a_camera, bool a_deferred = false);
 	void DrawDebugGizmos();
 
 	void Reload();

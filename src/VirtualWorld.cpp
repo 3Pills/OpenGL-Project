@@ -183,15 +183,16 @@ void VirtualWorld::draw(){
 	}
 
 	//Transparency Drawing
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	for (int i = 0; i < m_particleEmitters.size(); i++) {
-		m_particleEmitters[i]->Render(m_fCurrTime, m_oCamera.getWorldTransform(), m_oCamera.getProjectionView(), true);
+		m_particleEmitters[i]->Render(m_fCurrTime, m_oCamera, true);
 	}
-	//glBlendFunc(GL_ONE, GL_ONE);
+	glBlendFunc(GL_ONE, GL_ONE);
 
 	//Light Rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, m_lightFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
+	glDisable(GL_DEPTH_TEST);
 
 	//glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -257,7 +258,7 @@ void VirtualWorld::draw(){
 	glUniform1i(loc, 1);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_albedoTexture);
+	glBindTexture(GL_TEXTURE_2D, m_depthTexture);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, m_lightTexture);
 	
@@ -265,7 +266,6 @@ void VirtualWorld::draw(){
 	glBindVertexArray(m_screenspaceQuad.m_VAO);
 	glDrawElements(GL_TRIANGLES, m_screenspaceQuad.m_indexCount, GL_UNSIGNED_INT, 0);
 
-	glDisable(GL_DEPTH_TEST);
 	//GUI Drawing
 	//Goes here.
 

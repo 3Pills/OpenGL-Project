@@ -54,21 +54,7 @@ void GPUEmitter::Init(vec3 a_pos, vec3 a_extents, unsigned int a_maxParticles, f
 	CreateBuffers();
 	CreateTexture();
 
-	unsigned int vs;
-	LoadShader("./data/shaders/gpuparticles_update_vertex.glsl", GL_VERTEX_SHADER, &vs);
-
-	m_updateShader = glCreateProgram();
-	glAttachShader(m_updateShader, vs);
-
-	const char* varyings[] = { "vPosition", "vVelocity", "vLifetime", "vLifespan" };
-
-	glTransformFeedbackVaryings(m_updateShader, 4, varyings, GL_INTERLEAVED_ATTRIBS);
-
-	glLinkProgram(m_updateShader);
-	glDeleteShader(vs);
-
-	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gpuparticles_fragment.glsl", &m_instantRender);
-	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gbuffer_fragment.glsl", &m_deferredRender);
+	Reload();
 }
 
 void GPUEmitter::CreateBuffers() {
@@ -105,27 +91,22 @@ void GPUEmitter::CreateTexture() {
 	glGenTextures(1, &m_texture);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 
-	const char* extension = filename.substr(filename.find_last_of("."), +1).c_str();
-	if (extension == ".jpg") {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-	}
-	else {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	}
+	glTexImage2D(GL_TEXTURE_2D, 0, channels, width, height, 0, (channels == 3) ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, data);
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 	stbi_image_free(data);
 }
 
-void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView, bool a_deferred) {
+void GPUEmitter::Render(float a_currTime, FlyCamera a_camera, bool a_deferred) {
 	glUseProgram(m_updateShader);
 	//Enable transparent rendering
 	glEnable(GL_BLEND);
 	//Disable depth buffer, to draw all particles regardless of depth.
 	glDepthMask(GL_FALSE);
 	//Modify the Blend Func to make particles blend better with the world.
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	int loc = glGetUniformLocation(m_updateShader, "time");
 	glUniform1f(loc, a_currTime);
@@ -191,19 +172,22 @@ void GPUEmitter::Render(float a_currTime, mat4 a_camTransform, mat4 a_projView, 
 	loc = glGetUniformLocation(renderer, "fadeOut");
 	glUniform1f(loc, m_fadeOut);
 
+	loc = glGetUniformLocation(renderer, "deferred");
+	glUniform1i(loc, a_deferred);
+
 	loc = glGetUniformLocation(renderer, "projView");
-	glUniformMatrix4fv(loc, 1, false, &a_projView[0][0]);
+	glUniformMatrix4fv(loc, 1, false, &a_camera.getView()[0][0]);
+
+	loc = glGetUniformLocation(renderer, "projView");
+	glUniformMatrix4fv(loc, 1, false, &a_camera.getProjectionView()[0][0]);
 
 	loc = glGetUniformLocation(renderer, "camTransform");
-	glUniformMatrix4fv(loc, 1, false, &a_camTransform[0][0]);
+	glUniformMatrix4fv(loc, 1, false, &a_camera.getWorldTransform()[0][0]);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 	loc = glGetUniformLocation(renderer, "diffuse");
 	glUniform1i(loc, 0);
-
-	loc = glGetUniformLocation(m_deferredRender, "textured");
-	glUniform1i(loc, true);
 
 	glBindVertexArray(m_VAO[otherBuffer]);
 	glDrawArrays(GL_POINTS, 0, m_maxParticles);
@@ -233,7 +217,7 @@ void GPUEmitter::Reload() {
 	glDeleteShader(vs);
 
 	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gpuparticles_fragment.glsl", &m_instantRender);
-	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gbuffer_fragment.glsl", &m_deferredRender);
+	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gbuffer_textured_fragment.glsl", &m_deferredRender);
 }
 
 void GPUEmitter::DrawDebugGizmos(){

@@ -11,6 +11,7 @@ out vec3 fNormal;
 out vec3 fTangent;
 out vec3 fBiTangent;
 out vec2 fTexCoord;
+out vec4 fColor;
 
 uniform bool deferred;
 
@@ -27,6 +28,7 @@ void main()
 	fTexCoord = TexCoord;
 	fNormal = Normal.xyz;
 	fTangent = Tangent.xyz;
+	fColor = vec4(1);
 
 	ivec4 indices = ivec4(Indices);
 	vec4 finalPos;

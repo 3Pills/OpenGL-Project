@@ -15,6 +15,9 @@ out vec2 fTexCoord;
 out vec3 fNormal;
 out vec3 fPosition;
 
+uniform bool deferred;
+
+uniform mat4 view;
 uniform mat4 projView;
 uniform mat4 camTransform;
 
@@ -50,26 +53,28 @@ void main() {
 	vec3 yAxis = cross( zAxis, xAxis );
 	mat3 billboard = mat3(xAxis,yAxis,zAxis);
 
-	fNormal = camTransform[3].xyz;
+	fNormal = vec3(0,1,0);
+	//if (deferred)
+	//	fNormal = (view * vec4(fNormal, 1)).xyz;
 
 	//Assign values to each vertex.
 	gl_Position = projView*vec4(billboard*corners[0]+vPosition[0], 1);
 	fTexCoord = vec2(1,0);
-	fPosition = vec3(gl_Position);
+	fPosition = vec3(gl_Position.xy, 0);
 	EmitVertex();
 
 	gl_Position = projView*vec4(billboard*corners[1]+vPosition[0], 1);
 	fTexCoord = vec2(1,1);
-	fPosition = vec3(gl_Position);
+	fPosition = vec3(gl_Position.xy, 0);
 	EmitVertex();
 
 	gl_Position = projView*vec4(billboard*corners[2]+vPosition[0], 1);
 	fTexCoord = vec2(0,0);
-	fPosition = vec3(gl_Position);
+	fPosition = vec3(gl_Position.xy, 0);
 	EmitVertex();
 
 	gl_Position = projView*vec4(billboard*corners[3]+vPosition[0], 1);
 	fTexCoord = vec2(0,1);
-	fPosition = vec3(gl_Position);
+	fPosition = vec3(gl_Position.xy, 0);
 	EmitVertex();
 }
