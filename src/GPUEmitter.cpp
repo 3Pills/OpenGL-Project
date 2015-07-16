@@ -22,6 +22,7 @@ GPUEmitter::~GPUEmitter(){
 	glDeleteBuffers(2, m_VBO);
 
 	glDeleteProgram(m_instantRender);
+	glDeleteProgram(m_deferredRender);
 	glDeleteProgram(m_updateShader);
 }
 

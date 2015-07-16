@@ -13,18 +13,18 @@ uniform vec3 lightDir;
 uniform vec3 camPos;
 uniform float specPow;
 
-uniform sampler2D diffTex;
-uniform sampler2D normTex;
-uniform sampler2D specTex;
+uniform sampler2D diffuse;
+uniform sampler2D normal;
+uniform sampler2D specular;
 
 void main() {
 	mat3 TBN = mat3(normalize(fTangent), normalize(fBiTangent), normalize(fNormal));
 
-	vec3 sampledNormal = texture(normTex, fTexCoord).xyz;
+	vec3 sampledNormal = texture(normal, fTexCoord).xyz;
 	vec3 adjustedNormal = sampledNormal * 2 - 1;
 
-	vec3 matCol = texture(diffTex, fTexCoord).xyz;
-	vec3 matSpec = texture(specTex, fTexCoord).xyz;
+	vec3 matCol = texture(diffuse, fTexCoord).xyz;
+	vec3 matSpec = texture(specular, fTexCoord).xyz;
 
 	vec3 N = normalize(TBN * adjustedNormal);
 	vec3 L = normalize(lightDir);

@@ -12,7 +12,10 @@ out vec3 fTangent;
 out vec3 fBiTangent;
 out vec2 fTexCoord;
 
+uniform bool deferred;
+
 uniform mat4 projView;
+uniform mat4 view;
 uniform mat4 world;
 
 const int MAX_BONES = 128;
@@ -47,5 +50,11 @@ void main()
 	fTangent = finalTangent.xyz;
 	
 	fBiTangent = cross(fNormal, fTangent);
+	
+	if (deferred) {
+		fPosition = (view * world * finalPos).xyz;
+		fNormal = (view * finalNormal).xyz;
+	}
+
 	gl_Position = projView * world * finalPos;
 }

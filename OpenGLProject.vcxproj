@@ -178,6 +178,7 @@
     <None Include="data\shaders\diffuse_shadowed_vertex.glsl" />
     <None Include="data\shaders\directional_light_fragment.glsl" />
     <None Include="data\shaders\gbuffer_fragment.glsl" />
+    <None Include="data\shaders\gbuffer_textured_fragment.glsl" />
     <None Include="data\shaders\gbuffer_vertex.glsl" />
     <None Include="data\shaders\gpuparticles_fragment.glsl" />
     <None Include="data\shaders\gpuparticles_geometry.glsl" />

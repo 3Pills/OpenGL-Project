@@ -1,6 +1,6 @@
 #version 410
 
-in vec2 vTexCoord;
+in vec2 fTexCoord;
 
 out vec4 FragColor;
 
@@ -8,8 +8,8 @@ uniform sampler2D perlinTexture;
 uniform float scale;
 
 void main() {
-	//FragColor = vec4(vTexCoord.x,0,vTexCoord.y,1);
-	float perlinSample = texture(perlinTexture, vTexCoord).r ;
+	//FragColor = vec4(fTexCoord.x,0,fTexCoord.y,1);
+	float perlinSample = texture(perlinTexture, fTexCoord).r ;
 
 	if (perlinSample < 0.5) {
 		FragColor = vec4(0, 0, 1, 1) * perlinSample / 2;

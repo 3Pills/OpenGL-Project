@@ -416,5 +416,8 @@
     <None Include="data\shaders\navmesh_fragment.glsl">
       <Filter>AdvancedNavigation</Filter>
     </None>
+    <None Include="data\shaders\gbuffer_textured_fragment.glsl">
+      <Filter>DeferredRendering</Filter>
+    </None>
   </ItemGroup>
 </Project>
