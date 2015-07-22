@@ -204,7 +204,8 @@
     <None Include="data\shaders\reflective_vertex.glsl" />
     <None Include="data\shaders\shadowed_fragment.glsl" />
     <None Include="data\shaders\shadowed_vertex.glsl" />
-    <None Include="data\shaders\skinned_fragment.glsl" />
+    <None Include="data\shaders\skinned_fragment_pbr.glsl" />
+    <None Include="data\shaders\skinned_fragment_phong.glsl" />
     <None Include="data\shaders\skinned_vertex.glsl" />
     <None Include="data\shaders\textures_fragment.glsl" />
     <None Include="data\shaders\textures_vertex.glsl" />

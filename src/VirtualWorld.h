@@ -8,11 +8,11 @@
 
 //Struct for containing point light data.
 struct PointLight {
-	vec3 m_position;
+	vec3 m_pos;
 	vec3 m_color;
 	float m_radius;
 
-	PointLight(vec3 a_position, vec3 a_color, float a_radius) : m_position(a_position), m_color(a_color), m_radius(a_radius) {}
+	PointLight(vec3 a_pos, vec3 a_color, float a_radius) : m_pos(a_pos), m_color(a_color), m_radius(a_radius) {}
 };
 
 class VirtualWorld : public Application
@@ -26,11 +26,18 @@ class VirtualWorld : public Application
 	OpenGLData m_lightCube;
 	OpenGLData m_planeMesh;
 
+	bool m_debug[2];
+
+	unsigned int m_gBufferFBO, m_albedoTexture, m_positionTexture, m_normalTexture, m_specularTexture, m_depthTexture; //G-Buffer data
+	unsigned int m_lightFBO, m_lightTexture; //Light Buffer data
+	unsigned int m_fxFBO, m_fxTexture; //Effects Buffer data
+
+	unsigned int m_perlinTexture, m_pOct; //Procedural data
+	float m_pScale, m_pAmp, m_pPers;
 	float* m_perlinData;
 
-	unsigned int m_gBufferFBO, m_albedoTexture, m_positionTexture, m_normalTexture, m_depthTexture, m_lightFBO, m_lightTexture, m_perlinTexture;
-	unsigned int m_gBufferProgram, m_compositeProgram, m_dirLightProgram, m_pointLightProgram, m_proceduralProgram;
-	unsigned int m_LastKey;
+	unsigned int m_gBufferProgram, m_compositeProgram, m_dirLightProgram, m_pointLightProgram, m_proceduralProgram; //Shader Program Data
+	unsigned int m_lastKey[2];
 public:
 	VirtualWorld();
 	virtual ~VirtualWorld();
@@ -41,8 +48,7 @@ public:
 	virtual bool update();
 	virtual void draw();
 
-	void BuildGBuffer();
-	void BuildLightBuffer();
+	void BuildFrameBuffers();
 	void BuildQuad();
 	void BuildCube();
 	void BuildProceduralGrid(vec2 a_realDims, glm::ivec2 a_dims);
@@ -52,6 +58,13 @@ public:
 	void RenderPointLight(vec3 a_lightPos, float a_radius, vec3 a_lightColor);
 
 	void ReloadShaders();
+
+	void AddPointLight(vec3 a_pos = vec3(0), vec3 a_color = vec3(1), float a_radius = 25.0f);
+	void AddFBXModel(const char* a_filename, float a_roughness = 1.0f, float a_fresnelScale = 1.0f);
+	void AddParticleEmitter(vec3 a_pos = vec3(0), vec3 a_extents = vec3(1), unsigned int a_maxParticles = 100,
+		float a_lifespanMin = 1.0f, float a_lifespanMax = 2.0f, float a_velocityMin = 1.0f, float a_velocityMax = 2.0f, float a_fadeIn = 0.0f, float a_fadeOut = 0.0f,
+		float a_startSize = 1.0f, float a_endSize = 0.5f, vec4 a_startColor = vec4(1), vec4 a_endColor = vec4(1),
+		EmitType a_emitType = EmitType(0), MoveType a_moveType = MoveType(0), char* a_szFilename = "./data/textures/white.png");
 };
 
 #endif//VIRTUAL_WORLD_H_

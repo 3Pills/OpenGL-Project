@@ -326,9 +326,6 @@
     <None Include="data\shaders\normal_mapped_fragment.glsl">
       <Filter>AdvancedTextures</Filter>
     </None>
-    <None Include="data\shaders\skinned_fragment.glsl">
-      <Filter>Animation</Filter>
-    </None>
     <None Include="data\shaders\skinned_vertex.glsl">
       <Filter>Animation</Filter>
     </None>
@@ -418,6 +415,12 @@
     </None>
     <None Include="data\shaders\gbuffer_textured_fragment.glsl">
       <Filter>DeferredRendering</Filter>
+    </None>
+    <None Include="data\shaders\skinned_fragment_phong.glsl">
+      <Filter>Animation</Filter>
+    </None>
+    <None Include="data\shaders\skinned_fragment_pbr.glsl">
+      <Filter>Animation</Filter>
     </None>
   </ItemGroup>
 </Project>

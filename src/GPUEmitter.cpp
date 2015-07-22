@@ -101,12 +101,6 @@ void GPUEmitter::CreateTexture() {
 
 void GPUEmitter::Render(float a_currTime, FlyCamera a_camera, bool a_deferred) {
 	glUseProgram(m_updateShader);
-	//Enable transparent rendering
-	glEnable(GL_BLEND);
-	//Disable depth buffer, to draw all particles regardless of depth.
-	glDepthMask(GL_FALSE);
-	//Modify the Blend Func to make particles blend better with the world.
-	//glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	int loc = glGetUniformLocation(m_updateShader, "time");
 	glUniform1f(loc, a_currTime);
@@ -151,7 +145,6 @@ void GPUEmitter::Render(float a_currTime, FlyCamera a_camera, bool a_deferred) {
 	glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 0);
 
 	unsigned int renderer = (a_deferred) ? m_deferredRender : m_instantRender;
-
 	glUseProgram(renderer);
 
 	loc = glGetUniformLocation(renderer, "startSize");
@@ -195,8 +188,6 @@ void GPUEmitter::Render(float a_currTime, FlyCamera a_camera, bool a_deferred) {
 	// swap for next frame
 	m_activeBuffer = otherBuffer;
 	m_lastDrawTime = a_currTime;
-	glDisable(GL_BLEND);
-	glDepthMask(GL_TRUE);
 }
 
 void GPUEmitter::Reload() {

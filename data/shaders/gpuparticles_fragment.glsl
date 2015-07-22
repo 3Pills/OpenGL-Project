@@ -1,7 +1,5 @@
 #version 410
 
-in vec3 fPosition;
-in vec3 fNormal;
 in vec2 fTexCoord;
 in vec4 fColor;
 

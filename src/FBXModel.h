@@ -9,7 +9,13 @@ class FBXModel {
 private:
 	std::vector<OpenGLData> m_meshes;
 
-	unsigned int m_instantRender, m_deferredRender;
+	FBXFile* m_file;
+	FBXSkeleton* m_skeleton;
+	FBXAnimation* m_anim;
+
+	unsigned int m_pbrShader, m_phongShader, m_deferredShader;
+
+	bool m_pbr;
 
 	void EvaluateSkeleton(float dt);
 	void UpdateBones();
@@ -17,9 +23,8 @@ public:
 	FBXModel(const char* a_szModelPath);
 	~FBXModel();
 
-	FBXFile* m_file;
-	FBXSkeleton* m_skeleton;
-	FBXAnimation* m_anim;
+	vec3 m_lightDir, m_lightCol, m_ambCol;
+	float m_specPow, m_roughness, m_fresnelScale;
 
 	void GenerateGLMeshes(FBXFile* fbx);
 

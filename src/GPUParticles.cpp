@@ -98,8 +98,16 @@ void GPUParticles::draw(){
 
 	Gizmos::draw(m_oCamera.getProjectionView());
 
+	//Enable transparent rendering
+	glEnable(GL_BLEND);
+	//Disable depth buffer, to draw all particles regardless of depth.
+	glDepthMask(GL_FALSE);
+	//Modify the Blend Func to make particles blend better with the world.
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	m_emitter.Render(m_fCurrTime, m_oCamera);
 	m_emitterTwo.Render(m_fCurrTime, m_oCamera);
+	glDisable(GL_BLEND);
+	glDepthMask(GL_TRUE);
 
 	TwDraw();
 	Application::draw();

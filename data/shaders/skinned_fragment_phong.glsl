@@ -1,6 +1,6 @@
 #version 410
-in vec3 fPosition;
-in vec3 fNormal;
+in vec4 fPosition;
+in vec4 fNormal;
 in vec3 fTangent;
 in vec3 fBiTangent;
 in vec2 fTexCoord;
@@ -18,7 +18,7 @@ uniform sampler2D normal;
 uniform sampler2D specular;
 
 void main() {
-	mat3 TBN = mat3(normalize(fTangent), normalize(fBiTangent), normalize(fNormal));
+	mat3 TBN = mat3(normalize(fTangent), normalize(fBiTangent), normalize(fNormal.xyz));
 
 	vec3 sampledNormal = texture(normal, fTexCoord).xyz;
 	vec3 adjustedNormal = sampledNormal * 2 - 1;
@@ -31,12 +31,12 @@ void main() {
 
 	vec3 A = matCol * ambCol;
 
-	float d = max(0.0, dot(-L, N));
+	float d = max(0.0, dot(L, N));
 
 	vec3 D = vec3(d) * lightCol * matCol;
 
-	vec3 E = normalize(camPos - fPosition);
-	vec3 R = reflect(L, N);
+	vec3 E = normalize(camPos - fPosition.xyz);
+	vec3 R = reflect(-L, N);
 	float s = max(0, dot(R,E));
 	s = pow(s, specPow);
 	
