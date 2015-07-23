@@ -9,7 +9,6 @@ Application::~Application(){}
 Application* m_app;
 
 void WindowResize(GLFWwindow* window, int width, int height) {
-	glViewport(0, 0, width, height);
 	m_app->resize(width, height);
 }
 
@@ -63,6 +62,7 @@ void Application::draw(){
 }
 
 void Application::resize(int a_width, int a_height){
+	glViewport(0, 0, a_width, a_height);
 	m_iWidth = a_width;
 	m_iHeight = a_height;
 }

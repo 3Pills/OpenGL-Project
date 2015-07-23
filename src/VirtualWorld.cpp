@@ -7,10 +7,14 @@ VirtualWorld::VirtualWorld(): m_oCamera(50), m_pScale(1.f), m_pOct(6), m_pAmp(1.
 }
 VirtualWorld::~VirtualWorld(){}
 
+VirtualWorld* m_app;
+
 bool VirtualWorld::startup(){
 	if (!Application::startup()){
 		return false;
 	}
+
+	m_app = this;
 
 	//AntTweakBar Initialisation.
 	TwInit(TW_OPENGL_CORE, nullptr);
@@ -22,7 +26,9 @@ bool VirtualWorld::startup(){
 	glfwSetScrollCallback(m_window, OnMouseScroll);
 	glfwSetKeyCallback(m_window, OnKey);
 	glfwSetCharCallback(m_window, OnChar);
-	glfwSetWindowSizeCallback(m_window, OnWindowResize);
+	glfwSetWindowSizeCallback(m_window, [](GLFWwindow*, int width, int height){
+		m_app->resize(width, height); 
+	});
 
 	//Initialise camera
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
@@ -732,4 +738,13 @@ void VirtualWorld::ReloadShaders(){
 	for (FBXModel* model : m_FBXModels) {
 		model->ReloadShader();
 	}
+}
+
+void VirtualWorld::resize(int a_width, int a_height){
+	glViewport(0, 0, a_width, a_height);
+	TwWindowSize(a_width, a_height);
+	m_iWidth = a_width;
+	m_iHeight = a_height;
+	BuildFrameBuffers();
+	BuildQuad();
 }

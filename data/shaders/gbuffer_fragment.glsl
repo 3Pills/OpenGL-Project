@@ -13,6 +13,6 @@ out vec4 fragColor;
 void main() {
 	gPassAlbedo = vec4(0.5);
 	gPassPosition = vec4(fPosition.xyz, pow(gl_FragCoord.z, 25));
-	gPassNormal = vec4(fNormal.xyz, 0.1f);
-	gPassSpecular = vec4(vec3(0),0.1f);
+	gPassNormal = vec4(fNormal.xyz, 1.0f);
+	gPassSpecular = vec4(vec3(0),2.0f);
 }

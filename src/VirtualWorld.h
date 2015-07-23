@@ -47,6 +47,7 @@ public:
 
 	virtual bool update();
 	virtual void draw();
+	virtual void resize(int a_width, int a_height);
 
 	void BuildFrameBuffers();
 	void BuildQuad();
