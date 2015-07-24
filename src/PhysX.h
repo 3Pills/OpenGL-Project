@@ -5,23 +5,27 @@
 
 #include <PxPhysicsAPI.h>
 #include <PxScene.h>
+#include <vector>
+
+using namespace physx;
 
 class PhysX : public Application
 {
 	FlyCamera m_oCamera;
 
-	physx::PxFoundation* g_PhysicsFoundation;
-	physx::PxPhysics* g_Physics;
-	physx::PxScene* g_PhysicsScene;
-	physx::PxDefaultErrorCallback gDefaultErrorCallback;
-	physx::PxDefaultAllocator gDefaultAllocatorCallback;
-	physx::PxSimulationFilterShader gDefaultFilterShader = physx::PxDefaultSimulationFilterShader;
-	physx::PxMaterial* g_PhysicsMaterial;
-	physx::PxMaterial* g_boxMaterial;
-	physx::PxCooking* g_PhysicsCooker;
+	PxFoundation* m_physicsFoundation;
+	PxPhysics* m_physics;
+	PxScene* m_physicsScene;
+	PxDefaultErrorCallback m_defaultErrorCallback;
+	PxDefaultAllocator m_defaultAllocatorCallback;
+	PxSimulationFilterShader m_defaultFilterShader = PxDefaultSimulationFilterShader;
+	PxMaterial* m_physicsMaterial;
+	PxMaterial* m_boxMaterial;
+	PxCooking* m_physicsCooker;
 
-	physx::PxRigidDynamic* dynamicActors[32];
-	physx::PxArticulation* g_PhysXActorsRagDolls[1];
+	std::vector<PxRigidActor*> m_dynamicActors;
+	std::vector<vec3> m_extents;
+	PxArticulation* m_physXActorsRagDolls[1];
 public:
 	PhysX();
 	virtual ~PhysX();
@@ -33,7 +37,7 @@ public:
 	virtual void draw();
 
 	void setupPhysX();
-	//void setupTutorial1();
+	void setupMotor();
 	void setupVisualDebugger();
 
 	void addWidget(physx::PxShape* shape, physx::PxRigidActor* actor);
