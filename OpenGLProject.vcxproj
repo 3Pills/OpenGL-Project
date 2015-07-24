@@ -88,7 +88,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>./deps/fbxloader;./deps/atb/lib;./deps/glfw/lib-vc2013</AdditionalLibraryDirectories>
-      <AdditionalDependencies>FBXLoader.lib;AntTweakBar.lib;glfw3.lib;opengl32.lib;PhysX3DEBUG_x86.lib;PhysX3ExtensionsDEBUG.lib;PhysX3CommonDEBUG_x86.lib;PhysXVisualDebuggerSDKDEBUG.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>FBXLoader.lib;AntTweakBar.lib;glfw3.lib;opengl32.lib;PhysX3_x86.lib;PhysX3Extensions.lib;PhysX3Common_x86.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -117,6 +117,7 @@
     <ClCompile Include="src\PBR.cpp" />
     <ClCompile Include="src\Physics.cpp" />
     <ClCompile Include="src\PhysicsObject.cpp" />
+    <ClCompile Include="src\PhysX.cpp" />
     <ClCompile Include="src\PostProcessing.cpp" />
     <ClCompile Include="src\ProceduralGeneration.cpp" />
     <ClCompile Include="src\Quaternions.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="src\PBR.h" />
     <ClInclude Include="src\Physics.h" />
     <ClInclude Include="src\PhysicsObject.h" />
+    <ClInclude Include="src\PhysX.h" />
     <ClInclude Include="src\PostProcessing.h" />
     <ClInclude Include="src\ProceduralGeneration.h" />
     <ClInclude Include="src\Quaternions.h" />

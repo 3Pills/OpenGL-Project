@@ -69,6 +69,7 @@ bool VirtualWorld::startup(){
 	AddParticleEmitter(vec3(0, 10, 0), vec3(30), 20, 3.0f, 5.5f, 1.0f, 2.0f, 1.0f, 0.75f, 1.0f, 1.0f, vec4(1, 1, 0.5, 1), vec4(0.65, 0.65, 0, 1), EMIT_RECTANGLE, PMOVE_WAVE, "./data/textures/particles/glow.png");
 
 	TwBar* m_lightingBar = TwNewBar("Lighting"); //Lighting window. Allows modification of lighting data.
+	TwAddButton(m_lightingBar, "Add Point Light", [](void*){m_app->AddPointLight(); }, nullptr, "");
 	AddPointLight(vec3(0, 20, 10), vec3(1), 100); //Add point light data. Creates the data and puts it into the GUI.
 	
 	//Initialise Procedural Landscape
@@ -298,6 +299,7 @@ void VirtualWorld::draw(){
 
 	//Light Rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, m_lightFBO);
+	glEnable(GL_BLEND);//Enable fx rendering
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glUseProgram(m_dirLightProgram);

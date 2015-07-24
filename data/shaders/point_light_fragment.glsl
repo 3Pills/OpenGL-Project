@@ -1,6 +1,6 @@
 #version 410
 
-out vec3 LightOutput;
+out vec4 LightOutput;
 
 uniform vec3 lightViewPos;
 uniform vec3 lightCol;
@@ -103,5 +103,7 @@ void main() {
 	//Final Cook-Torrance Equation
 	float CookTorrance = max(0.0f, (F*G*D) / (NdE * pi));
 
-	LightOutput = lightCol * (OrenNayer + (specularSample.xyz * CookTorrance)) * falloff;
+	vec4 LightColor = vec4(lightCol, 1);
+
+	LightOutput = LightColor * (OrenNayer + (vec4(specularSample.xyz,1) * CookTorrance)) * falloff;
 }

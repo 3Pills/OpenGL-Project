@@ -73,6 +73,9 @@
     <Filter Include="PhysicallyBasedRendering">
       <UniqueIdentifier>{cd6aa32a-c041-487b-ac2c-d1f313aad8c7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PhysX">
+      <UniqueIdentifier>{ca9e359d-b66b-470e-9a5e-764b54ce038b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -180,6 +183,9 @@
     </ClCompile>
     <ClCompile Include="src\PBR.cpp">
       <Filter>PhysicallyBasedRendering</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysX.cpp">
+      <Filter>PhysX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -291,9 +297,6 @@
     <ClInclude Include="src\Physics.h">
       <Filter>Physics</Filter>
     </ClInclude>
-    <ClInclude Include="src\PhysicsObject.h">
-      <Filter>Physics</Filter>
-    </ClInclude>
     <ClInclude Include="src\CollisionShapeHierarchies.h">
       <Filter>CollisionShapeHierarchies</Filter>
     </ClInclude>
@@ -302,6 +305,12 @@
     </ClInclude>
     <ClInclude Include="src\PBR.h">
       <Filter>PhysicallyBasedRendering</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsObject.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysX.h">
+      <Filter>PhysX</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
