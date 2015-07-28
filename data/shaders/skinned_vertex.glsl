@@ -16,6 +16,8 @@ out vec4 fColor;
 uniform bool deferred;
 uniform bool hasBones;
 
+uniform mat4 transform;
+
 uniform mat4 projView;
 uniform mat4 view;
 uniform mat4 world;
@@ -32,7 +34,7 @@ void main()
 	fBiTangent = cross(fNormal.xyz, fTangent);
 	fColor = vec4(1);
 
-	vec4 finalPos = Position;
+	vec4 finalPos = transform * Position;
 	vec4 finalNormal = Normal;
 
 	if (hasBones) {
@@ -41,7 +43,7 @@ void main()
 		finalPos += (bones[indices.y] * Position) * Weights.y;
 		finalPos += (bones[indices.z] * Position) * Weights.z;
 		finalPos.w = 1;
-		finalPos = world * finalPos;
+		finalPos = transform * (world * finalPos);
 	
 		finalNormal =  (bones[indices.x] * Normal) * Weights.x;
 		finalNormal += (bones[indices.y] * Normal) * Weights.y;

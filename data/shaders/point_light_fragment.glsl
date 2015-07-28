@@ -10,6 +10,7 @@ uniform float lightRadius;
 uniform sampler2D positionTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D specularTexture;
+
 /*
 void main() {
 	//texture coord

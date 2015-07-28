@@ -42,7 +42,7 @@ bool PhysX::startup(){
 	//add a box
 	float density = 10;
 
-	for (int i = 0; i < 32; ++i)	{
+	for (int i = 0; i < 0; ++i) {
 		physx::PxBoxGeometry box(1, 1, 1);
 		physx::PxTransform transform(physx::PxVec3(0, 4 + ((float)i * 2.4f), 0));
 		m_dynamicActors.push_back(PxCreateDynamic(*m_physics, transform, box, *m_physicsMaterial, density));
@@ -87,13 +87,7 @@ bool PhysX::update(){
 		if (m_dynamicActors[i]) {
 			PxTransform box_transform = m_dynamicActors[i]->getGlobalPose();
 			vec3 pos(box_transform.p.x, box_transform.p.y, box_transform.p.z);
-			quat q;
-
-			q.x = box_transform.q.x;
-			q.y = box_transform.q.y;
-			q.z = box_transform.q.z;
-			q.w = box_transform.q.w;
-
+			quat q(box_transform.q.w, box_transform.q.x, box_transform.q.y, box_transform.q.z);
 			mat4 rot = mat4(q);
 
 			mat4 model_matrix;
@@ -102,6 +96,19 @@ bool PhysX::update(){
 			Gizmos::addAABBFilled(pos, m_extents[i], vec4(1, 0, 0, 1), &rot);
 		}
 	}
+
+	PxTransform drivePos = m_testD6Joint->getDrivePosition();
+	if (drivePos.p.x < -8)
+		currentXSpeed = 10;
+	else if (drivePos.p.x >= 8)
+		currentXSpeed = -10;
+	if (drivePos.p.y < -8)
+		currentYSpeed = 10;
+	else if (drivePos.p.y >= 8)
+		currentYSpeed = -10;
+	drivePos.p.x += currentXSpeed * dt;
+	drivePos.p.y += currentYSpeed * dt;
+	m_testD6Joint->setDrivePosition(drivePos);
 
 	return true;
 }
@@ -114,41 +121,92 @@ void PhysX::draw(){
 }
 
 void PhysX::setupMotor(){
-	PxMaterial* boxMaterial = m_physics->createMaterial(1, 1, 1);
-	float boxHalfSize = 1;
-	float gap = .01f;
-	float density = 1;
-	//create two boxes
-	PxBoxGeometry box(boxHalfSize, boxHalfSize, boxHalfSize);
-	PxTransform box1Transform(PxVec3(-((boxHalfSize + gap) * 2), 2, 0));
-	PxTransform box2Transform(PxVec3(0, 2, 0));
+	//{
+	//	PxMaterial* boxMaterial = m_physics->createMaterial(1, 1, 1);
+	//	float boxHalfSize = 1;
+	//	float gap = .01f;
+	//	float density = 1;
+	//	//create two boxes
+	//	PxBoxGeometry box(boxHalfSize, boxHalfSize, boxHalfSize);
+	//	PxTransform box1Transform(PxVec3(-((boxHalfSize + gap) * 2), 2, 0));
+	//	PxTransform box2Transform(PxVec3(0, 2, 0));
 
-	//Create a PhysX static actor with a box as a collider
-	PxRigidStatic* staticBox = PxCreateStatic(*m_physics, box1Transform, box, *boxMaterial);
-	m_physicsScene->addActor(*staticBox);
-	m_dynamicActors.push_back(staticBox);
-	m_extents.push_back(vec3(1));
+	//	//Create a PhysX static actor with a box as a collider
+	//	PxRigidStatic* staticBox = PxCreateStatic(*m_physics, box1Transform, box, *boxMaterial);
+	//	m_physicsScene->addActor(*staticBox);
+	//	m_dynamicActors.push_back(staticBox);
+	//	m_extents.push_back(vec3(1));
 
-	// Create a PhysX dynamic actor with a box as a collider
-	PxRigidDynamic* dynamicBox = PxCreateDynamic(*m_physics, box2Transform, box, *boxMaterial, density);
-	m_physicsScene->addActor(*dynamicBox);
-	m_dynamicActors.push_back(dynamicBox);
-	m_extents.push_back(vec3(1));
+	//	// Create a PhysX dynamic actor with a box as a collider
+	//	PxRigidDynamic* dynamicBox = PxCreateDynamic(*m_physics, box2Transform, box, *boxMaterial, density);
+	//	m_physicsScene->addActor(*dynamicBox);
+	//	m_dynamicActors.push_back(dynamicBox);
+	//	m_extents.push_back(vec3(1));
 
-	//set up the constraint frames for the joint so boxes are correctly posiitoned
-	PxTransform constraintFrame1 = PxTransform(PxVec3(boxHalfSize + gap, 0, 0));
-	PxTransform constraintFrame2 = PxTransform(PxVec3(-(boxHalfSize + gap), 0, 0));
-	PxRevoluteJoint *joint = NULL;
+	//	//set up the constraint frames for the joint so boxes are correctly posiitoned
+	//	PxTransform constraintFrame1 = PxTransform(PxVec3(boxHalfSize + gap, 0, 0));
+	//	PxTransform constraintFrame2 = PxTransform(PxVec3(-(boxHalfSize + gap), 0, 0));
+	//	PxRevoluteJoint *joint = NULL;
 
-	//create the revolute (axle) joint
-	joint = PxRevoluteJointCreate(*m_physics, staticBox, constraintFrame1, dynamicBox, constraintFrame2);
+	//	//create the revolute (axle) joint
+	//	joint = PxRevoluteJointCreate(*m_physics, staticBox, constraintFrame1, dynamicBox, constraintFrame2);
 
-	if (joint) //if the joint is successfully created then configure it
+	//	if (joint) //if the joint is successfully created then configure it
+	//	{
+	//		joint->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_ENABLED, true);
+	//		joint->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, false);
+	//		joint->setDriveVelocity(10); //give it some drive
+	//	}
+	//}
 	{
-		joint->setRevoluteJointFlag(PxRevoluteJointFlag::eDRIVE_ENABLED, true);
-		joint->setRevoluteJointFlag(PxRevoluteJointFlag::eLIMIT_ENABLED, false);
-		joint->setDriveVelocity(10); //give it some drive
-	}
+		PxMaterial* boxMaterial = m_physics->createMaterial(1, 1, .2);
+		float density = 1;
+
+		//create two boxes
+		PxBoxGeometry box(1, 1, 1);
+		PxTransform box1Transform(PxVec3(-2, 1, 0));
+		PxVec3 box2TargetPosition(1.5f, 0, 0);
+		PxTransform box2Transform(PxVec3(0, 1, 0));
+
+		//Static box
+		PxRigidStatic* staticBox = PxCreateStatic(*m_physics, box1Transform, box, *boxMaterial);
+		m_physicsScene->addActor(*staticBox);
+		m_dynamicActors.push_back(staticBox);
+		m_extents.push_back(vec3(1));
+
+		//Dynamic box
+		PxRigidDynamic* dynamicBox = PxCreateDynamic(*m_physics, box2Transform, box, *boxMaterial, density);
+		dynamicBox->setLinearDamping(0.5f);
+		m_physicsScene->addActor(*dynamicBox);
+		m_dynamicActors.push_back(dynamicBox);
+		m_extents.push_back(vec3(1));
+
+		PxTransform constraintFrame1 = PxTransform(PxVec3(0, 0, 0));
+		PxTransform constraintFrame2 = PxTransform(PxVec3(0, 0, 0));
+
+		//The d6 joint
+		m_testD6Joint = PxD6JointCreate(*m_physics, staticBox, constraintFrame1, dynamicBox, constraintFrame2);
+
+		//Unlock just the x axis so it behaves like a prismatic joint
+		m_testD6Joint->setMotion(PxD6Axis::eX, PxD6Motion::eFREE);
+		m_testD6Joint->setMotion(PxD6Axis::eY, PxD6Motion::eFREE);
+		m_testD6Joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, true);
+
+		float driveStiffness = 100.0f;
+		float driveDamping = 20.0f;
+		float _forceLimit = PX_MAX_F32;
+		bool isAcceleration = true;
+		PxD6JointDrive drive(driveStiffness, driveDamping, _forceLimit, isAcceleration);
+
+		//set drive for x-axis
+		m_testD6Joint->setDrive(PxD6Drive::eX, drive);
+		m_testD6Joint->setDrive(PxD6Drive::eY, drive);
+		PxVec3 linearTargetVelocity(10, 10, 0);
+		PxVec3 angularTargetVelocity(0, 0, 0); //ignored because rotation is locked
+
+		m_testD6Joint->setDriveVelocity(linearTargetVelocity, angularTargetVelocity);
+		m_testD6Joint->setDrivePosition(PxTransform(box2TargetPosition));
+	}
 }
 
 void PhysX::setupPhysX(){

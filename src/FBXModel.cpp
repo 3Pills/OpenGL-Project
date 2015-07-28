@@ -2,7 +2,8 @@
 #include "FBXModel.h"
 #include "Utility.h"
 
-FBXModel::FBXModel(const char* a_szModelPath) : m_pbr(true), m_fresnelScale(1), m_roughness(1) {
+FBXModel::FBXModel(const char* a_szModelPath, vec3 a_pos, float a_roughness, float a_fresnelScale, vec3 a_scale, quat a_rot) 
+	: m_pbr(true), m_fresnelScale(a_roughness), m_roughness(a_fresnelScale), m_pos(a_pos), m_scale(a_scale), m_rot(a_rot), m_animationTime(0){
 	m_file = new FBXFile;
 	m_file->load(a_szModelPath);
 	m_file->initialiseOpenGLTextures();
@@ -62,8 +63,9 @@ void FBXModel::GenerateGLMeshes(FBXFile* fbx){
 	}
 }
 
-void FBXModel::Update(float time) {
-	EvaluateSkeleton(time);
+void FBXModel::Update(float dt) {
+	m_transform = glm::translate(m_pos) * glm::toMat4(m_rot) * glm::scale(m_scale);
+	EvaluateSkeleton(dt);
 	UpdateBones();
 }
 
@@ -87,6 +89,9 @@ void FBXModel::Render(FlyCamera a_camera) {
 
 	loc = glGetUniformLocation(program, "camPos");
 	glUniform3fv(loc, 1, (float*)&a_camera.getWorldTransform()[3].xyz);
+
+	loc = glGetUniformLocation(program, "transform");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_transform);
 
 	loc = glGetUniformLocation(program, "specPow");
 	glUniform1f(loc, m_specPow);
@@ -154,6 +159,9 @@ void FBXModel::RenderDeferred(FlyCamera a_camera) {
 	loc = glGetUniformLocation(m_deferredShader, "camPos");
 	glUniform3fv(loc, 1, (float*)&a_camera.getWorldTransform()[3].xyz);
 
+	loc = glGetUniformLocation(m_deferredShader, "transform");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_transform);
+
 	loc = glGetUniformLocation(m_deferredShader, "roughness");
 	glUniform1f(loc, m_roughness);
 
@@ -191,7 +199,9 @@ void FBXModel::RenderDeferred(FlyCamera a_camera) {
 	}
 }
 
-void FBXModel::EvaluateSkeleton(float time){
+void FBXModel::RenderGizmos(){}
+
+void FBXModel::EvaluateSkeleton(float dt){
 	//Ignore models without animations.
 	if (m_file->getSkeletonCount() == 0 || m_file->getAnimationCount() == 0)
 		return;
@@ -199,20 +209,27 @@ void FBXModel::EvaluateSkeleton(float time){
 	m_skeleton = m_file->getSkeletonByIndex(0);
 	m_anim = m_file->getAnimationByIndex(0);
 
+	m_animationTime += (dt > 0.3) ? 0.3 : dt;
+
 	float fps = 24.0f;
-	int currTime = (int)(time * fps);
+	int currTime = (int)(m_animationTime * fps);
 	//Loop thru tracks
 	for (unsigned int i = 0; i < m_anim->m_trackCount; ++i) {
 		//Get the correct bone for the given track.
 		int trackFrameCount = m_anim->m_tracks[i].m_keyframeCount;
+
 		int trackTime = currTime % trackFrameCount;
+		//if (trackTime == 42) {
+		//	m_animationTime = 0;
+		//}
 
 		//Find keyframes affecting bone.
 		FBXKeyFrame currFrame = m_anim->m_tracks[i].m_keyframes[trackTime];
 		FBXKeyFrame nextFrame = m_anim->m_tracks[i].m_keyframes[(trackTime + 1) % trackFrameCount];
 
+
 		//interpolate between these keyframes to generate matrix for current pose
-		float timeSinceFrame = time - (currTime / fps);
+		float timeSinceFrame = m_animationTime - (currTime / fps);
 		float t = timeSinceFrame * fps;
 
 		vec3 newPos = glm::mix(currFrame.m_translation, nextFrame.m_translation, t);

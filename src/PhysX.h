@@ -22,6 +22,10 @@ class PhysX : public Application
 	PxMaterial* m_physicsMaterial;
 	PxMaterial* m_boxMaterial;
 	PxCooking* m_physicsCooker;
+	PxD6Joint* m_testD6Joint;
+
+	float currentXSpeed;
+	float currentYSpeed;
 
 	std::vector<PxRigidActor*> m_dynamicActors;
 	std::vector<vec3> m_extents;

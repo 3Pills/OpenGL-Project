@@ -1,7 +1,7 @@
-#include "PhysX.h"
+#include "VirtualWorld.h"
 
 int main() {
-	PhysX App;
+	VirtualWorld App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

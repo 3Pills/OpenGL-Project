@@ -14,8 +14,8 @@ uniform bool drawAlbedo;
 void main() {
 	vec4 albedo = texture(albedoTexture, vTexCoord);
 	vec4 light = texture(lightTexture, vTexCoord);
-	vec4 transparent = texture(fxTexture, vTexCoord);
+	vec4 fx = texture(fxTexture, vTexCoord);
 
-	//transparent objects are rendered independant of the other two, so they blend additively.
-	FragColour = albedo * light + transparent;
+	//fx objects are rendered independant of the other two, so they blend additively.
+	FragColour = albedo * light + fx;
 }

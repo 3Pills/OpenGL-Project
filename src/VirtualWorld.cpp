@@ -1,19 +1,20 @@
 #include "VirtualWorld.h"
 #include "AntTweakBar.h"
 #include <string>
+#include "stb_image.h"
 
-VirtualWorld::VirtualWorld(): m_oCamera(50), m_pScale(1.f), m_pOct(6), m_pAmp(1.f), m_pPers(0.3f){
+VirtualWorld::VirtualWorld(): m_oCamera(50), m_pScale(0.f), m_pOct(6), m_pAmp(1.f), m_pPers(0.3f), m_ambCol(vec3(0.4)){
 	Application::Application();
 }
 VirtualWorld::~VirtualWorld(){}
 
+//Virtual world app stored as a global variable. Mainly for AntTweakBar to access the application during button callbacks.
 VirtualWorld* m_app;
 
 bool VirtualWorld::startup(){
 	if (!Application::startup()){
 		return false;
 	}
-
 	m_app = this;
 
 	//AntTweakBar Initialisation.
@@ -34,20 +35,16 @@ bool VirtualWorld::startup(){
 	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	//Shader Initialisation
-	//Opaque Geometry
+	//Opaque Geometry Shaders
 	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
 	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_proceduralProgram);
 
-	//Light Pre-Pass
+	//Light Pre-Pass Shaders
 	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_dirLightProgram);
 	LoadShader("./data/shaders/point_light_vertex.glsl", 0, "./data/shaders/point_light_fragment.glsl", &m_pointLightProgram);
 
-	//Transparency
-	//LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_dirLightProgram);
-
-	//Final Render
+	//Final Render Shader
 	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/composite_fragment.glsl", &m_compositeProgram);
-
 
 	//Add some models.
 	BuildQuad();
@@ -60,8 +57,9 @@ bool VirtualWorld::startup(){
 	TwAddVarRW(m_generalBar, "Render Grid", TW_TYPE_BOOL8, &m_debug[1], "group=Gizmos");
 
 	TwBar* m_modelsBar = TwNewBar("Models");
-	AddFBXModel("./data/models/characters/SoulSpear/soulspear.fbx", 1, 2);
-	AddFBXModel("./data/models/characters/Pyro/pyro.fbx", 1, 2);
+	AddFBXModel("./data/models/characters/Pyro/pyro.fbx", 0.3f, 2.0f);
+	//AddPhysModel("./data/models/characters/SoulSpear/soulspear.fbx", vec3(0, 10, 0), &PxBoxGeometry(1.f, 4.15f, 0.5f), m_physScene.m_physics->createMaterial(1, 1, .2), 10);
+	AddPhysModel("./data/models/items/bomb.fbx", vec3(0, 10, 0), &PxSphereGeometry(5.f), m_physScene.m_physics->createMaterial(1, 1, .2), 10);
 
 	//Create Particle GUI bar and add particle emitters.
 	TwBar* m_particlesBar = TwNewBar("Particles");
@@ -69,12 +67,45 @@ bool VirtualWorld::startup(){
 	AddParticleEmitter(vec3(0, 10, 0), vec3(30), 20, 3.0f, 5.5f, 1.0f, 2.0f, 1.0f, 0.75f, 1.0f, 1.0f, vec4(1, 1, 0.5, 1), vec4(0.65, 0.65, 0, 1), EMIT_RECTANGLE, PMOVE_WAVE, "./data/textures/particles/glow.png");
 
 	TwBar* m_lightingBar = TwNewBar("Lighting"); //Lighting window. Allows modification of lighting data.
+
+	//Buttons to add and remove point lights from the program
 	TwAddButton(m_lightingBar, "Add Point Light", [](void*){m_app->AddPointLight(); }, nullptr, "");
-	AddPointLight(vec3(0, 20, 10), vec3(1), 100); //Add point light data. Creates the data and puts it into the GUI.
+	TwAddButton(m_lightingBar, "Remove Point Light", [](void*){
+		TwBar* m_lightingBar = TwGetBarByName("Lighting");
+		if (m_lightingBar == nullptr || m_app->m_pointLights.size() <= 0) return;
+
+		std::string prefix("P" + std::to_string(m_app->m_pointLights.size()) + "_");
+
+		TwRemoveVar(m_lightingBar, std::string(prefix + "X").c_str());
+		TwRemoveVar(m_lightingBar, std::string(prefix + "Y").c_str());
+		TwRemoveVar(m_lightingBar, std::string(prefix + "Z").c_str());
+		TwRemoveVar(m_lightingBar, std::string(prefix + "Color").c_str());
+		TwRemoveVar(m_lightingBar, std::string(prefix + "Radius").c_str());
+
+		m_app->m_pointLights.pop_back();
+	}, nullptr, "");
+
+	//Buttons to add and remove directional lights from the program
+	TwAddButton(m_lightingBar, "Add Directional Light", [](void*){m_app->AddDirectionalLight(); }, nullptr, "");
+	TwAddButton(m_lightingBar, "Remove Directional Light", [](void*){
+		TwBar* m_lightingBar = TwGetBarByName("Lighting");
+		if (m_lightingBar == nullptr || m_app->m_dirLights.size() <= 0) return;
+
+		std::string prefix("D" + std::to_string(m_app->m_dirLights.size()) + "_");
+
+		TwRemoveVar(m_lightingBar, std::string(prefix + "Direction").c_str());
+		TwRemoveVar(m_lightingBar, std::string(prefix + "Color").c_str());
+
+		m_app->m_dirLights.pop_back();
+	}, nullptr, "");
+
+	TwAddVarRW(m_lightingBar, "Ambient Color", TW_TYPE_COLOR3F, &m_ambCol, "");
+	AddPointLight(vec3(0, 20, 10), vec3(1), 100);
+	AddDirectionalLight(vec3(0, -1, 0), vec3(1)); 
 	
 	//Initialise Procedural Landscape
 	glm::ivec2 dims = glm::ivec2(256, 256);
-	BuildProceduralGrid(vec2(40, 40), dims);
+	BuildProceduralGrid(vec2(800, 800), dims);
 	BuildPerlinTexture(glm::ivec2(256, 256), m_pOct, m_pAmp, m_pPers);
 
 	//Add procedural generation variables to debugging GUI window. 
@@ -88,81 +119,6 @@ bool VirtualWorld::startup(){
 	return true;
 }
 
-//Convenience function that creates point light data and adds it to the lighting GUI window.
-void VirtualWorld::AddPointLight(vec3 a_pos, vec3 a_color, float a_radius) {
-	m_pointLights.push_back(new PointLight(a_pos, a_color, a_radius));
-
-	TwBar* m_lightingBar = TwGetBarByName("Lighting");
-
-	if (m_lightingBar == nullptr) return; //No Lighting bar was found.
-
-	std::string prefix(std::to_string(m_pointLights.size()) + "_");
-	std::string group = std::string("group=PointLight" + std::to_string(m_pointLights.size()));
-
-	TwAddVarRW(m_lightingBar, std::string(prefix + "X").c_str(),		TW_TYPE_FLOAT,		&m_pointLights.back()->m_pos.x,		group.c_str());
-	TwAddVarRW(m_lightingBar, std::string(prefix + "Y").c_str(),		TW_TYPE_FLOAT,		&m_pointLights.back()->m_pos.y,		group.c_str());
-	TwAddVarRW(m_lightingBar, std::string(prefix + "Z").c_str(),		TW_TYPE_FLOAT,		&m_pointLights.back()->m_pos.z,		group.c_str());
-	TwAddVarRW(m_lightingBar, std::string(prefix + "Color").c_str(),	TW_TYPE_COLOR3F,	&m_pointLights.back()->m_color,		group.c_str());
-	TwAddVarRW(m_lightingBar, std::string(prefix + "Radius").c_str(),	TW_TYPE_FLOAT,		&m_pointLights.back()->m_radius,	(std::string("min=0 ") + group).c_str());
-}
-
-//Convenience function that add an FBXModel to the vector array, while also adding it to the Model GUI window.
-void VirtualWorld::AddFBXModel(const char* a_filename, float a_roughness, float a_fresnelScale) {
-	m_FBXModels.push_back(new FBXModel(a_filename));
-	m_FBXModels.back()->m_roughness = a_roughness;
-	m_FBXModels.back()->m_fresnelScale = a_fresnelScale;
-
-	TwBar* m_modelBar = TwGetBarByName("Models");
-
-	if (m_modelBar == nullptr) return; //No Models bar was found.
-
-	std::string prefix(std::to_string(m_FBXModels.size()) + "_");
-	std::string group = std::string("group=Model" + std::to_string(m_FBXModels.size()));
-
-	TwAddVarRW(m_modelBar, std::string(prefix + "Roughness").c_str(),		TW_TYPE_FLOAT, &m_FBXModels.back()->m_roughness,	(std::string("min=0 step=0.05 max=100.0 ") + group).c_str());
-	TwAddVarRW(m_modelBar, std::string(prefix + "Fresnel_Scale").c_str(),	TW_TYPE_FLOAT, &m_FBXModels.back()->m_fresnelScale, (std::string("min=0 step=0.05 max=100.0 ") + group).c_str());
-}
-
-void VirtualWorld::AddParticleEmitter(vec3 a_pos, vec3 a_extents, unsigned int a_maxParticles,	float a_lifespanMin, float a_lifespanMax, float a_velocityMin, float a_velocityMax, 
-	float a_fadeIn, float a_fadeOut, float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor, EmitType a_emitType, MoveType a_moveType, char* a_szFilename) {
-	m_particleEmitters.push_back(new GPUEmitter);
-	m_particleEmitters.back()->Init(a_pos, a_extents, a_maxParticles, a_lifespanMin, a_lifespanMax, a_velocityMin, a_velocityMax, a_fadeIn, a_fadeOut, a_startSize, a_endSize, a_startColor, a_endColor, a_emitType, a_moveType, a_szFilename);
-
-	TwBar* m_particlesBar = TwGetBarByName("Particles");
-
-	if (m_particlesBar == nullptr) return; //No Particles bar was found.
-
-	std::string prefix(std::to_string(m_particleEmitters.size()) + "_");
-	std::string group = std::string("group=ParticleEmitter" + std::to_string(m_particleEmitters.size()));
-
-	TwEnumVal emitTypes[] = { { EMIT_POINT, "Point" }, { EMIT_LINE, "Line" }, { EMIT_PLANE, "Plane" }, { EMIT_RING, "Ring" }, { EMIT_OUTER_RING, "Outer Ring" },
-	{ EMIT_RECTANGLE, "Rectangle" }, { EMIT_OUTER_RECTANGLE, "Outer Rectangle" }, { EMIT_SPHERE, "Sphere" }, { EMIT_OUTER_SPHERE, "Outer Sphere" } };
-	TwType emitType = TwDefineEnum("EmitType", emitTypes, 9);
-
-	TwEnumVal moveTypes[] = { { PMOVE_LINEAR, "Linear" }, { PMOVE_WAVE, "Wave" } };
-	TwType moveType = TwDefineEnum("MoveType", moveTypes, 2);
-
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Position_X").c_str(),		TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_pos.x,		(std::string("step=0.1 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Position_Y").c_str(),		TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_pos.y,		(std::string("step=0.1 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Position_Z").c_str(),		TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_pos.z,		(std::string("step=0.1 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Extents_X").c_str(),		TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_extents.x,	(std::string("step=0.1 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Extents_Y").c_str(),		TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_extents.y,	(std::string("step=0.1 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Extents_Z").c_str(),		TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_extents.z,	(std::string("step=0.1 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Emit_Type").c_str(),		emitType,			&m_particleEmitters.back()->m_emitType,		group.c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Move_Type").c_str(),		moveType,			&m_particleEmitters.back()->m_moveType,		group.c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Lifespan_Max").c_str(), 	TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_lifespanMax,	(std::string("step=0.05 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Lifespan_Min").c_str(), 	TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_lifespanMin,	(std::string("step=0.05 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Velocity_Min").c_str(), 	TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_velocityMin,	(std::string("step=0.05 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Velocity_Max").c_str(), 	TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_velocityMax,	(std::string("step=0.05 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Fade_In").c_str(),			TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_fadeIn,		(std::string("step=0.05 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Fade_Out").c_str(),		TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_fadeOut,		(std::string("step=0.05 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Start_Size").c_str(),		TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_startSize,	(std::string("step=0.05 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "End_Size").c_str(),		TW_TYPE_FLOAT,		&m_particleEmitters.back()->m_endSize,		(std::string("step=0.05 min=0 ") + group).c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "Start_Color").c_str(),		TW_TYPE_COLOR4F,	&m_particleEmitters.back()->m_startColor,	group.c_str());
-	TwAddVarRW(m_particlesBar, std::string(prefix + "End_Color").c_str(),		TW_TYPE_COLOR4F,	&m_particleEmitters.back()->m_endColor,		group.c_str());
-}
-
-
 bool VirtualWorld::shutdown(){
 	//Game Asset Termination
 	//Delete all particles and their texture memory
@@ -172,10 +128,6 @@ bool VirtualWorld::shutdown(){
 	//Delete all models and their texture memory
 	for (FBXModel* model : m_FBXModels) {
 		delete model;
-	}
-
-	for (PointLight* light : m_pointLights) {
-		delete light;
 	}
 
 	//Delete Buffers for deferred rendering quad and lightcube.
@@ -206,8 +158,10 @@ bool VirtualWorld::update(){
 	m_oCamera.update(m_fDeltaTime);
 	Gizmos::clear();
 
+	m_physScene.Update(m_fDeltaTime);
+
 	for (FBXModel* model : m_FBXModels) {
-		model->Update(m_fCurrTime);
+		model->Update(m_fDeltaTime);
 	}
 
 	//Button Input for shader reloading. Uses lastKey variable to only pass the first frame the key is pressed.
@@ -236,7 +190,8 @@ bool VirtualWorld::update(){
 	}
 
 	//Parenting of particle position.
-	m_particleEmitters[0]->m_pos = m_pointLights[0]->m_pos;
+	if (m_pointLights.size() > 0)
+		m_particleEmitters[0]->m_pos = m_pointLights[0].m_pos;
 
 	return true;
 }
@@ -247,6 +202,9 @@ void VirtualWorld::draw(){
 
 	//Enable Depth Culling.
 	glEnable(GL_DEPTH_TEST);
+
+	//Enable Face Culling of polygons facing away from camera.
+	glEnable(GL_CULL_FACE);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO);
 	glClearColor(0, 0, 0, 0);
@@ -295,69 +253,28 @@ void VirtualWorld::draw(){
 	
 	for (FBXModel* model : m_FBXModels){
 		model->RenderDeferred(m_oCamera);
+		model->RenderGizmos();
 	}
 
 	//Light Rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, m_lightFBO);
-	glEnable(GL_BLEND);//Enable fx rendering
+	glEnable(GL_BLEND);//Enable transparency blending
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glUseProgram(m_dirLightProgram);
-	
-	loc = glGetUniformLocation(m_dirLightProgram, "positionTexture");
-	glUniform1i(loc, 0);
-	loc = glGetUniformLocation(m_dirLightProgram, "normalTexture");
-	glUniform1i(loc, 1);
-	loc = glGetUniformLocation(m_dirLightProgram, "specularTexture");
-	glUniform1i(loc, 2);
-	
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_positionTexture);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
 	
 	//RenderDirectionalLight(vec3(1, 0, 0), vec3(1, 0, 0));
 	//RenderDirectionalLight(vec3(0, 1, 0), vec3(0, 1, 0));
 	//RenderDirectionalLight(vec3(0, 0, 1), vec3(0, 0, 1));
 	//RenderDirectionalLight(vec3(0, -1, 0), vec3(1));
 	//RenderDirectionalLight(vec3(0, 0, -1), vec3(0.7));
-
-	glUseProgram(m_pointLightProgram);
-	
-	loc = glGetUniformLocation(m_pointLightProgram, "projView");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
-
-	loc = glGetUniformLocation(m_pointLightProgram, "positionTexture");
-	glUniform1i(loc, 0);
-	loc = glGetUniformLocation(m_pointLightProgram, "normalTexture");
-	glUniform1i(loc, 1);
-	loc = glGetUniformLocation(m_pointLightProgram, "specularTexture");
-	glUniform1i(loc, 2);
-
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_positionTexture);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
-
-	glCullFace(GL_FRONT);
-	for (PointLight* light : m_pointLights) {
-		Gizmos::addTransform(glm::translate(light->m_pos), 1);
-		RenderPointLight(light->m_pos, light->m_radius, light->m_color);
-	}
-	glCullFace(GL_BACK);
-
-	glDisable(GL_BLEND);
+	RenderDirectionalLights();
+	RenderPointLights();
 
 	//Effects Rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, m_fxFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glEnable(GL_BLEND);//Enable fx rendering
 	glDepthFunc(GL_LEQUAL);
-	glDepthMask(GL_FALSE);
+	glDepthMask(GL_FALSE); //Disable newly drawn objects writing to the depth buffer. Allows all FX to be drawn without culling.
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUseProgram(m_gBufferProgram);
@@ -366,7 +283,7 @@ void VirtualWorld::draw(){
 	}
 
 	glDepthMask(GL_TRUE);
-	glDisable(GL_BLEND);
+	glDisable(GL_BLEND); //No more transparent rendering, turn off the blend.
 	glBlendFunc(GL_ONE, GL_ONE);
 
 	//Draw Gizmos at the end of the transparency pass, to retain depth culling without lighting.
@@ -414,36 +331,178 @@ void VirtualWorld::draw(){
 	Application::draw();
 }
 
-void VirtualWorld::RenderDirectionalLight(vec3 a_lightDir, vec3 a_lightColor) {
-	vec4 viewspaceLightDir = m_oCamera.getView() * vec4(glm::normalize(a_lightDir), 0);
+void VirtualWorld::RenderDirectionalLights() {
+	glUseProgram(m_dirLightProgram);
 
-	int loc = glGetUniformLocation(m_dirLightProgram, "lightDir");
-	glUniform3fv(loc, 1, (float*)&viewspaceLightDir);
+	//Tell the shader which slot holds each texture
+	glUniform1i(glGetUniformLocation(m_dirLightProgram, "positionTexture"), 0);
+	glUniform1i(glGetUniformLocation(m_dirLightProgram, "normalTexture"),   1);
+	glUniform1i(glGetUniformLocation(m_dirLightProgram, "specularTexture"), 2);
 
-	loc = glGetUniformLocation(m_dirLightProgram, "lightCol");
-	glUniform3fv(loc, 1, (float*)&a_lightColor);
+	//Bind the textures to the slots
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_positionTexture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
 
-	glBindVertexArray(m_screenspaceQuad.m_VAO);
-	glDrawElements(GL_TRIANGLES, m_screenspaceQuad.m_indexCount, GL_UNSIGNED_INT, 0);
+	//Assign uniform locations outside of loop, for efficiency.
+	int lightDir_uniform = glGetUniformLocation(m_dirLightProgram, "lightDir");
+	int lightCol_uniform = glGetUniformLocation(m_dirLightProgram, "lightCol");
+	int ambCol_uniform = glGetUniformLocation(m_dirLightProgram, "ambCol");
+	glUniform3fv(ambCol_uniform, 1, (float*)&m_ambCol);
+
+	for (DirectionalLight light : m_dirLights) {
+		vec4 viewspaceLightDir = m_oCamera.getView() * vec4(glm::normalize(light.m_dir), 0);
+
+		glUniform3fv(lightDir_uniform, 1, (float*)&viewspaceLightDir);
+		glUniform3fv(lightCol_uniform, 1, (float*)&light.m_color);
+
+		glBindVertexArray(m_screenspaceQuad.m_VAO);
+		glDrawElements(GL_TRIANGLES, m_screenspaceQuad.m_indexCount, GL_UNSIGNED_INT, 0);
+	}
 }
 
-void VirtualWorld::RenderPointLight(vec3 a_lightPos, float a_radius, vec3 a_lightColor) {
-	vec4 viewspaceLightPos = m_oCamera.getView() * vec4(a_lightPos, 1);
+void VirtualWorld::RenderPointLights() {
+	glUseProgram(m_pointLightProgram);
 
-	int loc = glGetUniformLocation(m_pointLightProgram, "lightPos");
-	glUniform3fv(loc, 1, &a_lightPos[0]);
+	int loc = glGetUniformLocation(m_pointLightProgram, "projView");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
 
-	loc = glGetUniformLocation(m_pointLightProgram, "lightViewPos");
-	glUniform3fv(loc, 1, &viewspaceLightPos[0]);
+	glUniform1i(glGetUniformLocation(m_pointLightProgram, "positionTexture"), 0);
+	glUniform1i(glGetUniformLocation(m_pointLightProgram, "normalTexture"),   1);
+	glUniform1i(glGetUniformLocation(m_pointLightProgram, "specularTexture"), 2);
 
-	loc = glGetUniformLocation(m_pointLightProgram, "lightRadius");
-	glUniform1f(loc, a_radius);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_positionTexture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
 
-	loc = glGetUniformLocation(m_pointLightProgram, "lightCol");
-	glUniform3fv(loc, 1, &a_lightColor[0]);
+	//Assign uniform locations outside of loop, for efficiency.
+	int lightPos_uniform = glGetUniformLocation(m_pointLightProgram, "lightPos");
+	int lightViewPos_uniform = glGetUniformLocation(m_pointLightProgram, "lightViewPos");
+	int lightRadius_uniform = glGetUniformLocation(m_pointLightProgram, "lightRadius");
+	int lightCol_uniform = glGetUniformLocation(m_pointLightProgram, "lightCol");
 
-	glBindVertexArray(m_lightCube.m_VAO);
-	glDrawElements(GL_TRIANGLES, m_lightCube.m_indexCount, GL_UNSIGNED_INT, 0);
+
+	for (PointLight light : m_pointLights) {
+		Gizmos::addAABB(light.m_pos, vec3(0.5), vec4(light.m_color, 1));
+
+		vec4 viewspaceLightPos = m_oCamera.getView() * vec4(light.m_pos, 1);
+
+		glUniform3fv(lightPos_uniform, 1, (float*)&light.m_pos);
+		glUniform3fv(lightViewPos_uniform, 1, (float*)&viewspaceLightPos);
+		glUniform1f(lightRadius_uniform, light.m_radius);
+		glUniform3fv(lightCol_uniform, 1, (float*)&light.m_color);
+
+		glBindVertexArray(m_lightCube.m_VAO);
+		glDrawElements(GL_TRIANGLES, m_lightCube.m_indexCount, GL_UNSIGNED_INT, 0);
+	}
+}
+
+//Convenience function to initialise directional light data within simulation and add it to GUI.
+void VirtualWorld::AddDirectionalLight(vec3 a_dir, vec3 a_color) {
+	m_dirLights.push_back(DirectionalLight(a_dir, a_color));
+
+	TwBar* m_lightingBar = TwGetBarByName("Lighting");
+
+	if (m_lightingBar == nullptr) return; //No Lighting bar was found.
+
+	//Formatting the light data with a unique prefix, so AntTweakBar can display it. ATB rejects duplicate keyvalue names.
+	std::string prefix("DL" + std::to_string(m_dirLights.size()) + "_");
+	std::string group = std::string("group=DirectionalLight" + std::to_string(m_dirLights.size()));
+
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Direction").c_str(), TW_TYPE_DIR3F, &m_dirLights.back().m_dir, group.c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Color").c_str(), TW_TYPE_COLOR3F, &m_dirLights.back().m_color, group.c_str());
+
+}
+
+//Convenience function that creates point light data and adds it to the lighting GUI window.
+void VirtualWorld::AddPointLight(vec3 a_pos, vec3 a_color, float a_radius) {
+	m_pointLights.push_back(PointLight(a_pos, a_color, a_radius));
+
+	TwBar* m_lightingBar = TwGetBarByName("Lighting");
+
+	if (m_lightingBar == nullptr) return; //No Lighting bar was found.
+
+	std::string prefix("PL" + std::to_string(m_pointLights.size()) + "_");
+	std::string group = std::string("group=PointLight" + std::to_string(m_pointLights.size()));
+
+	TwAddVarRW(m_lightingBar, std::string(prefix + "X").c_str(), TW_TYPE_FLOAT, &m_pointLights.back().m_pos.x, (std::string("step=0.1 ") + group).c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Y").c_str(), TW_TYPE_FLOAT, &m_pointLights.back().m_pos.y, (std::string("step=0.1 ") + group).c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Z").c_str(), TW_TYPE_FLOAT, &m_pointLights.back().m_pos.z, (std::string("step=0.1 ") + group).c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Color").c_str(), TW_TYPE_COLOR3F, &m_pointLights.back().m_color, group.c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Radius").c_str(), TW_TYPE_FLOAT, &m_pointLights.back().m_radius, (std::string("min=0 ") + group).c_str());
+}
+
+//Convenience function that add an FBXModel to the vector array, while also adding it to the Model GUI window.
+void VirtualWorld::AddFBXModel(const char* a_filename, float a_roughness, float a_fresnelScale) {
+	m_FBXModels.push_back(new FBXModel(a_filename, vec3(0), a_roughness, a_fresnelScale));
+
+	TwBar* m_modelBar = TwGetBarByName("Models");
+
+	if (m_modelBar == nullptr) return; //No Models bar was found.
+
+	std::string prefix(std::to_string(m_FBXModels.size()) + "_");
+	std::string group = std::string("group=Model" + std::to_string(m_FBXModels.size()));
+
+	TwAddVarRW(m_modelBar, std::string(prefix + "Position_X").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_pos.x, (std::string("step=0.1 ") + group).c_str());
+	TwAddVarRW(m_modelBar, std::string(prefix + "Position_Y").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_pos.y, (std::string("step=0.1 ") + group).c_str());
+	TwAddVarRW(m_modelBar, std::string(prefix + "Position_Z").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_pos.z, (std::string("step=0.1 ") + group).c_str());
+	TwAddVarRW(m_modelBar, std::string(prefix + "Scale_X").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_scale.x, (std::string("min=0.01 step=0.01 ") + group).c_str());
+	TwAddVarRW(m_modelBar, std::string(prefix + "Scale_Y").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_scale.y, (std::string("min=0.01 step=0.01 ") + group).c_str());
+	TwAddVarRW(m_modelBar, std::string(prefix + "Scale_Z").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_scale.z, (std::string("min=0.01 step=0.01 ") + group).c_str());
+	TwAddVarRW(m_modelBar, std::string(prefix + "Rotation").c_str(), TW_TYPE_QUAT4F, &m_FBXModels.back()->m_rot, group.c_str());
+	TwAddVarRW(m_modelBar, std::string(prefix + "Roughness").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_roughness, (std::string("min=0 step=0.05 max=100.0 ") + group).c_str());
+	TwAddVarRW(m_modelBar, std::string(prefix + "Fresnel_Scale").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_fresnelScale, (std::string("min=0 step=0.05 max=100.0 ") + group).c_str());
+}
+
+void VirtualWorld::AddPhysModel(const char* a_filename, vec3 a_pos, PxGeometry* a_geometry, PxMaterial* a_physicsMaterial, float a_density, float a_roughness, float a_fresnelScale) {
+	m_FBXModels.push_back(new PhysModel(a_filename, a_pos, a_geometry, a_physicsMaterial, &m_physScene, a_density));
+
+	TwBar* m_modelBar = TwGetBarByName("Models");
+}
+
+void VirtualWorld::AddParticleEmitter(vec3 a_pos, vec3 a_extents, unsigned int a_maxParticles, float a_lifespanMin, float a_lifespanMax, float a_velocityMin, float a_velocityMax,
+	float a_fadeIn, float a_fadeOut, float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor, EmitType a_emitType, MoveType a_moveType, char* a_szFilename) {
+	m_particleEmitters.push_back(new GPUEmitter);
+	m_particleEmitters.back()->Init(a_pos, a_extents, a_maxParticles, a_lifespanMin, a_lifespanMax, a_velocityMin, a_velocityMax, a_fadeIn, a_fadeOut, a_startSize, a_endSize, a_startColor, a_endColor, a_emitType, a_moveType, a_szFilename);
+
+	TwBar* m_particlesBar = TwGetBarByName("Particles");
+
+	if (m_particlesBar == nullptr) return; //No Particles bar was found.
+
+	std::string prefix(std::to_string(m_particleEmitters.size()) + "_");
+	std::string group = std::string("group=ParticleEmitter" + std::to_string(m_particleEmitters.size()));
+
+	TwEnumVal emitTypes[] = { { EMIT_POINT, "Point" }, { EMIT_LINE, "Line" }, { EMIT_PLANE, "Plane" }, { EMIT_RING, "Ring" }, { EMIT_OUTER_RING, "Outer Ring" },
+	{ EMIT_RECTANGLE, "Rectangle" }, { EMIT_OUTER_RECTANGLE, "Outer Rectangle" }, { EMIT_SPHERE, "Sphere" }, { EMIT_OUTER_SPHERE, "Outer Sphere" } };
+	TwType emitType = TwDefineEnum("EmitType", emitTypes, 9);
+
+	TwEnumVal moveTypes[] = { { PMOVE_LINEAR, "Linear" }, { PMOVE_WAVE, "Wave" } };
+	TwType moveType = TwDefineEnum("MoveType", moveTypes, 2);
+
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Position_X").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_pos.x, (std::string("step=0.1 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Position_Y").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_pos.y, (std::string("step=0.1 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Position_Z").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_pos.z, (std::string("step=0.1 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Extents_X").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_extents.x, (std::string("step=0.1 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Extents_Y").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_extents.y, (std::string("step=0.1 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Extents_Z").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_extents.z, (std::string("step=0.1 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Emit_Type").c_str(), emitType, &m_particleEmitters.back()->m_emitType, group.c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Move_Type").c_str(), moveType, &m_particleEmitters.back()->m_moveType, group.c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Lifespan_Max").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_lifespanMax, (std::string("step=0.05 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Lifespan_Min").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_lifespanMin, (std::string("step=0.05 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Velocity_Min").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_velocityMin, (std::string("step=0.05 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Velocity_Max").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_velocityMax, (std::string("step=0.05 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Fade_In").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_fadeIn, (std::string("step=0.05 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Fade_Out").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_fadeOut, (std::string("step=0.05 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Start_Size").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_startSize, (std::string("step=0.05 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "End_Size").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_endSize, (std::string("step=0.05 min=0 ") + group).c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "Start_Color").c_str(), TW_TYPE_COLOR4F, &m_particleEmitters.back()->m_startColor, group.c_str());
+	TwAddVarRW(m_particlesBar, std::string(prefix + "End_Color").c_str(), TW_TYPE_COLOR4F, &m_particleEmitters.back()->m_endColor, group.c_str());
 }
 
 //Build the screenspace quad that will display the final render graphic.
@@ -710,7 +769,7 @@ void VirtualWorld::BuildPerlinTexture(glm::ivec2 a_dims, const int a_octaves, co
 
 	glGenTextures(1, &m_perlinTexture);
 	glBindTexture(GL_TEXTURE_2D, m_perlinTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, a_dims.x, a_dims.y, 0, GL_RED, GL_FLOAT, m_perlinData);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, a_dims.x, a_dims.y, 0, GL_RED, GL_FLOAT, m_perlinData);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
