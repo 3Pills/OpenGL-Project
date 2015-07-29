@@ -83,7 +83,7 @@ bool PhysX::update(){
 	while (m_physicsScene->fetchResults() == false)	{}
 
 
-	for (int i = 0; i < m_dynamicActors.size(); ++i)	{
+	for (unsigned int i = 0; i < m_dynamicActors.size(); ++i) {
 		if (m_dynamicActors[i]) {
 			PxTransform box_transform = m_dynamicActors[i]->getGlobalPose();
 			vec3 pos(box_transform.p.x, box_transform.p.y, box_transform.p.z);
@@ -159,7 +159,7 @@ void PhysX::setupMotor(){
 	//	}
 	//}
 	{
-		PxMaterial* boxMaterial = m_physics->createMaterial(1, 1, .2);
+		PxMaterial* boxMaterial = m_physics->createMaterial(1, 1, 0.2f);
 		float density = 1;
 
 		//create two boxes

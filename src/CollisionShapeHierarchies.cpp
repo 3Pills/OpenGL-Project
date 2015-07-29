@@ -131,7 +131,7 @@ bool CollisionShapeHierarchies::update(){
 		m_physics_scene->addActor(*ball);
 	}
 
-	for (int i = 0; i < m_physActors.size(); i++) {
+	for (unsigned int i = 0; i < m_physActors.size(); i++) {
 		PxTransform transform = m_physActors[i]->getGlobalPose();
 		//get its position
 		vec3 position(transform.p.x, transform.p.y, transform.p.z);

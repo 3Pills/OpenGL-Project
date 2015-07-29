@@ -27,7 +27,7 @@ void SphereClass::makeGizmo(){
 }
 
 void DIYPhysicsScene::update(){
-	for (int i = 0; i < m_actors.size(); i++) {
+	for (unsigned int i = 0; i < m_actors.size(); i++) {
 		m_actors[i]->update(m_gravity, m_timeStep);
 	}
 }
@@ -38,7 +38,7 @@ void DIYPhysicsScene::addActor(PhysicsObject* a_actor){
 	m_actors.push_back(a_actor);
 }
 void DIYPhysicsScene::removeActor(PhysicsObject* a_actor){
-	for (int i = 0; i < m_actors.size(); i++) {
+	for (unsigned int i = 0; i < m_actors.size(); i++) {
 		if (m_actors[i]->m_shapeID == a_actor->m_shapeID) {
 			m_actors.erase(m_actors.begin() + i);
 			break;

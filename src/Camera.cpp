@@ -56,8 +56,8 @@ vec3 Camera::pickAgainstPlane(float x, float y, vec4 plane) {
 	float nxPos = x / m_iWidth;
 	float nyPos = y / m_iHeight;
 
-	float sxPos = nxPos - 0.5;
-	float syPos = nyPos - 0.5;
+	float sxPos = nxPos - 0.5f;
+	float syPos = nyPos - 0.5f;
 
 	float fxPos = sxPos * 2;
 	float fyPos = syPos * 2;

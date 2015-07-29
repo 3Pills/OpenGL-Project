@@ -4,7 +4,8 @@ const int PLAYOUT_THREAD_SIZE = 1000;
 const int MAX_THREADS = 8;
 
 int MCTS::makeDecision(const Game& game){
-	float bestAction = -1, bestScore = -1;
+	int bestAction = -1;
+	float bestScore = -1;
 
 	std::vector<int> actions;
 
@@ -12,7 +13,7 @@ int MCTS::makeDecision(const Game& game){
 	if (actions.size() > 1) {
 		bool bInstantLossWin = false;
 
-		for (int i = 0; i < actions.size(); i++) {
+		for (unsigned int i = 0; i < actions.size(); i++) {
 			Game* clone = game.clone();
 			clone->performAction(actions[i]);
 			if (clone->getCurrentGameState() == Game::PLAYER_TWO) {
@@ -26,7 +27,7 @@ int MCTS::makeDecision(const Game& game){
 		std::vector<int> nextActions;
 		game.getValidActions(nextActions);
 
-		for (int i = 0; i < actions.size(); i++) {
+		for (unsigned int i = 0; i < actions.size(); i++) {
 			Game* clone = game.clone();
 			clone->setCurrentPlayer(Game::PLAYER_ONE);
 			clone->performAction(actions[i]);
@@ -39,7 +40,7 @@ int MCTS::makeDecision(const Game& game){
 		}
 
 		if (!bInstantLossWin) {
-			for (int i = 0; i < actions.size(); i++) {
+			for (unsigned int i = 0; i < actions.size(); i++) {
 				std::mutex scoreMutex;
 				std::vector<std::thread> m_threads;
 				int threadCount = (m_playouts / PLAYOUT_THREAD_SIZE > 0) ? m_playouts / PLAYOUT_THREAD_SIZE : 1;

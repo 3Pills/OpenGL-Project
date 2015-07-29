@@ -167,7 +167,7 @@ void ProceduralGeneration::BuildPerlinTexture(glm::ivec2 a_dims, const int a_oct
 			m_perlinData[y*a_dims.x + x] = 0;
 
 			for (int o = 0; o < a_octaves; o++) {
-				float perlinSample = glm::perlin(vec2((float)x, (float)y) * scale * freq) * 0.5 + 0.5;
+				float perlinSample = glm::perlin(vec2((float)x, (float)y) * scale * freq) * 0.5f + 0.5f;
 
 				perlinSample *= amplitude;
 				m_perlinData[y*a_dims.x + x] += perlinSample;

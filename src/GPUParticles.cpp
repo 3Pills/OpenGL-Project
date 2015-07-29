@@ -80,7 +80,7 @@ bool GPUParticles::update(){
 
 	Gizmos::clear();
 	Gizmos::addTransform(mat4(1), 10);
-	m_emitter.DrawDebugGizmos();
+	m_emitter.RenderGizmos();
 
 	vec4 white(1);
 	vec4 black(0, 0, 0, 1);

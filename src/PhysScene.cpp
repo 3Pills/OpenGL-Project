@@ -37,7 +37,7 @@ PhysScene::PhysScene() {
 
 	//Create a plane below everything to catch stray physics objects.
 	m_planePose = PxTransform(PxVec3(0.f, 0.f, 0.f), PxQuat(PxHalfPi * 1.0f, PxVec3(0.0f, 0.0f, 1.0f)));
-	m_plane = PxCreateStatic(*m_physics, m_planePose, PxPlaneGeometry(), *m_physics->createMaterial(0.9f, 0.9f, 0.f));
+	m_plane = PxCreateStatic(*m_physics, m_planePose, PxPlaneGeometry(), *m_physics->createMaterial(1.f, 1.f, 1.f));
 	m_physicsScene->addActor(*m_plane);
 
 	if (m_physics->getPvdConnectionManager() != NULL)

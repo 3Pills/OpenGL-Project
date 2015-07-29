@@ -156,7 +156,7 @@ void DeferredRendering::draw(){
 
 	//Composite Rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClearColor(0.3, 0.3, 0.3, 1);
+	glClearColor(0.3f, 0.3f, 0.3f, 1);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 

@@ -2,8 +2,8 @@
 #include "FBXModel.h"
 #include "Utility.h"
 
-FBXModel::FBXModel(const char* a_szModelPath, vec3 a_pos, float a_roughness, float a_fresnelScale, vec3 a_scale, quat a_rot) 
-	: m_pbr(true), m_fresnelScale(a_roughness), m_roughness(a_fresnelScale), m_pos(a_pos), m_scale(a_scale), m_rot(a_rot), m_animationTime(0){
+FBXModel::FBXModel(const char* a_szModelPath, vec3 a_pos, float a_roughness, float a_fresnelScale, mat4 a_modTransform, vec3 a_scale, quat a_rot) 
+: m_pbr(true), m_roughness(a_roughness), m_fresnelScale(a_fresnelScale), m_pos(a_pos), m_modTransform(a_modTransform), m_scale(a_scale), m_rot(a_rot), m_animationTime(0){
 	m_file = new FBXFile;
 	m_file->load(a_szModelPath);
 	m_file->initialiseOpenGLTextures();
@@ -64,7 +64,7 @@ void FBXModel::GenerateGLMeshes(FBXFile* fbx){
 }
 
 void FBXModel::Update(float dt) {
-	m_transform = glm::translate(m_pos) * glm::toMat4(m_rot) * glm::scale(m_scale);
+	m_transform = glm::translate(m_pos) * glm::toMat4(m_rot) * glm::scale(m_scale) * m_modTransform;
 	EvaluateSkeleton(dt);
 	UpdateBones();
 }
@@ -126,12 +126,18 @@ void FBXModel::Render(FlyCamera a_camera) {
 		glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&currMesh->m_globalTransform);
 
 		FBXMaterial* meshMat = currMesh->m_material;
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::DiffuseTexture]->handle);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::NormalTexture]->handle);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::SpecularTexture]->handle);
+		if (meshMat->textures[FBXMaterial::DiffuseTexture] != nullptr) {
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::DiffuseTexture]->handle);
+		}
+		if (meshMat->textures[FBXMaterial::NormalTexture] != nullptr) {
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::NormalTexture]->handle);
+		}
+		if (meshMat->textures[FBXMaterial::SpecularTexture] != nullptr) {
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::SpecularTexture]->handle);
+		}
 
 		glBindVertexArray(m_meshes[i].m_VAO);
 		glDrawElements(GL_TRIANGLES, m_meshes[i].m_indexCount, GL_UNSIGNED_INT, 0);
@@ -187,12 +193,18 @@ void FBXModel::RenderDeferred(FlyCamera a_camera) {
 		glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&currMesh->m_globalTransform);
 
 		FBXMaterial* meshMat = currMesh->m_material;
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::DiffuseTexture]->handle);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::NormalTexture]->handle);
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::SpecularTexture]->handle);
+		if (meshMat->textures[FBXMaterial::DiffuseTexture] != nullptr) {
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::DiffuseTexture]->handle);
+		}
+		if (meshMat->textures[FBXMaterial::NormalTexture] != nullptr) {
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::NormalTexture]->handle);
+		}
+		if (meshMat->textures[FBXMaterial::SpecularTexture] != nullptr) {
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, meshMat->textures[FBXMaterial::SpecularTexture]->handle);
+		}
 
 		glBindVertexArray(m_meshes[i].m_VAO);
 		glDrawElements(GL_TRIANGLES, m_meshes[i].m_indexCount, GL_UNSIGNED_INT, 0);
@@ -209,40 +221,9 @@ void FBXModel::EvaluateSkeleton(float dt){
 	m_skeleton = m_file->getSkeletonByIndex(0);
 	m_anim = m_file->getAnimationByIndex(0);
 
-	m_animationTime += (dt > 0.3) ? 0.3 : dt;
+	m_animationTime += (dt > 0.3f) ? 0.3f : dt;
 
-	float fps = 24.0f;
-	int currTime = (int)(m_animationTime * fps);
-	//Loop thru tracks
-	for (unsigned int i = 0; i < m_anim->m_trackCount; ++i) {
-		//Get the correct bone for the given track.
-		int trackFrameCount = m_anim->m_tracks[i].m_keyframeCount;
-
-		int trackTime = currTime % trackFrameCount;
-		//if (trackTime == 42) {
-		//	m_animationTime = 0;
-		//}
-
-		//Find keyframes affecting bone.
-		FBXKeyFrame currFrame = m_anim->m_tracks[i].m_keyframes[trackTime];
-		FBXKeyFrame nextFrame = m_anim->m_tracks[i].m_keyframes[(trackTime + 1) % trackFrameCount];
-
-
-		//interpolate between these keyframes to generate matrix for current pose
-		float timeSinceFrame = m_animationTime - (currTime / fps);
-		float t = timeSinceFrame * fps;
-
-		vec3 newPos = glm::mix(currFrame.m_translation, nextFrame.m_translation, t);
-		vec3 newScale = glm::mix(currFrame.m_scale, nextFrame.m_scale, t);
-		quat newRot = glm::slerp(currFrame.m_rotation, nextFrame.m_rotation, t);
-
-		//set the fbxnodes local transforms to match
-		mat4 transform = glm::translate(newPos) * glm::toMat4(newRot) * glm::scale(newScale);
-		unsigned int boneIndex = m_anim->m_tracks[i].m_boneIndex;
-
-		if (boneIndex < m_skeleton->m_boneCount)
-			m_skeleton->m_nodes[boneIndex]->m_localTransform = transform;
-	}
+	m_skeleton->evaluate(m_anim, m_animationTime);
 }
 
 void FBXModel::UpdateBones(){
@@ -251,21 +232,7 @@ void FBXModel::UpdateBones(){
 		return;
 
 	m_skeleton = m_file->getSkeletonByIndex(0);
-	//loop thru nodes in skele
-	for (unsigned int i = 0; i < m_skeleton->m_boneCount; ++i) {
-		//generate their global transforms 
-		int parentIndex = m_skeleton->m_parentIndex[i];
-		if (parentIndex == -1) {
-			m_skeleton->m_bones[i] = m_skeleton->m_nodes[i]->m_localTransform;
-		}
-		else {
-			m_skeleton->m_bones[i] = m_skeleton->m_bones[parentIndex] * m_skeleton->m_nodes[i]->m_localTransform;
-		}
-	}
-	for (unsigned int i = 0; i < m_skeleton->m_boneCount; ++i) {
-		m_skeleton->m_bones[i] *= m_skeleton->m_bindPoses[i];
-		m_skeleton->m_nodes[i]->updateGlobalTransform();
-	}
+	m_skeleton->updateBones();
 }
 
 void FBXModel::ReloadShader(){

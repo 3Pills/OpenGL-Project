@@ -35,7 +35,8 @@ void main()
 	fColor = vec4(1);
 
 	vec4 finalPos = transform * Position;
-	vec4 finalNormal = Normal;
+	vec4 finalNormal = transform * Normal;
+	vec4 finalTangent = transform * Tangent;
 
 	if (hasBones) {
 		ivec4 indices = ivec4(Indices);
@@ -49,14 +50,13 @@ void main()
 		finalNormal += (bones[indices.y] * Normal) * Weights.y;
 		finalNormal += (bones[indices.z] * Normal) * Weights.z;
 		finalNormal.w = 0;
-		fNormal = finalNormal;
+		finalNormal = transform * finalNormal;
 	
-		vec4 finalTangent;
 		finalTangent =  (bones[indices.x] * Tangent) * Weights.x;
 		finalTangent += (bones[indices.y] * Tangent) * Weights.y;
 		finalTangent += (bones[indices.z] * Tangent) * Weights.z;
 		finalTangent.w = 0;
-		fTangent = finalTangent.xyz;
+		fTangent = (transform * finalTangent).xyz;
 		fBiTangent = cross(fNormal.xyz, fTangent);
 	}
 	

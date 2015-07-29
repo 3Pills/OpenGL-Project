@@ -62,7 +62,7 @@ void GameTreeSearch::gameUpdate(){
 
 				double x = 0, y = 0;
 				glfwGetCursorPos(m_window, &x, &y);
-				vec3 m_pickPosition = m_oCamera.pickAgainstPlane(x, y, vec4(0, 1, 0, 0));
+				vec3 m_pickPosition = m_oCamera.pickAgainstPlane((float)x, (float)y, vec4(0, 1, 0, 0));
 
 				int column = (int)((m_pickPosition.z + ConnectFour::COLUMNS) / 2);
 

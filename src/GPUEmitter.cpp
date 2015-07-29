@@ -106,7 +106,7 @@ void GPUEmitter::Render(float a_currTime, FlyCamera a_camera, bool a_deferred) {
 	glUniform1f(loc, a_currTime);
 
 	loc = glGetUniformLocation(m_updateShader, "deltaTime");
-	glUniform1f(loc, (a_currTime - m_lastDrawTime > 0.1) ? 0.1 : a_currTime - m_lastDrawTime);
+	glUniform1f(loc, (a_currTime - m_lastDrawTime > 0.1f) ? 0.1f : a_currTime - m_lastDrawTime);
 
 	loc = glGetUniformLocation(m_updateShader, "emitPos");
 	glUniform3fv(loc, 1, &m_pos[0]);
@@ -211,10 +211,13 @@ void GPUEmitter::Reload() {
 	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gbuffer_textured_fragment.glsl", &m_deferredRender);
 }
 
-void GPUEmitter::DrawDebugGizmos(){
-	Gizmos::addTransform(glm::translate(mat4(1), vec3(m_pos)), 1);
+void GPUEmitter::RenderGizmos(){
+	
 	switch (m_emitType) {
 	case(EMIT_POINT) : {
+		Gizmos::addLine(m_pos, m_pos + vec3(1,0,0), m_startColor, m_endColor);
+		Gizmos::addLine(m_pos, m_pos + vec3(0,1,0), m_startColor, m_endColor);
+		Gizmos::addLine(m_pos, m_pos + vec3(0,0,1), m_startColor, m_endColor);
 		break;
 	}
 	case(EMIT_LINE) : {

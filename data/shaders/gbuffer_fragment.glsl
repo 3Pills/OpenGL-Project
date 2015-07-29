@@ -13,7 +13,7 @@ uniform sampler2D perlinTexture;
 out vec4 fragColor;
 
 void main() {
-	gPassAlbedo = vec4(texture(perlinTexture, fTexCoord));
+	gPassAlbedo = vec4(1);
 	gPassPosition = vec4(fPosition.xyz, pow(gl_FragCoord.z, 25));
 	gPassNormal = vec4(fNormal.xyz, 1.0f);
 	gPassSpecular = vec4(vec3(0),2.0f);

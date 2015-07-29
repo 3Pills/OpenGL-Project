@@ -3,7 +3,7 @@
 #include <string>
 #include "stb_image.h"
 
-VirtualWorld::VirtualWorld(): m_oCamera(50), m_pScale(0.f), m_pOct(6), m_pAmp(1.f), m_pPers(0.3f), m_ambCol(vec3(0.4)){
+VirtualWorld::VirtualWorld(): m_oCamera(50), m_pScale(50.f), m_pOct(6), m_pAmp(0.9f), m_pPers(0.2f), m_ambCol(vec3(0.4f)){
 	Application::Application();
 }
 VirtualWorld::~VirtualWorld(){}
@@ -55,11 +55,19 @@ bool VirtualWorld::startup(){
 	TwBar* m_generalBar = TwNewBar("Debugging");
 	TwAddVarRW(m_generalBar, "Ignore Depth", TW_TYPE_BOOL8, &m_debug[0], "group=Gizmos");
 	TwAddVarRW(m_generalBar, "Render Grid", TW_TYPE_BOOL8, &m_debug[1], "group=Gizmos");
+	TwAddVarRW(m_generalBar, "Render PhysX", TW_TYPE_BOOL8, &m_debug[2], "group=Gizmos");
+	TwAddVarRW(m_generalBar, "Render Particles", TW_TYPE_BOOL8, &m_debug[3], "group=Gizmos");
+	TwAddVarRW(m_generalBar, "Render Lights", TW_TYPE_BOOL8, &m_debug[4], "group=Gizmos");
 
 	TwBar* m_modelsBar = TwNewBar("Models");
-	AddFBXModel("./data/models/characters/Pyro/pyro.fbx", 0.3f, 2.0f);
+	AddFBXModel("./data/models/characters/Pyro/pyro.fbx", vec3(0), 0.3f, 2.0f);
+
+	//modTransform for bombs.
+	mat4 bombTransform = glm::translate(vec3(0.1f, 0.4f, 0)) * glm::scale(vec3(0.1f)) * glm::rotate(glm::radians(-90.0f), vec3(1, 0, 0));
+	//AddFBXModel("./data/models/items/bomb.fbx", vec3(5), 0.3f, 2.0f, );
 	//AddPhysModel("./data/models/characters/SoulSpear/soulspear.fbx", vec3(0, 10, 0), &PxBoxGeometry(1.f, 4.15f, 0.5f), m_physScene.m_physics->createMaterial(1, 1, .2), 10);
-	AddPhysModel("./data/models/items/bomb.fbx", vec3(0, 10, 0), &PxSphereGeometry(5.f), m_physScene.m_physics->createMaterial(1, 1, .2), 10);
+	AddPhysModel("./data/models/items/bomb.fbx", vec3(0.0f, 10.0f, 0.0f), &PxSphereGeometry(1.65f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), 10.0f, 0.3f, 2.0f, bombTransform);
+	AddPhysModel("./data/models/items/bomb.fbx", vec3(0.1f, 16.0f, 0.0f), &PxSphereGeometry(1.65f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), 10.0f, 0.3f, 2.0f, bombTransform);
 
 	//Create Particle GUI bar and add particle emitters.
 	TwBar* m_particlesBar = TwNewBar("Particles");
@@ -104,8 +112,7 @@ bool VirtualWorld::startup(){
 	AddDirectionalLight(vec3(0, -1, 0), vec3(1)); 
 	
 	//Initialise Procedural Landscape
-	glm::ivec2 dims = glm::ivec2(256, 256);
-	BuildProceduralGrid(vec2(800, 800), dims);
+	BuildProceduralGrid(vec2(800, 800), glm::ivec2(256, 256));
 	BuildPerlinTexture(glm::ivec2(256, 256), m_pOct, m_pAmp, m_pPers);
 
 	//Add procedural generation variables to debugging GUI window. 
@@ -235,6 +242,12 @@ void VirtualWorld::draw(){
 	loc = glGetUniformLocation(m_proceduralProgram, "deferred");
 	glUniform1i(loc, true);
 
+	loc = glGetUniformLocation(m_proceduralProgram, "worldSize");
+	glUniform2fv(loc, 1, (float*)&m_perlinWorldSize);
+
+	loc = glGetUniformLocation(m_proceduralProgram, "textureSize");
+	glUniform2fv(loc, 1, (float*)&m_perlinTextureSize);
+
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_perlinTexture);
 
@@ -253,7 +266,8 @@ void VirtualWorld::draw(){
 	
 	for (FBXModel* model : m_FBXModels){
 		model->RenderDeferred(m_oCamera);
-		model->RenderGizmos();
+		if (m_debug[2])
+			model->RenderGizmos();
 	}
 
 	//Light Rendering
@@ -278,8 +292,11 @@ void VirtualWorld::draw(){
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUseProgram(m_gBufferProgram);
-	for (int i = 0; i < m_particleEmitters.size(); i++) {
+	for (unsigned int i = 0; i < m_particleEmitters.size(); i++) {
 		m_particleEmitters[i]->Render(m_fCurrTime, m_oCamera, true);
+		if (m_debug[3]) {
+			m_particleEmitters[i]->RenderGizmos();
+		}
 	}
 
 	glDepthMask(GL_TRUE);
@@ -293,7 +310,7 @@ void VirtualWorld::draw(){
 
 	//Composite Rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClearColor(0.3, 0.3, 0.3, 1);
+	glClearColor(0.3f, 0.3f, 0.3f, 1);
 
 	glClear(GL_COLOR_BUFFER_BIT);
 
@@ -389,6 +406,7 @@ void VirtualWorld::RenderPointLights() {
 
 
 	for (PointLight light : m_pointLights) {
+		if (m_debug[4])
 		Gizmos::addAABB(light.m_pos, vec3(0.5), vec4(light.m_color, 1));
 
 		vec4 viewspaceLightPos = m_oCamera.getView() * vec4(light.m_pos, 1);
@@ -439,8 +457,8 @@ void VirtualWorld::AddPointLight(vec3 a_pos, vec3 a_color, float a_radius) {
 }
 
 //Convenience function that add an FBXModel to the vector array, while also adding it to the Model GUI window.
-void VirtualWorld::AddFBXModel(const char* a_filename, float a_roughness, float a_fresnelScale) {
-	m_FBXModels.push_back(new FBXModel(a_filename, vec3(0), a_roughness, a_fresnelScale));
+void VirtualWorld::AddFBXModel(const char* a_filename, vec3 a_pos, float a_roughness, float a_fresnelScale, mat4 a_modTransform, vec3 a_scale, quat a_rot) {
+	m_FBXModels.push_back(new FBXModel(a_filename, a_pos, a_roughness, a_fresnelScale, a_modTransform, a_scale, a_rot));
 
 	TwBar* m_modelBar = TwGetBarByName("Models");
 
@@ -460,8 +478,9 @@ void VirtualWorld::AddFBXModel(const char* a_filename, float a_roughness, float 
 	TwAddVarRW(m_modelBar, std::string(prefix + "Fresnel_Scale").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_fresnelScale, (std::string("min=0 step=0.05 max=100.0 ") + group).c_str());
 }
 
-void VirtualWorld::AddPhysModel(const char* a_filename, vec3 a_pos, PxGeometry* a_geometry, PxMaterial* a_physicsMaterial, float a_density, float a_roughness, float a_fresnelScale) {
-	m_FBXModels.push_back(new PhysModel(a_filename, a_pos, a_geometry, a_physicsMaterial, &m_physScene, a_density));
+void VirtualWorld::AddPhysModel(const char* a_filename, vec3 a_pos, PxGeometry* a_geometry, PxMaterial* a_physicsMaterial, 
+	float a_density, float a_roughness, float a_fresnelScale, mat4 a_modTransform, vec3 a_scale, quat a_rot) {
+	m_FBXModels.push_back(new PhysModel(a_filename, a_pos, a_geometry, a_physicsMaterial, &m_physScene, a_density, a_roughness, a_fresnelScale, a_modTransform, a_scale, a_rot));
 
 	TwBar* m_modelBar = TwGetBarByName("Models");
 }
@@ -688,6 +707,9 @@ void VirtualWorld::BuildFrameBuffers() {
 }
 
 void VirtualWorld::BuildProceduralGrid(vec2 a_realDims, glm::ivec2 a_dims){
+	m_perlinWorldSize = a_realDims;
+	m_perlinTextureSize = a_dims;
+
 	int vertexCount = (a_dims.x + 1) * (a_dims.y + 1);
 
 	VertexTexCoord* vertexData = new VertexTexCoord[vertexCount];
@@ -756,7 +778,7 @@ void VirtualWorld::BuildPerlinTexture(glm::ivec2 a_dims, const int a_octaves, co
 			m_perlinData[y*a_dims.x + x] = 0;
 
 			for (int o = 0; o < a_octaves; o++) {
-				float perlinSample = glm::perlin(vec2((float)x, (float)y) * scale * freq) * 0.5 + 0.5;
+				float perlinSample = glm::perlin(vec2((float)x, (float)y) * scale * freq) * 0.5f + 0.5f;
 
 				perlinSample *= amplitude;
 				m_perlinData[y*a_dims.x + x] += perlinSample;

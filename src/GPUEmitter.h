@@ -44,7 +44,7 @@ public:
 		EmitType a_emitType = EmitType(0), MoveType a_moveType = MoveType(0), char* a_szFilename = "./data/textures/white.png");
 	
 	void Render(float a_dt, FlyCamera a_camera, bool a_deferred = false);
-	void DrawDebugGizmos();
+	void RenderGizmos();
 
 	void Reload();
 
