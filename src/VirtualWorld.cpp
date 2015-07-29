@@ -53,11 +53,12 @@ bool VirtualWorld::startup(){
 
 	//AntTweakBar GUI Settings Initialisation
 	TwBar* m_generalBar = TwNewBar("Debugging");
-	TwAddVarRW(m_generalBar, "Ignore Depth", TW_TYPE_BOOL8, &m_debug[0], "group=Gizmos");
-	TwAddVarRW(m_generalBar, "Render Grid", TW_TYPE_BOOL8, &m_debug[1], "group=Gizmos");
-	TwAddVarRW(m_generalBar, "Render PhysX", TW_TYPE_BOOL8, &m_debug[2], "group=Gizmos");
-	TwAddVarRW(m_generalBar, "Render Particles", TW_TYPE_BOOL8, &m_debug[3], "group=Gizmos");
-	TwAddVarRW(m_generalBar, "Render Lights", TW_TYPE_BOOL8, &m_debug[4], "group=Gizmos");
+	TwAddVarRW(m_generalBar, "No Z-Buffer", TW_TYPE_BOOL8, &m_debug[0], "group=Gizmos");
+	TwAddVarRW(m_generalBar, "Draw Grid", TW_TYPE_BOOL8, &m_debug[1], "group=Gizmos");
+	TwAddVarRW(m_generalBar, "Draw PhysX", TW_TYPE_BOOL8, &m_debug[2], "group=Gizmos");
+	TwAddVarRW(m_generalBar, "Draw Particles", TW_TYPE_BOOL8, &m_debug[3], "group=Gizmos");
+	TwAddVarRW(m_generalBar, "Draw Point Lights", TW_TYPE_BOOL8, &m_debug[4], "group=Gizmos");
+	TwAddVarRW(m_generalBar, "Draw Directional Lights", TW_TYPE_BOOL8, &m_debug[5], "group=Gizmos");
 
 	TwBar* m_modelsBar = TwNewBar("Models");
 	AddFBXModel("./data/models/characters/Pyro/pyro.fbx", vec3(0), 0.3f, 2.0f);
@@ -372,6 +373,9 @@ void VirtualWorld::RenderDirectionalLights() {
 
 	for (DirectionalLight light : m_dirLights) {
 		vec4 viewspaceLightDir = m_oCamera.getView() * vec4(glm::normalize(light.m_dir), 0);
+		if (m_debug[5]) {
+			Gizmos::addSphere(-light.m_dir * 15000, 350, 8, 8, vec4(light.m_color, 0.5));
+		}
 
 		glUniform3fv(lightDir_uniform, 1, (float*)&viewspaceLightDir);
 		glUniform3fv(lightCol_uniform, 1, (float*)&light.m_color);
@@ -406,10 +410,10 @@ void VirtualWorld::RenderPointLights() {
 
 
 	for (PointLight light : m_pointLights) {
-		if (m_debug[4])
-		Gizmos::addAABB(light.m_pos, vec3(0.5), vec4(light.m_color, 1));
-
 		vec4 viewspaceLightPos = m_oCamera.getView() * vec4(light.m_pos, 1);
+		if (m_debug[4]) {
+			Gizmos::addAABB(light.m_pos, vec3(0.5), vec4(light.m_color, 1));
+		}
 
 		glUniform3fv(lightPos_uniform, 1, (float*)&light.m_pos);
 		glUniform3fv(lightViewPos_uniform, 1, (float*)&viewspaceLightPos);
