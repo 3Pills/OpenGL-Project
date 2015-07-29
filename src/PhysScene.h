@@ -19,6 +19,7 @@ class PhysScene {
 public:
 	PxPhysics* m_physics;
 	PxScene* m_physicsScene;
+	PxCooking* m_cooking;
 
 	PhysScene();
 	~PhysScene();

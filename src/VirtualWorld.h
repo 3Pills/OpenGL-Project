@@ -81,18 +81,9 @@ public:
 	void AddDirectionalLight(vec3 a_dir = vec3(0, -1, 0), vec3 a_color = vec3(1));
 	void AddPointLight(vec3 a_pos = vec3(0), vec3 a_color = vec3(1), float a_radius = 25.0f);
 
-	void AddFBXModel( const char* a_filename, vec3 a_pos = vec3(0), float a_roughness = 0.3f, float a_fresnelScale = 2.0f, 
-					  mat4 a_modTransform = mat4(1), vec3 m_scale = vec3(1), quat m_rot = quat::tquat());
-
-	void AddPhysModel(const char* a_filename, vec3 a_pos, PxGeometry* a_geometry, PxMaterial* a_physicsMaterial, 
-					  float a_density = 10.0f, float a_roughness = 0.3f, float a_fresnelScale = 2.0f, 
-					  mat4 a_modTransform = mat4(1), vec3 m_scale = vec3(1), quat m_rot = quat::tquat());
-
-	void AddParticleEmitter(vec3 a_pos = vec3(0), vec3 a_extents = vec3(1), unsigned int a_maxParticles = 100,
-							float a_lifespanMin = 1.0f, float a_lifespanMax = 2.0f, float a_velocityMin = 1.0f, 
-							float a_velocityMax = 2.0f, float a_fadeIn = 0.0f, float a_fadeOut = 0.0f,
-							float a_startSize = 1.0f, float a_endSize = 0.5f, vec4 a_startColor = vec4(1), vec4 a_endColor = vec4(1),
-							EmitType a_emitType = EmitType(0), MoveType a_moveType = MoveType(0), char* a_szFilename = "./data/textures/white.png");
+	void AddFBXModel( FBXModel* a_model );
+	void AddPhysModel(PhysModel* a_physModel);
+	void AddParticleEmitter(GPUEmitter* a_particle);
 };
 
 #endif//VIRTUAL_WORLD_H_

@@ -8,8 +8,7 @@ class GPUParticles : public Application
 {
 	FlyCamera m_oCamera;
 
-	GPUEmitter m_emitter;
-	GPUEmitter m_emitterTwo;
+	GPUEmitter* m_emitter[2];
 
 	unsigned int m_programID;
 public:

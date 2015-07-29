@@ -35,13 +35,13 @@ struct GPUParticle {
 
 class GPUEmitter {
 public:
-	GPUEmitter();
+	GPUEmitter(vec3 a_pos = vec3(0), vec3 a_extents = vec3(1), unsigned int a_maxParticles = 100,
+		float a_lifespanMin = 1.0f, float a_lifespanMax = 2.0f, float a_velocityMin = 1.0f, float a_velocityMax = 2.0f, float a_fadeIn = 0.0f, float a_fadeOut = 0.0f,
+		float a_startSize = 1.0f, float a_endSize = 0.5f, vec4 a_startColor = vec4(1), vec4 a_endColor = vec4(1),
+		EmitType a_emitType = EmitType(0), MoveType a_moveType = MoveType(0), char* a_szFilename = "./data/textures/white.png");
 	~GPUEmitter();
 
-	void Init(vec3 a_pos = vec3(0), vec3 a_extents = vec3(1), unsigned int a_maxParticles = 100,
-		float a_lifespanMin = 1.0f, float a_lifespanMax = 2.0f, float a_velocityMin = 1.0f, float a_velocityMax = 2.0f, float a_fadeIn = 0.0f, float a_fadeOut = 0.0f,
-		float a_startSize = 1.0f, float a_endSize = 0.5f, vec4 a_startColor = vec4(1), vec4 a_endColor = vec4(1), 
-		EmitType a_emitType = EmitType(0), MoveType a_moveType = MoveType(0), char* a_szFilename = "./data/textures/white.png");
+	void Init();
 	
 	void Render(float a_dt, FlyCamera a_camera, bool a_deferred = false);
 	void RenderGizmos();

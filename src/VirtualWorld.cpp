@@ -61,19 +61,19 @@ bool VirtualWorld::startup(){
 	TwAddVarRW(m_generalBar, "Draw Directional Lights", TW_TYPE_BOOL8, &m_debug[5], "group=Gizmos");
 
 	TwBar* m_modelsBar = TwNewBar("Models");
-	AddFBXModel("./data/models/characters/Pyro/pyro.fbx", vec3(0), 0.3f, 2.0f);
+	AddFBXModel(new FBXModel("./data/models/characters/Pyro/pyro.fbx", vec3(0), 0.3f, 2.0f));
 
 	//modTransform for bombs.
 	mat4 bombTransform = glm::translate(vec3(0.1f, 0.4f, 0)) * glm::scale(vec3(0.1f)) * glm::rotate(glm::radians(-90.0f), vec3(1, 0, 0));
 	//AddFBXModel("./data/models/items/bomb.fbx", vec3(5), 0.3f, 2.0f, );
-	//AddPhysModel("./data/models/characters/SoulSpear/soulspear.fbx", vec3(0, 10, 0), &PxBoxGeometry(1.f, 4.15f, 0.5f), m_physScene.m_physics->createMaterial(1, 1, .2), 10);
-	AddPhysModel("./data/models/items/bomb.fbx", vec3(0.0f, 10.0f, 0.0f), &PxSphereGeometry(1.65f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), 10.0f, 0.3f, 2.0f, bombTransform);
-	AddPhysModel("./data/models/items/bomb.fbx", vec3(0.1f, 16.0f, 0.0f), &PxSphereGeometry(1.65f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), 10.0f, 0.3f, 2.0f, bombTransform);
+	AddPhysModel(new PhysModel("./data/models/characters/SoulSpear/soulspear.fbx", vec3(0, 10, 0), nullptr, m_physScene.m_physics->createMaterial(1, 1, .2f), &m_physScene, 400.0f, 0.3f, 2.0f, 40.0f));
+	AddPhysModel(new PhysModel("./data/models/items/bomb.fbx", vec3(0.0f, 10.0f, 0.0f), nullptr, m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), &m_physScene, 100.0f, 0.3f, 2.0f, 3.2f, bombTransform));
+	AddPhysModel(new PhysModel("./data/models/items/bomb.fbx", vec3(0.1f, 16.0f, 0.0f), nullptr, m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), &m_physScene, 100.0f, 0.3f, 2.0f, 3.2f, bombTransform));
 
 	//Create Particle GUI bar and add particle emitters.
 	TwBar* m_particlesBar = TwNewBar("Particles");
-	AddParticleEmitter(vec3(0), vec3(1), 50, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_LINEAR, "./data/textures/particles/glow.png");
-	AddParticleEmitter(vec3(0, 10, 0), vec3(30), 20, 3.0f, 5.5f, 1.0f, 2.0f, 1.0f, 0.75f, 1.0f, 1.0f, vec4(1, 1, 0.5, 1), vec4(0.65, 0.65, 0, 1), EMIT_RECTANGLE, PMOVE_WAVE, "./data/textures/particles/glow.png");
+	AddParticleEmitter(new GPUEmitter(vec3(0), vec3(1), 50, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_LINEAR, "./data/textures/particles/glow.png"));
+	AddParticleEmitter(new GPUEmitter(vec3(0, 10, 0), vec3(30), 20, 3.0f, 5.5f, 1.0f, 2.0f, 1.0f, 0.75f, 1.0f, 1.0f, vec4(1, 1, 0.5, 1), vec4(0.65, 0.65, 0, 1), EMIT_RECTANGLE, PMOVE_WAVE, "./data/textures/particles/glow.png"));
 
 	TwBar* m_lightingBar = TwNewBar("Lighting"); //Lighting window. Allows modification of lighting data.
 
@@ -461,8 +461,12 @@ void VirtualWorld::AddPointLight(vec3 a_pos, vec3 a_color, float a_radius) {
 }
 
 //Convenience function that add an FBXModel to the vector array, while also adding it to the Model GUI window.
-void VirtualWorld::AddFBXModel(const char* a_filename, vec3 a_pos, float a_roughness, float a_fresnelScale, mat4 a_modTransform, vec3 a_scale, quat a_rot) {
-	m_FBXModels.push_back(new FBXModel(a_filename, a_pos, a_roughness, a_fresnelScale, a_modTransform, a_scale, a_rot));
+void VirtualWorld::AddFBXModel(FBXModel* a_model) {
+	for (auto model : m_FBXModels) {
+		if (model == a_model)
+			return;
+	}
+	m_FBXModels.push_back(a_model);
 
 	TwBar* m_modelBar = TwGetBarByName("Models");
 
@@ -482,17 +486,14 @@ void VirtualWorld::AddFBXModel(const char* a_filename, vec3 a_pos, float a_rough
 	TwAddVarRW(m_modelBar, std::string(prefix + "Fresnel_Scale").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_fresnelScale, (std::string("min=0 step=0.05 max=100.0 ") + group).c_str());
 }
 
-void VirtualWorld::AddPhysModel(const char* a_filename, vec3 a_pos, PxGeometry* a_geometry, PxMaterial* a_physicsMaterial, 
-	float a_density, float a_roughness, float a_fresnelScale, mat4 a_modTransform, vec3 a_scale, quat a_rot) {
-	m_FBXModels.push_back(new PhysModel(a_filename, a_pos, a_geometry, a_physicsMaterial, &m_physScene, a_density, a_roughness, a_fresnelScale, a_modTransform, a_scale, a_rot));
+void VirtualWorld::AddPhysModel(PhysModel* a_physModel) {
+	m_FBXModels.push_back(a_physModel);
 
 	TwBar* m_modelBar = TwGetBarByName("Models");
 }
 
-void VirtualWorld::AddParticleEmitter(vec3 a_pos, vec3 a_extents, unsigned int a_maxParticles, float a_lifespanMin, float a_lifespanMax, float a_velocityMin, float a_velocityMax,
-	float a_fadeIn, float a_fadeOut, float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor, EmitType a_emitType, MoveType a_moveType, char* a_szFilename) {
-	m_particleEmitters.push_back(new GPUEmitter);
-	m_particleEmitters.back()->Init(a_pos, a_extents, a_maxParticles, a_lifespanMin, a_lifespanMax, a_velocityMin, a_velocityMax, a_fadeIn, a_fadeOut, a_startSize, a_endSize, a_startColor, a_endColor, a_emitType, a_moveType, a_szFilename);
+void VirtualWorld::AddParticleEmitter(GPUEmitter* a_particle) {
+	m_particleEmitters.push_back(a_particle);
 
 	TwBar* m_particlesBar = TwGetBarByName("Particles");
 

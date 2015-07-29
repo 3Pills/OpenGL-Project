@@ -4,15 +4,26 @@
 #include <string>
 #include <Gizmos.h>
 
-GPUEmitter::GPUEmitter() :
-	m_particles(nullptr), m_maxParticles(0), m_pos(0), m_lifespanMin(0), m_lifespanMax(0),
-	m_velocityMin(0), m_velocityMax(0), m_startSize(0), m_endSize(0),
-	m_startColor(0), m_endColor(0), m_instantRender(0), m_deferredRender(0), m_updateShader(0),
-	m_lastDrawTime(0), m_activeBuffer(0), m_szFilename(nullptr) {
+GPUEmitter::GPUEmitter(vec3 a_pos, vec3 a_extents, unsigned int a_maxParticles, float a_lifespanMin,
+	float a_lifespanMax, float a_velocityMin, float a_velocityMax, float a_fadeIn, float a_fadeOut,
+	float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor,
+	EmitType a_emitType, MoveType a_moveType, char* a_szFilename) :
+	m_particles(new GPUParticle[a_maxParticles]), m_pos(a_pos), m_maxParticles(a_maxParticles), 
+	m_lifespanMin(a_lifespanMin), m_lifespanMax(a_lifespanMax),
+	m_velocityMin(a_velocityMin), m_velocityMax(a_velocityMax), 
+	m_fadeIn(a_fadeIn), m_fadeOut(a_fadeOut),
+	m_startSize(a_startSize), m_endSize(a_endSize),
+	m_startColor(a_startColor), m_endColor(a_endColor), 
+	m_instantRender(0), m_deferredRender(0), m_updateShader(0),
+	m_lastDrawTime(0), m_activeBuffer(0), m_szFilename(a_szFilename) {
 	m_VAO[0] = 0;
 	m_VAO[1] = 0;
 	m_VBO[0] = 0;
 	m_VBO[1] = 0;
+
+	CreateTexture();
+	CreateBuffers();
+	Reload();
 }
 
 GPUEmitter::~GPUEmitter(){
@@ -24,37 +35,6 @@ GPUEmitter::~GPUEmitter(){
 	glDeleteProgram(m_instantRender);
 	glDeleteProgram(m_deferredRender);
 	glDeleteProgram(m_updateShader);
-}
-
-void GPUEmitter::Init(vec3 a_pos, vec3 a_extents, unsigned int a_maxParticles, float a_lifespanMin,
-	float a_lifespanMax, float a_velocityMin, float a_velocityMax, float a_fadeIn, float a_fadeOut,
-	float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor, 
-	EmitType a_emitType, MoveType a_moveType, char* a_szFilename) {
-	m_maxParticles = a_maxParticles;
-	m_pos = a_pos;
-	m_extents = a_extents;
-	m_lifespanMin = a_lifespanMin;
-	m_lifespanMax = a_lifespanMax;
-	m_velocityMin = a_velocityMin;
-	m_velocityMax = a_velocityMax;
-	m_fadeIn = a_fadeIn;
-	m_fadeOut = a_fadeOut;
-	m_startSize = a_startSize;
-	m_endSize = a_endSize;
-	m_startColor = a_startColor;
-	m_endColor = a_endColor;
-	m_emitType = a_emitType;
-	m_moveType = a_moveType;
-	m_szFilename = a_szFilename;
-
-	m_activeBuffer = 0;
-
-	m_particles = new GPUParticle[m_maxParticles];
-
-	CreateBuffers();
-	CreateTexture();
-
-	Reload();
 }
 
 void GPUEmitter::CreateBuffers() {

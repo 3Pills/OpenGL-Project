@@ -35,6 +35,15 @@ PhysScene::PhysScene() {
 
 	m_physicsScene = m_physics->createScene(sceneDesc);
 
+	PxTolerancesScale toleranceScale;
+	toleranceScale.mass = 1000;
+	toleranceScale.speed = sceneDesc.gravity.y;
+	bool value = toleranceScale.isValid(); // make sure this value is always true
+
+	if (value) {
+		m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_physicsFoundation, PxCookingParams(toleranceScale));
+	}
+
 	//Create a plane below everything to catch stray physics objects.
 	m_planePose = PxTransform(PxVec3(0.f, 0.f, 0.f), PxQuat(PxHalfPi * 1.0f, PxVec3(0.0f, 0.0f, 1.0f)));
 	m_plane = PxCreateStatic(*m_physics, m_planePose, PxPlaneGeometry(), *m_physics->createMaterial(1.f, 1.f, 1.f));
