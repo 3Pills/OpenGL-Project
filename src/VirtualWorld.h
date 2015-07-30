@@ -29,7 +29,6 @@ class VirtualWorld : public Application
 	FlyCamera m_oCamera;
 	std::vector<GPUEmitter*> m_particleEmitters;
 	std::vector<FBXModel*> m_FBXModels;
-	std::vector<PhysModel*> m_PhysModels;
 
 	OpenGLData m_screenspaceQuad;
 	OpenGLData m_lightCube;
@@ -81,8 +80,7 @@ public:
 	void AddDirectionalLight(vec3 a_dir = vec3(0, -1, 0), vec3 a_color = vec3(1));
 	void AddPointLight(vec3 a_pos = vec3(0), vec3 a_color = vec3(1), float a_radius = 25.0f);
 
-	void AddFBXModel( FBXModel* a_model );
-	void AddPhysModel(PhysModel* a_physModel);
+	void AddFBXModel(FBXModel* a_model);
 	void AddParticleEmitter(GPUEmitter* a_particle);
 };
 

@@ -8,12 +8,13 @@ GPUEmitter::GPUEmitter(vec3 a_pos, vec3 a_extents, unsigned int a_maxParticles, 
 	float a_lifespanMax, float a_velocityMin, float a_velocityMax, float a_fadeIn, float a_fadeOut,
 	float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor,
 	EmitType a_emitType, MoveType a_moveType, char* a_szFilename) :
-	m_particles(new GPUParticle[a_maxParticles]), m_pos(a_pos), m_maxParticles(a_maxParticles), 
+	m_particles(new GPUParticle[a_maxParticles]), m_pos(a_pos), m_extents(a_extents), m_maxParticles(a_maxParticles), 
 	m_lifespanMin(a_lifespanMin), m_lifespanMax(a_lifespanMax),
 	m_velocityMin(a_velocityMin), m_velocityMax(a_velocityMax), 
 	m_fadeIn(a_fadeIn), m_fadeOut(a_fadeOut),
 	m_startSize(a_startSize), m_endSize(a_endSize),
 	m_startColor(a_startColor), m_endColor(a_endColor), 
+	m_emitType(a_emitType), m_moveType(a_moveType),
 	m_instantRender(0), m_deferredRender(0), m_updateShader(0),
 	m_lastDrawTime(0), m_activeBuffer(0), m_szFilename(a_szFilename) {
 	m_VAO[0] = 0;

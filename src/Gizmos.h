@@ -72,7 +72,16 @@ public:
 	// Adds a Sphere at a given position, with a given number of rows, and columns, radius and a max and min long and latitude
 	static void		addSphere(const glm::vec3& a_center, float a_radius, int a_rows, int a_columns, const glm::vec4& a_fillColour, 
 							  const glm::mat4* a_transform = nullptr, float a_longMin = 0.f, float a_longMax = 360, 
-							  float a_latMin = -90, float a_latMax = 90 );
+							  float a_latMin = -90, float a_latMax = 90);
+
+	// Adds a Sphere at a given position, with a given number of rows, and columns, radius and a max and min long and latitude
+	static void		addSphereFilled(const glm::vec3& a_center, float a_radius, int a_rows, int a_columns, const glm::vec4& a_fillColour,
+									const glm::mat4* a_transform = nullptr, float a_longMin = 0.f, float a_longMax = 360,
+									float a_latMin = -90, float a_latMax = 90);
+
+	// Adds a capsuler aligned to the Y-axis with optional transform for rotation.
+	static void     addCapsule(const glm::vec3& a_center, const float a_length, const float a_radius,
+							   const int a_rows, const int a_columns, const glm::vec4& a_color, const glm::mat4* a_transform = 0);
 
 	// Adds a single Hermite spline curve
 	static void		addHermiteSpline(const glm::vec3& a_start, const glm::vec3& a_end,

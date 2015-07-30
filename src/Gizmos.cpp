@@ -582,19 +582,114 @@ void Gizmos::addSphere(const glm::vec3& a_center, float a_radius, int a_rows, in
 			iNextFace = iNextFace - (a_columns);
 		}
 
-		addLine(a_center + v4Array[face], a_center + v4Array[face+a_columns], glm::vec4(1.f,1.f,1.f,1.f), glm::vec4(1.f,1.f,1.f,1.f));
+		addLine(a_center + v4Array[face], a_center + v4Array[face + a_columns], a_fillColour, a_fillColour);
 		
 		if( face % a_columns == 0 && longitudinalRange < (glm::pi<float>() * 2))
 		{
 				continue;
 		}
-		addLine(a_center + v4Array[iNextFace+a_columns], a_center + v4Array[face+a_columns], glm::vec4(1.f,1.f,1.f,1.f), glm::vec4(1.f,1.f,1.f,1.f));
-
-		addTri( a_center + v4Array[iNextFace+a_columns], a_center + v4Array[face], a_center + v4Array[iNextFace], a_fillColour);
-		addTri( a_center + v4Array[iNextFace+a_columns], a_center + v4Array[face+a_columns], a_center + v4Array[face], a_fillColour);		
+		addLine(a_center + v4Array[iNextFace + a_columns], a_center + v4Array[face + a_columns], a_fillColour, a_fillColour);
 	}
 
 	delete[] v4Array;	
+}
+
+void Gizmos::addSphereFilled(const glm::vec3& a_center, float a_radius, int a_rows, int a_columns, const glm::vec4& a_fillColour,
+	const glm::mat4* a_transform /*= nullptr*/, float a_longMin /*= 0.f*/, float a_longMax /*= 360*/,
+	float a_latMin /*= -90*/, float a_latMax /*= 90*/)
+{
+	float inverseRadius = 1 / a_radius;
+	//Invert these first as the multiply is slightly quicker
+	float invColumns = 1.0f / float(a_columns);
+	float invRows = 1.0f / float(a_rows);
+
+	float DEG2RAD = glm::pi<float>() / 180;
+
+	//Lets put everything in radians first
+	float latitiudinalRange = (a_latMax - a_latMin) * DEG2RAD;
+	float longitudinalRange = (a_longMax - a_longMin) * DEG2RAD;
+	// for each row of the mesh
+	glm::vec3* v4Array = new glm::vec3[a_rows*a_columns + a_columns];
+
+	for (int row = 0; row <= a_rows; ++row)
+	{
+		// y ordinates this may be a little confusing but here we are navigating around the xAxis in GL
+		float ratioAroundXAxis = float(row) * invRows;
+		float radiansAboutXAxis = ratioAroundXAxis * latitiudinalRange + (a_latMin * DEG2RAD);
+		float y = a_radius * sin(radiansAboutXAxis);
+		float z = a_radius * cos(radiansAboutXAxis);
+
+		for (int col = 0; col <= a_columns; ++col)
+		{
+			float ratioAroundYAxis = float(col) * invColumns;
+			float theta = ratioAroundYAxis * longitudinalRange + (a_longMin * DEG2RAD);
+			glm::vec3 v4Point(-z * sinf(theta), y, -z * cosf(theta));
+			glm::vec3 v4Normal(inverseRadius * v4Point.x, inverseRadius * v4Point.y, inverseRadius * v4Point.z);
+
+			if (a_transform != nullptr)
+			{
+				v4Point = (*a_transform * glm::vec4(v4Point, 0)).xyz();
+				v4Normal = (*a_transform * glm::vec4(v4Normal, 0)).xyz();
+			}
+
+			int index = row * a_columns + (col % a_columns);
+			v4Array[index] = v4Point;
+		}
+	}
+
+	for (int face = 0; face < (a_rows)*(a_columns); ++face)
+	{
+		int iNextFace = face + 1;
+
+		if (iNextFace % a_columns == 0)
+		{
+			iNextFace = iNextFace - (a_columns);
+		}
+
+		addLine(a_center + v4Array[face], a_center + v4Array[face + a_columns], glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(1.f, 1.f, 1.f, 1.f));
+
+		if (face % a_columns == 0 && longitudinalRange < (glm::pi<float>() * 2))
+		{
+			continue;
+		}
+		addLine(a_center + v4Array[iNextFace + a_columns], a_center + v4Array[face + a_columns], glm::vec4(1.f, 1.f, 1.f, 1.f), glm::vec4(1.f, 1.f, 1.f, 1.f));
+
+		addTri(a_center + v4Array[iNextFace + a_columns], a_center + v4Array[face], a_center + v4Array[iNextFace], a_fillColour);
+		addTri(a_center + v4Array[iNextFace + a_columns], a_center + v4Array[face + a_columns], a_center + v4Array[face], a_fillColour);
+	}
+
+	delete[] v4Array;
+}
+
+void Gizmos::addCapsule(const glm::vec3& a_center, const float a_length, const float a_radius,
+	const int a_rows, const int a_columns, const glm::vec4& a_color, const glm::mat4* a_transform)
+{
+	float halfSphereCenter = (a_length * 0.5f) - a_radius;
+	glm::vec4 right = glm::vec4(halfSphereCenter, 0, 0, 0);
+	glm::vec4 left = glm::vec4(-halfSphereCenter, 0, 0, 0);
+	if (a_transform)
+	{
+		right = (*a_transform) * right;
+		left = (*a_transform) * left;
+	}
+
+	glm::vec3 rightCenter = a_center + right.xyz();
+	glm::vec3 leftCenter = a_center + left.xyz();
+
+	addSphere(rightCenter, a_radius, a_rows, a_columns, a_color, nullptr, 0, 360.f, -90.f, 0.f);
+	addSphere(leftCenter,  a_radius, a_rows, a_columns, a_color, nullptr, 0, 360.f, 0.f, 90.f);
+
+	for (int i = 0; i < a_columns; ++i)
+	{
+		float x = (float)i / (float)a_columns;
+		x *= 2.0f * glm::pi<float>();
+		glm::vec4 pos = glm::vec4(0, cosf(x), sinf(x), 0) * a_radius;
+		if (a_transform) {
+			pos = (*a_transform) * pos;
+		}
+
+		addLine(leftCenter + pos.xyz(), rightCenter + pos.xyz(), a_color);
+	}
 }
 
 void Gizmos::addHermiteSpline(const glm::vec3& a_start, const glm::vec3& a_end,

@@ -61,14 +61,27 @@ bool VirtualWorld::startup(){
 	TwAddVarRW(m_generalBar, "Draw Directional Lights", TW_TYPE_BOOL8, &m_debug[5], "group=Gizmos");
 
 	TwBar* m_modelsBar = TwNewBar("Models");
-	AddFBXModel(new FBXModel("./data/models/characters/Pyro/pyro.fbx", vec3(0), 0.3f, 2.0f));
+	AddFBXModel(new FBXModel("./data/models/characters/Pyro/pyro.fbx", 0.3f, 2.0f));
 
 	//modTransform for bombs.
 	mat4 bombTransform = glm::translate(vec3(0.1f, 0.4f, 0)) * glm::scale(vec3(0.1f)) * glm::rotate(glm::radians(-90.0f), vec3(1, 0, 0));
 	//AddFBXModel("./data/models/items/bomb.fbx", vec3(5), 0.3f, 2.0f, );
-	AddPhysModel(new PhysModel("./data/models/characters/SoulSpear/soulspear.fbx", vec3(0, 10, 0), nullptr, m_physScene.m_physics->createMaterial(1, 1, .2f), &m_physScene, 400.0f, 0.3f, 2.0f, 40.0f));
-	AddPhysModel(new PhysModel("./data/models/items/bomb.fbx", vec3(0.0f, 10.0f, 0.0f), nullptr, m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), &m_physScene, 100.0f, 0.3f, 2.0f, 3.2f, bombTransform));
-	AddPhysModel(new PhysModel("./data/models/items/bomb.fbx", vec3(0.1f, 16.0f, 0.0f), nullptr, m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), &m_physScene, 100.0f, 0.3f, 2.0f, 3.2f, bombTransform));
+	AddFBXModel(new FBXModel("./data/models/characters/SoulSpear/soulspear.fbx", 0.3f, 2.0f));
+	m_physScene.AttachRigidBodyConvex(PxTransform(0, 10, 0), m_physScene.m_physics->createMaterial(1, 1, .2f), m_FBXModels.back(), 100.f, 100.f);
+
+	//AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
+	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 10, 0), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 100.f);
+
+	//AddFBXModel(new FBXModel("./data/models/characters/SoulSpear/soulspear.fbx", 0.3f, 2.0f));
+	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 7, 0), &PxCapsuleGeometry(0.25f, 4.0f), m_physScene.m_physics->createMaterial(1, 1, .2f), m_FBXModels.back(), 400.f);
+
+	//AddPhysModel(new PhysModel("./data/models/items/bomb.fbx", vec3(0.0f, 10.0f, 0.0f), nullptr, m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), &m_physScene, 100.0f, 0.3f, 2.0f, 3.2f, bombTransform));
+	//AddPhysModel(new PhysModel("./data/models/items/bomb.fbx", vec3(0.1f, 16.0f, 0.0f), nullptr, m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), &m_physScene, 100.0f, 0.3f, 2.0f, 3.2f, bombTransform));
+
+	//AddPhysModel(new PhysModel("./data/models/items/bomb.fbx", vec3(0.1f, 23.0f, 0.0f), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), &m_physScene, 100.0f, 0.3f, 2.0f, 3.2f, bombTransform));
+	////AddPhysModel(new PhysModel("./data/models/tank/battle_tank.fbx", vec3(0, 10, 0), &PxBoxGeometry(PxVec3(3)), m_physScene.m_physics->createMaterial(1, 1, .2f), &m_physScene, 400.0f, 0.3f, 2.0f, 100.0f));
+	//AddPhysModel(new PhysModel("./data/models/characters/SoulSpear/soulspear.fbx", vec3(0, 7, 0), &PxCapsuleGeometry(0.25f, 4.0f), m_physScene.m_physics->createMaterial(1, 1, .2f), &m_physScene, 400.0f, 0.3f, 2.0f, 100.0f));
+	//AddPhysModel(new PhysModel("./data/models/characters/SoulSpear/soulspear.fbx", vec3(0, 5, 0), &PxCapsuleGeometry(0.25f, 4.0f), m_physScene.m_physics->createMaterial(1, 1, .2f), &m_physScene, 400.0f, 0.3f, 2.0f, 100.0f));
 
 	//Create Particle GUI bar and add particle emitters.
 	TwBar* m_particlesBar = TwNewBar("Particles");
@@ -166,12 +179,6 @@ bool VirtualWorld::update(){
 	m_oCamera.update(m_fDeltaTime);
 	Gizmos::clear();
 
-	m_physScene.Update(m_fDeltaTime);
-
-	for (FBXModel* model : m_FBXModels) {
-		model->Update(m_fDeltaTime);
-	}
-
 	//Button Input for shader reloading. Uses lastKey variable to only pass the first frame the key is pressed.
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS && m_lastKey[0] != GLFW_PRESS){
 		ReloadShaders();
@@ -197,9 +204,16 @@ bool VirtualWorld::update(){
 		}
 	}
 
+	m_physScene.Update(m_fDeltaTime, m_debug[2]);
+
+	for (FBXModel* model : m_FBXModels) {
+		model->Update(m_fDeltaTime);
+	}
+
+
 	//Parenting of particle position.
-	if (m_pointLights.size() > 0)
-		m_particleEmitters[0]->m_pos = m_pointLights[0].m_pos;
+	//if (m_pointLights.size() > 0)
+	//	m_particleEmitters[0]->m_pos = m_pointLights[0].m_pos;
 
 	return true;
 }
@@ -267,8 +281,6 @@ void VirtualWorld::draw(){
 	
 	for (FBXModel* model : m_FBXModels){
 		model->RenderDeferred(m_oCamera);
-		if (m_debug[2])
-			model->RenderGizmos();
 	}
 
 	//Light Rendering
@@ -484,12 +496,6 @@ void VirtualWorld::AddFBXModel(FBXModel* a_model) {
 	TwAddVarRW(m_modelBar, std::string(prefix + "Rotation").c_str(), TW_TYPE_QUAT4F, &m_FBXModels.back()->m_rot, group.c_str());
 	TwAddVarRW(m_modelBar, std::string(prefix + "Roughness").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_roughness, (std::string("min=0 step=0.05 max=100.0 ") + group).c_str());
 	TwAddVarRW(m_modelBar, std::string(prefix + "Fresnel_Scale").c_str(), TW_TYPE_FLOAT, &m_FBXModels.back()->m_fresnelScale, (std::string("min=0 step=0.05 max=100.0 ") + group).c_str());
-}
-
-void VirtualWorld::AddPhysModel(PhysModel* a_physModel) {
-	m_FBXModels.push_back(a_physModel);
-
-	TwBar* m_modelBar = TwGetBarByName("Models");
 }
 
 void VirtualWorld::AddParticleEmitter(GPUEmitter* a_particle) {

@@ -20,8 +20,6 @@ public:
 	virtual ~PhysModel();
 	virtual void Update(float dt);
 	virtual void RenderGizmos();
-
-	void AttachRigidBodyConvex(float a_density, PhysScene* a_physics, PxMaterial* a_physicsMaterial, vec3 a_pos);
 };
 
 

@@ -2,7 +2,7 @@
 #include "FBXModel.h"
 #include "Utility.h"
 
-FBXModel::FBXModel(const char* a_szModelPath, vec3 a_pos, float a_roughness, float a_fresnelScale, mat4 a_modTransform, vec3 a_scale, quat a_rot) 
+FBXModel::FBXModel(const char* a_szModelPath, float a_roughness, float a_fresnelScale, mat4 a_modTransform, vec3 a_pos, vec3 a_scale, quat a_rot)
 : m_pbr(true), m_roughness(a_roughness), m_fresnelScale(a_fresnelScale), m_pos(a_pos), m_modTransform(a_modTransform), m_scale(a_scale), m_rot(a_rot), m_animationTime(0){
 	m_file = new FBXFile;
 	m_file->load(a_szModelPath);
