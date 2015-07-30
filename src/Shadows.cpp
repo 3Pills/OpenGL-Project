@@ -54,9 +54,7 @@ void Shadows::draw(){
 	glUseProgram(m_shadowProgramID);
 
 	int lightMatrix_uniform = glGetUniformLocation(m_shadowProgramID, "lightMatrix");
-
-	if (lightMatrix_uniform > -1)
-		glUniformMatrix4fv(lightMatrix_uniform, 1, GL_FALSE, &m_lightMatrix[0][0]);
+	glUniformMatrix4fv(lightMatrix_uniform, 1, GL_FALSE, (float*)&m_lightMatrix);
 
 	glBindVertexArray(m_bunny.m_VAO);
 	glDrawElements(GL_TRIANGLES, m_bunny.m_indexCount, GL_UNSIGNED_INT, 0);
@@ -68,7 +66,7 @@ void Shadows::draw(){
 	glUseProgram(m_diffuseShadowProgramID);
 
 	int projView_uniform = glGetUniformLocation(m_diffuseShadowProgramID, "projView");
-	glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, &m_oCamera.getProjectionView()[0][0]);
+	glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
 
 	mat4 offsetScale = mat4(
 		0.5f, 0.0f, 0.0f, 0.0f,
@@ -79,7 +77,7 @@ void Shadows::draw(){
 	mat4 lightMatrix = offsetScale * m_lightMatrix;
 
 	lightMatrix_uniform = glGetUniformLocation(m_diffuseShadowProgramID, "lightMatrix");
-	glUniformMatrix4fv(lightMatrix_uniform, 1, GL_FALSE, &lightMatrix[0][0]);
+	glUniformMatrix4fv(lightMatrix_uniform, 1, GL_FALSE, (float*)&lightMatrix);
 
 	int lightDir_uniform = glGetUniformLocation(m_diffuseShadowProgramID, "lightDir");
 	glUniform3fv(lightDir_uniform, 1, &m_lightDir[0]);

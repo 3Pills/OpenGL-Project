@@ -26,9 +26,10 @@ public:
 
 	void Update(float dt, bool a_renderGizmos);
 
-	void AddRigidBodyStatic(PxTransform a_transform, PxGeometry* a_geometry, PxMaterial* a_physMaterial, void* a_userData = nullptr, float a_density = 100.f);
-	void AddRigidBodyDynamic(PxTransform a_transform, PxGeometry* a_geometry, PxMaterial* a_physMaterial, void* a_userData = nullptr, float a_density = 100.f);
-	void AttachRigidBodyConvex(PxTransform a_transform, PxMaterial* a_physicsMaterial, void* a_userData, float a_density = 100.f, float a_physModelScale = 1.f);
+	void AddRigidBodyStatic(	 PxTransform a_transform, PxGeometry* a_geometry, PxMaterial* a_physMaterial, void* a_userData = nullptr, float a_density = 100.f);
+	void AddRigidBodyDynamic(	 PxTransform a_transform, PxGeometry* a_geometry, PxMaterial* a_physMaterial, void* a_userData = nullptr, float a_density = 100.f);
+	void AttachRigidBodyConvex(	 PxTransform a_transform, PxMaterial* a_physicsMaterial, void* a_userData, float a_density = 100.f, float a_physModelScale = 1.f);
+	void AttachRigidBodyTriangle(PxTransform a_transform, PxMaterial* a_physicsMaterial, void* a_userData, float a_density = 100.f, float a_physModelScale = 1.f);
 };
 
 #endif//_PHYS_SCENE

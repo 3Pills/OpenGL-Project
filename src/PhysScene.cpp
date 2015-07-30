@@ -164,7 +164,7 @@ void PhysScene::AddRigidBodyDynamic(PxTransform a_transform, PxGeometry* a_geome
 }
 
 void PhysScene::AttachRigidBodyConvex(PxTransform a_transform, PxMaterial* a_physMaterial, void* a_userData, float a_density, float a_physModelScale) {
-	if (a_userData == nullptr)
+	if (a_userData == nullptr || m_cooking == nullptr)
 		return;
 
 	PxRigidDynamic* m_phys = PxCreateDynamic(*m_physics, a_transform, PxBoxGeometry(1, 1, 1), *a_physMaterial, a_density);
@@ -186,8 +186,8 @@ void PhysScene::AttachRigidBodyConvex(PxTransform a_transform, PxMaterial* a_phy
 	//copy our verts from all the sub meshes and tranform them into the same space
 	for (unsigned int i = 0; i < model->m_file->getMeshCount(); ++i){
 		FBXMeshNode* mesh = model->m_file->getMeshByIndex(i);
-		int numberVerts = mesh->m_vertices.size();
-		for (int vertCount = 0; vertCount< numberVerts; vertCount++){
+		int numberV = mesh->m_vertices.size();
+		for (int vertCount = 0; vertCount < numberV; vertCount++){
 			//Scale the global transform by an arbitrary number, based on what the model individually requires.
 			glm::vec4 temp = mesh->m_globalTransform * glm::scale(vec3(a_physModelScale)) * mesh->m_vertices[vertCount].position;
 			verts[vertIDX++] = PxVec3(temp.x, temp.y, temp.z);
@@ -202,10 +202,7 @@ void PhysScene::AttachRigidBodyConvex(PxTransform a_transform, PxMaterial* a_phy
 	convexDesc.vertexLimit = 128;
 
 	PxDefaultMemoryOutputStream* buf = new PxDefaultMemoryOutputStream();
-	bool succeeded = false;
-	if (m_cooking != nullptr) {
-		succeeded = m_cooking->cookConvexMesh(convexDesc, *buf);
-	}
+	assert(m_cooking->cookConvexMesh(convexDesc, *buf));
 
 	PxU8* contents = buf->getData();
 	PxU32 size = buf->getSize();
@@ -223,4 +220,62 @@ void PhysScene::AttachRigidBodyConvex(PxTransform a_transform, PxMaterial* a_phy
 	delete(verts); //delete our temporary vert buffer.
 
 	m_physicsScene->addActor(*m_phys);
+}
+
+void PhysScene::AttachRigidBodyTriangle(PxTransform a_transform, PxMaterial* a_physMaterial, void* a_userData, float a_density, float a_physModelScale) {
+	if (a_userData == nullptr || m_cooking == nullptr)
+		return;
+
+	PxRigidDynamic* m_phys = PxCreateDynamic(*m_physics, a_transform, PxBoxGeometry(1, 1, 1), *a_physMaterial, a_density);
+
+	m_phys->userData = a_userData;
+	int numberVerts = 0;
+	int numberIndices = 0;
+	FBXModel* model = ((FBXModel*)a_userData);
+
+	//find out how many verts there are in total in model
+	for (unsigned int i = 0; i < model->m_file->getMeshCount(); ++i) {
+		FBXMeshNode* mesh = model->m_file->getMeshByIndex(i);
+		numberVerts += mesh->m_vertices.size();
+		numberIndices += mesh->m_indices.size();
+	}
+
+	//reserve space for vert buffer
+	PxVec3 *verts = new PxVec3[numberVerts];
+	PxVec3 *indices = new PxVec3[numberIndices];
+	int vertIDX = 0;
+
+	//copy our verts from all the sub meshes and tranform them into the same space
+	for (unsigned int i = 0; i < model->m_file->getMeshCount(); ++i){
+		FBXMeshNode* mesh = model->m_file->getMeshByIndex(i);
+		int numberV = mesh->m_vertices.size();
+		int numberI = mesh->m_indices.size();
+		for (int vertCount = 0; vertCount< numberV; vertCount++){
+			glm::vec4 temp = mesh->m_globalTransform * glm::scale(vec3(a_physModelScale)) * mesh->m_vertices[vertCount].position;
+			verts[vertIDX++] = PxVec3(temp.x, temp.y, temp.z);
+		}
+		for (int indexCount = 0; indexCount < numberV; indexCount++){
+			glm::vec4 temp = mesh->m_globalTransform * glm::scale(vec3(a_physModelScale)) * mesh->m_vertices[indexCount].position;
+			verts[vertIDX++] = PxVec3(temp.x, temp.y, temp.z);
+		}
+	}
+
+	PxTriangleMeshDesc meshDesc;
+	meshDesc.points.count = numberVerts;
+	meshDesc.points.stride = sizeof(PxVec3);
+	meshDesc.points.data = verts;
+	int triCount = numberIndices / 3;
+	meshDesc.triangles.count = triCount;
+	meshDesc.triangles.stride = 3 * sizeof(PxU32);
+	meshDesc.triangles.data = indices;
+
+	PxDefaultMemoryOutputStream* buf = new PxDefaultMemoryOutputStream();
+	assert(m_cooking->cookTriangleMesh(meshDesc, *buf));
+
+	PxU8* contents = buf->getData();
+	PxU32 size = buf->getSize();
+	PxDefaultMemoryInputData input(contents, size);
+	PxTriangleMesh* triangleMesh = m_physics->createTriangleMesh(input);
+	PxTransform pose = PxTransform(PxVec3(0.0f, 0, 0.0f));
+	PxShape* convexShape = m_phys->createShape(PxTriangleMeshGeometry(triangleMesh), *a_physMaterial, pose);
 }

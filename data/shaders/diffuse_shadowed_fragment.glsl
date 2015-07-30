@@ -1,4 +1,5 @@
 #version 410
+
 in vec4 fragNormal;
 in vec4 shadowCoord;
 
@@ -10,8 +11,8 @@ uniform sampler2D shadowMap;
 void main() { 
 	float d = max(0, dot(normalize(fragNormal).xyz, lightDir));
 
-	if (texture(shadowMap, shadowCoord.xy).r < shadowCoord.z) {
-		d = 0;
+	if (texture(shadowMap, shadowCoord.xy).r < shadowCoord.z - 0.1f) {
+		d = 1;
 	}
 
 	fragColor = vec4(d,d,d,1);
