@@ -1,7 +1,7 @@
-#include "Shadows.h"
+#include "VirtualWorld.h"
 
 int main() {
-	Shadows App;
+	VirtualWorld App;
 	if (App.startup() == false) return -1;
 
 	while (App.update()){

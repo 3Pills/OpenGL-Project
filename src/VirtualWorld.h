@@ -24,6 +24,98 @@ struct DirectionalLight {
 	DirectionalLight(vec3 a_dir, vec3 a_color) : m_dir(a_dir), m_color(a_color) {}
 };
 
+struct ClothData {
+	PxCloth* m_cloth;
+
+	vec3* m_vertices;
+	vec2* m_texCoords;
+	unsigned int* m_indices;
+
+	unsigned int m_texture;
+	unsigned int m_indexCount, m_vertexCount;
+	unsigned int m_VAO, m_VBO, m_textureVBO, m_IBO;
+
+	ClothData(const unsigned int a_springSize, const unsigned int a_rows, const unsigned int a_columns) {
+		// this position will represent the top middle vertex
+		glm::vec3 clothPosition = glm::vec3(0, 12, 0);
+		// shifting grid position for looks
+		float halfWidth = a_rows * a_springSize * 0.5f;
+		// generate vertices for a grid with texture coordinates
+		m_vertexCount = a_rows * a_columns;
+		m_vertices = new glm::vec3[m_vertexCount];
+		m_texCoords = new glm::vec2[m_vertexCount];
+		for (unsigned int r = 0; r < a_rows; ++r) {
+			for (unsigned int c = 0; c < a_columns; ++c) {
+				m_vertices[r * a_columns + c].x = clothPosition.x + a_springSize * c;
+				m_vertices[r * a_columns + c].y = clothPosition.y;
+				m_vertices[r * a_columns + c].z = clothPosition.z + a_springSize * r - halfWidth;
+				m_texCoords[r * a_columns + c].x = 1.0f - r / (a_rows - 1.0f);
+				m_texCoords[r * a_columns + c].y = 1.0f - c / (a_columns - 1.0f);
+			}
+		}
+
+		m_indexCount = (a_rows - 1) * (a_columns - 1) * 2 * 3;
+		m_indices = new unsigned int[m_indexCount];
+		unsigned int* index = m_indices;
+		for (unsigned int r = 0; r < (a_rows - 1); ++r) {
+			for (unsigned int c = 0; c < (a_columns - 1); ++c) {
+				// indices for the 4 quad corner vertices
+				unsigned int i0 = r * a_columns + c;
+				unsigned int i1 = i0 + 1;
+				unsigned int i2 = i0 + a_columns;
+				unsigned int i3 = i2 + 1;
+				// every second quad changes the triangle order
+				if ((c + r) % 2) {
+					*index++ = i0; *index++ = i2; *index++ = i1;
+					*index++ = i1; *index++ = i2; *index++ = i3;
+				}
+				else {
+					*index++ = i0; *index++ = i2; *index++ = i3;
+					*index++ = i0; *index++ = i3; *index++ = i1;
+				}
+			}
+		}
+
+	}
+	~ClothData() {
+		delete[] m_vertices;
+		delete[] m_indices;
+		delete[] m_texCoords;
+	}
+
+	void GLGenBuffers() {
+		glGenVertexArrays(1, &m_VAO);
+		glGenBuffers(1, &m_VBO);
+		glGenBuffers(1, &m_IBO);
+
+		glBindVertexArray(m_VAO);
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+
+		glBufferData(GL_ARRAY_BUFFER, (sizeof(vec3) + sizeof(vec2)) * m_vertexCount, 0, GL_STATIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * m_vertexCount, m_vertices);
+		glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3)* m_vertexCount, sizeof(vec2)* m_vertexCount, m_texCoords);
+
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)* m_indexCount, m_indices, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		//glEnableVertexAttribArray(2);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(vec3)* m_vertexCount));
+		//glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindVertexArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+
+	void draw() {
+		glBindVertexArray(m_VAO);
+		glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
+	}
+};
+
 class VirtualWorld : public Application
 {
 	FlyCamera m_oCamera;
@@ -55,6 +147,7 @@ class VirtualWorld : public Application
 public:
 	std::vector<PointLight> m_pointLights;
 	std::vector<DirectionalLight> m_dirLights;
+	std::vector<ClothData*> m_cloths;
 
 	VirtualWorld();
 	virtual ~VirtualWorld();
@@ -82,6 +175,8 @@ public:
 
 	void AddFBXModel(FBXModel* a_model);
 	void AddParticleEmitter(GPUEmitter* a_particle);
+
+	void AddCloth(PxCloth* a_cloth);
 };
 
 #endif//VIRTUAL_WORLD_H_

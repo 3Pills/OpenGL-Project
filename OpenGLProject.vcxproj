@@ -118,7 +118,6 @@
     <ClCompile Include="src\Physics.cpp" />
     <ClCompile Include="src\PhysicsObject.cpp" />
     <ClCompile Include="src\PhysX.cpp" />
-    <ClCompile Include="src\PhysModel.cpp" />
     <ClCompile Include="src\PhysScene.cpp" />
     <ClCompile Include="src\PostProcessing.cpp" />
     <ClCompile Include="src\ProceduralGeneration.cpp" />
@@ -160,7 +159,6 @@
     <ClInclude Include="src\PBR.h" />
     <ClInclude Include="src\Physics.h" />
     <ClInclude Include="src\PhysicsObject.h" />
-    <ClInclude Include="src\PhysModel.h" />
     <ClInclude Include="src\PhysX.h" />
     <ClInclude Include="src\PhysScene.h" />
     <ClInclude Include="src\PostProcessing.h" />

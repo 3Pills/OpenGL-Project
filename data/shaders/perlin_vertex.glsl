@@ -38,7 +38,6 @@ vec4 getNormal(vec3 pos) {
 	vec3 tangentZP = vec3(pos.x, pos.y + getHeight(coordZP), pos.z + worldDeltaY);
 	vec3 tangentZN = vec3(pos.x, pos.y + getHeight(coordZN), pos.z - worldDeltaY);
 
-
 	return vec4(normalize(cross(tangentZP - tangentZN, tangentXP - tangentXN)), 0);
 }
 

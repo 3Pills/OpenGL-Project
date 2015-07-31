@@ -24,9 +24,9 @@ bool Shadows::startup(){
 
 	m_lightDir = glm::normalize(glm::vec3(1, 2.5f, 1));
 
-	mat4 lightProj = glm::ortho(-10, 10, -10, 10, -10, 10);
+	mat4 lightProj = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
 	mat4 lightView = glm::lookAt(m_lightDir, vec3(0), vec3(0, 1, 0));
-	m_lightMatrix = lightProj * lightView;
+	m_lightMatrix = lightProj * lightView * mat4(1);
 
 	return true;
 }
@@ -51,13 +51,16 @@ void Shadows::draw(){
 	glViewport(0, 0, 1024, 1024);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
+	glEnable(GL_CULL_FACE);
 	glUseProgram(m_shadowProgramID);
 
 	int lightMatrix_uniform = glGetUniformLocation(m_shadowProgramID, "lightMatrix");
 	glUniformMatrix4fv(lightMatrix_uniform, 1, GL_FALSE, (float*)&m_lightMatrix);
 
+	//glCullFace(GL_FRONT);
 	glBindVertexArray(m_bunny.m_VAO);
 	glDrawElements(GL_TRIANGLES, m_bunny.m_indexCount, GL_UNSIGNED_INT, 0);
+	//glCullFace(GL_BACK);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, m_iWidth, m_iHeight);
@@ -206,6 +209,7 @@ void Shadows::BuildShadowMap(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_fboDepth, 0);
 

@@ -187,9 +187,6 @@
     <ClCompile Include="src\PhysX.cpp">
       <Filter>PhysX</Filter>
     </ClCompile>
-    <ClCompile Include="src\PhysModel.cpp">
-      <Filter>PhysX</Filter>
-    </ClCompile>
     <ClCompile Include="src\PhysScene.cpp">
       <Filter>PhysX</Filter>
     </ClCompile>
@@ -316,9 +313,6 @@
       <Filter>Physics</Filter>
     </ClInclude>
     <ClInclude Include="src\PhysX.h">
-      <Filter>PhysX</Filter>
-    </ClInclude>
-    <ClInclude Include="src\PhysModel.h">
       <Filter>PhysX</Filter>
     </ClInclude>
     <ClInclude Include="src\PhysScene.h">

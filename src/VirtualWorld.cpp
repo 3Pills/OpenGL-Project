@@ -3,7 +3,7 @@
 #include <string>
 #include "stb_image.h"
 
-VirtualWorld::VirtualWorld(): m_oCamera(50), m_pScale(50.f), m_pOct(6), m_pAmp(0.9f), m_pPers(0.2f), m_ambCol(vec3(0.4f)){
+VirtualWorld::VirtualWorld(): m_oCamera(50), m_pScale(50.f), m_pOct(6), m_pAmp(0.9f), m_pPers(0.2f), m_ambCol(vec3(0.2f)){
 	Application::Application();
 }
 VirtualWorld::~VirtualWorld(){}
@@ -61,13 +61,13 @@ bool VirtualWorld::startup(){
 	TwAddVarRW(m_generalBar, "Draw Directional Lights", TW_TYPE_BOOL8, &m_debug[5], "group=Gizmos");
 
 	TwBar* m_modelsBar = TwNewBar("Models");
-	AddFBXModel(new FBXModel("./data/models/characters/Pyro/pyro.fbx", 0.3f, 2.0f));
+	//AddFBXModel(new FBXModel("./data/models/characters/Pyro/pyro.fbx", 0.3f, 2.0f));
 
 	//modTransform for bombs.
 	mat4 bombTransform = glm::translate(vec3(0.1f, 0.4f, 0)) * glm::scale(vec3(0.1f)) * glm::rotate(glm::radians(-90.0f), vec3(1, 0, 0));
 	//AddFBXModel("./data/models/items/bomb.fbx", vec3(5), 0.3f, 2.0f, );
-	AddFBXModel(new FBXModel("./data/models/characters/SoulSpear/soulspear.fbx", 0.3f, 2.0f));
-	m_physScene.AttachRigidBodyConvex(PxTransform(0, 10, 0), m_physScene.m_physics->createMaterial(1, 1, .2f), m_FBXModels.back(), 100.f, 100.f);
+	//AddFBXModel(new FBXModel("./data/models/characters/SoulSpear/soulspear.fbx", 0.3f, 2.0f));
+	//m_physScene.AttachRigidBodyConvex(PxTransform(0, 10, 0), m_physScene.m_physics->createMaterial(1, 1, .2f), m_FBXModels.back(), 100.f, 100.f);
 
 	//AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
 	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 10, 0), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 100.f);
@@ -126,8 +126,12 @@ bool VirtualWorld::startup(){
 	AddDirectionalLight(vec3(0, -1, 0), vec3(1)); 
 	
 	//Initialise Procedural Landscape
-	BuildProceduralGrid(vec2(800, 800), glm::ivec2(256, 256));
-	BuildPerlinTexture(glm::ivec2(256, 256), m_pOct, m_pAmp, m_pPers);
+	vec2 meshDims = glm::vec2(800, 800);
+	glm::ivec2 textDims = glm::ivec2(256,256);
+
+	BuildProceduralGrid(meshDims, textDims);
+	BuildPerlinTexture(textDims, m_pOct, m_pAmp, m_pPers);
+	m_physScene.AddHeightMap(m_perlinData, m_physScene.m_physics->createMaterial(1, 1, 1), textDims, vec3(meshDims.x, m_pScale, meshDims.y));
 
 	//Add procedural generation variables to debugging GUI window. 
 	TwAddVarRW(m_generalBar, "Scale",		TW_TYPE_FLOAT, &m_pScale,	"group=ProceduralGeneration min=0 step=0.05");
@@ -135,6 +139,10 @@ bool VirtualWorld::startup(){
 	TwAddVarRW(m_generalBar, "Amplitude",	TW_TYPE_FLOAT, &m_pAmp,		"group=ProceduralGeneration min=0 step=0.01");
 	TwAddVarRW(m_generalBar, "Persistance", TW_TYPE_FLOAT, &m_pPers,	"group=ProceduralGeneration min=0 step=0.01");
 	//Only the scale variable affects simulation in realtime. All others require recreating the perlinTexture.
+
+	m_cloths.push_back(new ClothData(1, 10, 20));
+	AddCloth(m_physScene.AddCloth(vec3(0, 40, 0), m_cloths.back()->m_vertexCount, m_cloths.back()->m_indexCount, m_cloths.back()->m_vertices, m_cloths.back()->m_indices));
+	m_cloths.back()->GLGenBuffers();
 
 	Gizmos::create();
 	return true;
@@ -149,6 +157,11 @@ bool VirtualWorld::shutdown(){
 	//Delete all models and their texture memory
 	for (FBXModel* model : m_FBXModels) {
 		delete model;
+	}
+
+
+	for (ClothData* cloth : m_cloths) {
+		delete cloth;
 	}
 
 	//Delete Buffers for deferred rendering quad and lightcube.
@@ -278,7 +291,10 @@ void VirtualWorld::draw(){
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
 
 	//Opaque Drawing
-	
+
+	for (ClothData* cloth : m_cloths) {
+		cloth->draw();
+	}
 	for (FBXModel* model : m_FBXModels){
 		model->RenderDeferred(m_oCamera);
 	}
@@ -329,12 +345,9 @@ void VirtualWorld::draw(){
 
 	glUseProgram(m_compositeProgram);
 
-	loc = glGetUniformLocation(m_compositeProgram, "albedoTexture");
-	glUniform1i(loc, 0);
-	loc = glGetUniformLocation(m_compositeProgram, "lightTexture");
-	glUniform1i(loc, 1);
-	loc = glGetUniformLocation(m_compositeProgram, "fxTexture");
-	glUniform1i(loc, 2);
+	glUniform1i(glGetUniformLocation(m_compositeProgram, "albedoTexture"), 0);
+	glUniform1i(glGetUniformLocation(m_compositeProgram, "lightTexture"), 1);
+	glUniform1i(glGetUniformLocation(m_compositeProgram, "fxTexture"), 2);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_albedoTexture);
@@ -342,6 +355,9 @@ void VirtualWorld::draw(){
 	glBindTexture(GL_TEXTURE_2D, m_lightTexture);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_fxTexture);
+
+	loc = glGetUniformLocation(m_compositeProgram, "ambCol");
+	glUniform3fv(loc, 1, (float*)&m_ambCol);
 
 	glDepthFunc(GL_ALWAYS);//Interface data / The screenspace quad should always be drawn.
 
@@ -380,8 +396,6 @@ void VirtualWorld::RenderDirectionalLights() {
 	//Assign uniform locations outside of loop, for efficiency.
 	int lightDir_uniform = glGetUniformLocation(m_dirLightProgram, "lightDir");
 	int lightCol_uniform = glGetUniformLocation(m_dirLightProgram, "lightCol");
-	int ambCol_uniform = glGetUniformLocation(m_dirLightProgram, "ambCol");
-	glUniform3fv(ambCol_uniform, 1, (float*)&m_ambCol);
 
 	for (DirectionalLight light : m_dirLights) {
 		vec4 viewspaceLightDir = m_oCamera.getView() * vec4(glm::normalize(light.m_dir), 0);
@@ -533,6 +547,10 @@ void VirtualWorld::AddParticleEmitter(GPUEmitter* a_particle) {
 	TwAddVarRW(m_particlesBar, std::string(prefix + "End_Size").c_str(), TW_TYPE_FLOAT, &m_particleEmitters.back()->m_endSize, (std::string("step=0.05 min=0 ") + group).c_str());
 	TwAddVarRW(m_particlesBar, std::string(prefix + "Start_Color").c_str(), TW_TYPE_COLOR4F, &m_particleEmitters.back()->m_startColor, group.c_str());
 	TwAddVarRW(m_particlesBar, std::string(prefix + "End_Color").c_str(), TW_TYPE_COLOR4F, &m_particleEmitters.back()->m_endColor, group.c_str());
+}
+
+void VirtualWorld::AddCloth(PxCloth* a_cloth) {
+	//m_cloths.push_back(a_cloth);
 }
 
 //Build the screenspace quad that will display the final render graphic.
