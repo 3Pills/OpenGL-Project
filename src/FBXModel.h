@@ -5,17 +5,24 @@
 #include <vector>
 #include "Camera.h"
 
+enum FBXAnimID {
+	eIDLE = 0,
+	eRUN = 1
+};
+
 class FBXModel {
 protected:
 	std::vector<OpenGLData> m_meshes;
 
-	FBXSkeleton* m_skeleton;
-	FBXAnimation* m_anim;
+	FBXSkeleton* m_skeleton; //Pointer to skeleton object in FBXFile
+	FBXAnimation* m_anim; //Pointer to animation object in FBXFile
 
-	unsigned int m_pbrShader, m_phongShader, m_deferredShader;
-	float m_animationTime;
+	unsigned int m_shaders[6]; //Shader programs
+	float m_animationTime; //Current time in animation
+	float m_animationTimeStep; //Speed factor of animation
+	float m_startTime, m_endTime; //Time clamp for animation
 
-	bool m_pbr;
+	mat4 m_transform; //Final transform of the model, calculated during update.
 
 	void EvaluateSkeleton(float dt);
 	void UpdateBones();
@@ -24,24 +31,30 @@ public:
 			 mat4 a_modTransform = mat4(1), vec3 a_pos = vec3(0), vec3 a_scale = vec3(1), quat a_rot = quat::tquat());
 	virtual ~FBXModel();
 
-	quat m_rot;
-	//m_transform is the final transform of the model. modTransform is a constant which modifies objects (to keep them to a world scale)
-	mat4 m_transform, m_modTransform;
-	vec3 m_lightDir, m_lightCol, m_ambCol, m_pos, m_scale;
-	float m_specPow, m_roughness, m_fresnelScale;
+	vec3 m_scale; //The scale transform of the model
+	quat m_rot; //The rotation transform of the model
+	vec3 m_pos; //The position (translation) transform of the model
+	mat4 m_modTransform; //Modifies the final transform.
 
-	FBXFile* m_file;
+	vec3 m_lightDir; //Direction for light hitting the model. Only applied if not renderring deferred.
+	vec3 m_lightCol; //Color for light hitting the model. Only applied if not renderring deferred.
+	vec3 m_ambCol; //Ambient color of the model. Only applied if not renderring deferred.
+	
+	float m_specPow; //Specular power of lighting on the model
+	float m_roughness; //Roughness value of lighting on the model.
+	float m_fresnelScale; //Fresnel scale of lighting on the model.
+	bool m_parentTransform; //For disabling parenting rotation to PhysX models (mainly for player).
+
+	FBXFile* m_file; //Main access for FBX File data.
 
 	void GenerateGLMeshes(FBXFile* fbx);
 
 	virtual void Update(float dt);
 
-	void Render(FlyCamera a_camera);
-	void RenderDeferred(FlyCamera a_camera);
-
-	virtual void RenderGizmos();
-
+	void Render(Camera* a_camera, bool a_deferred = false, mat4* a_lightMatrix = nullptr);
 	void ReloadShader();
+
+	void SetAnimation(const int a_animationID);
 };
 
 #endif//_FBX_MODEL_H_

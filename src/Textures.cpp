@@ -16,7 +16,7 @@ bool Textures::startup(){
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	LoadTexture("./data/textures/crate.png", 0);
 	LoadTexture("./data/textures/planets/earth_cloud.jpg", 1);
 	GenerateQuad(5.0f);
@@ -34,7 +34,7 @@ bool Textures::update(){
 		return false;
 	}
 
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	return true;
 }
 void Textures::draw(){
@@ -43,7 +43,7 @@ void Textures::draw(){
 
 	int view_proj_uniform = glGetUniformLocation(m_programID, "projView");
 	if (view_proj_uniform > -1) {
-		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 	}
 
 	glActiveTexture(GL_TEXTURE0);
@@ -64,7 +64,7 @@ void Textures::draw(){
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 	Gizmos::addTransform(mat4(1), 10);
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	Application::draw();
 }
 

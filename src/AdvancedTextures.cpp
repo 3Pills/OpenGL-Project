@@ -31,7 +31,7 @@ bool AdvancedTextures::startup(){
 	GenerateQuad(5.0f);
 	LoadShader("./data/shaders/normal_mapped_vertex.glsl", "", "./data/shaders/normal_mapped_fragment.glsl", &m_programID);
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	Gizmos::create();
 	
 	TwBar* m_bar = TwNewBar("Mars Bar");
@@ -60,10 +60,10 @@ bool AdvancedTextures::update(){
 	}
 	m_LastKey = glfwGetKey(m_window, GLFW_KEY_R);
 
-	vec3 forward = (vec3)m_oCamera.getWorldTransform()[2];
+	vec3 forward = (vec3)m_oCamera.GetWorldTransform()[2];
 	forward.y = 0;
 	forward = glm::normalize(forward);
-	vec3 side = (vec3)m_oCamera.getWorldTransform()[0];
+	vec3 side = (vec3)m_oCamera.GetWorldTransform()[0];
 
 	if (glfwGetKey(m_window, GLFW_KEY_KP_2) == GLFW_PRESS){
 		m_vLightPos += forward * 20 * m_fDeltaTime;
@@ -84,7 +84,7 @@ bool AdvancedTextures::update(){
 		m_vLightPos.y += 20 * m_fDeltaTime;
 	}
 
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	return true;
 }
 void AdvancedTextures::draw(){
@@ -95,7 +95,7 @@ void AdvancedTextures::draw(){
 
 	int view_proj_uniform = glGetUniformLocation(m_programID, "projView");
 	if (view_proj_uniform > -1) {
-		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 	}
 	int amb_color_uniform = glGetUniformLocation(m_programID, "ambCol");
 	if (amb_color_uniform > -1) {
@@ -111,7 +111,7 @@ void AdvancedTextures::draw(){
 	}
 	int cam_pos_uniform = glGetUniformLocation(m_programID, "camPos");
 	if (cam_pos_uniform > -1) {
-		glUniform3fv(cam_pos_uniform, 1, (float*)&m_oCamera.getWorldTransform()[3].xyz);
+		glUniform3fv(cam_pos_uniform, 1, (float*)&m_oCamera.GetWorldTransform()[3].xyz);
 	}
 	int spec_pow_uniform = glGetUniformLocation(m_programID, "specPow");
 	if (spec_pow_uniform > -1) {
@@ -153,7 +153,7 @@ void AdvancedTextures::draw(){
 		Gizmos::addLine(vec3(-10, 0, -10 + i), i != 10 ? vec3(10, 0, -10 + i) : vec3(0, 0, -10 + i), i != 10 ? black : white);
 	}
 
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	TwDraw();
 	Application::draw();
 }

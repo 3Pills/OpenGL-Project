@@ -150,13 +150,13 @@ void GPUEmitter::Render(float a_currTime, FlyCamera a_camera, bool a_deferred) {
 	glUniform1i(loc, a_deferred);
 
 	loc = glGetUniformLocation(renderer, "projView");
-	glUniformMatrix4fv(loc, 1, false, &a_camera.getView()[0][0]);
+	glUniformMatrix4fv(loc, 1, false, &a_camera.GetView()[0][0]);
 
 	loc = glGetUniformLocation(renderer, "projView");
-	glUniformMatrix4fv(loc, 1, false, &a_camera.getProjectionView()[0][0]);
+	glUniformMatrix4fv(loc, 1, false, &a_camera.GetProjectionView()[0][0]);
 
 	loc = glGetUniformLocation(renderer, "camTransform");
-	glUniformMatrix4fv(loc, 1, false, &a_camera.getWorldTransform()[0][0]);
+	glUniformMatrix4fv(loc, 1, false, &a_camera.GetWorldTransform()[0][0]);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture);

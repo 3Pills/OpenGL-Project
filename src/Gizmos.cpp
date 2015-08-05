@@ -676,8 +676,8 @@ void Gizmos::addCapsule(const glm::vec3& a_center, const float a_length, const f
 	glm::vec3 rightCenter = a_center + right.xyz();
 	glm::vec3 leftCenter = a_center + left.xyz();
 
-	addSphere(rightCenter, a_radius, a_rows, a_columns, a_color, nullptr, 0, 360.f, -90.f, 0.f);
-	addSphere(leftCenter,  a_radius, a_rows, a_columns, a_color, nullptr, 0, 360.f, 0.f, 90.f);
+	addSphere(rightCenter, a_radius, a_rows, a_columns, a_color, nullptr, 0, 360.f, 0.f, 90.f);
+	addSphere(leftCenter,  a_radius, a_rows, a_columns, a_color, nullptr, 0, 360.f, -90.f, 0.f);
 
 	for (int i = 0; i < a_columns; ++i)
 	{

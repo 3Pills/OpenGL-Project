@@ -13,57 +13,21 @@ out vec3 fBiTangent;
 out vec2 fTexCoord;
 out vec4 fColor;
 
-uniform bool deferred;
-uniform bool hasBones;
-
-uniform mat4 transform;
-
-uniform mat4 projView;
 uniform mat4 view;
-uniform mat4 world;
+uniform mat4 projView;
+uniform mat4 transform;
 
 const int MAX_BONES = 128;
 uniform mat4 bones[MAX_BONES];
 
 void main() 
 {
-	fPosition = Position;
+	fPosition = transform * Position;
 	fTexCoord = TexCoord;
-	fNormal = Normal;
-	fTangent = Tangent.xyz;
+	fNormal = transform * Normal;
+	fTangent = (transform * Tangent).xyz;
 	fBiTangent = cross(fNormal.xyz, fTangent);
 	fColor = vec4(1);
 
-	vec4 finalPos = transform * Position;
-	vec4 finalNormal = transform * Normal;
-	vec4 finalTangent = transform * Tangent;
-
-	if (hasBones) {
-		ivec4 indices = ivec4(Indices);
-		finalPos =  (bones[indices.x] * Position) * Weights.x;
-		finalPos += (bones[indices.y] * Position) * Weights.y;
-		finalPos += (bones[indices.z] * Position) * Weights.z;
-		finalPos.w = 1;
-		finalPos = transform * (world * finalPos);
-	
-		finalNormal =  (bones[indices.x] * Normal) * Weights.x;
-		finalNormal += (bones[indices.y] * Normal) * Weights.y;
-		finalNormal += (bones[indices.z] * Normal) * Weights.z;
-		finalNormal.w = 0;
-		finalNormal = transform * finalNormal;
-	
-		finalTangent =  (bones[indices.x] * Tangent) * Weights.x;
-		finalTangent += (bones[indices.y] * Tangent) * Weights.y;
-		finalTangent += (bones[indices.z] * Tangent) * Weights.z;
-		finalTangent.w = 0;
-		fTangent = (transform * finalTangent).xyz;
-		fBiTangent = cross(fNormal.xyz, fTangent);
-	}
-	
-	if (deferred) {
-		fPosition = (view * finalPos);
-		fNormal = (view * finalNormal);
-	}
-
-	gl_Position = projView * finalPos;
+	gl_Position = projView * transform * Position;
 }

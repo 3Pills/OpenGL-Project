@@ -8,8 +8,7 @@ out vec4 fNormal;
 out vec2 fTexCoord;
 
 uniform mat4 projView;
-uniform mat4 world;
-uniform mat4 view;
+uniform mat4 transform;
 
 uniform sampler2D perlinTexture;
 uniform float scale;
@@ -44,15 +43,12 @@ vec4 getNormal(vec3 pos) {
 void main() {
 	vec4 pos = Position;
 	fNormal = getNormal(pos.xyz);
-
 	pos.y += getHeight(TexCoord);
-
 	fPosition = pos;
-	if (deferred) {
-		fPosition = (view * fPosition);
-		fNormal = view * fNormal;
-	}
+
+	fPosition = (transform * fPosition);
+	fNormal = transform * fNormal;
 
 	fTexCoord = TexCoord;
-	gl_Position = projView * pos;
+	gl_Position = projView * transform * pos;
 }

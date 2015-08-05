@@ -18,7 +18,7 @@ bool RenderingGeometry::startup(){
 	generateGrid(100,100);
 
 	Gizmos::create();
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	return true;
 }
@@ -29,7 +29,7 @@ bool RenderingGeometry::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	return true;
 }
 void RenderingGeometry::draw(){
@@ -40,7 +40,7 @@ void RenderingGeometry::draw(){
 
 	int proj_view_handle = glGetUniformLocation(m_programID, "projView");
 	if (proj_view_handle > -1){
-		glUniformMatrix4fv(proj_view_handle, 1, false, (float*)&m_oCamera.getProjectionView());
+		glUniformMatrix4fv(proj_view_handle, 1, false, (float*)&m_oCamera.GetProjectionView());
 	}
 	int time_handle = glGetUniformLocation(m_programID, "time");
 	if (time_handle > -1){
@@ -64,7 +64,7 @@ void RenderingGeometry::draw(){
 	}
 
 	Gizmos::addTransform(mat4(1), 10);
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 
 	Application::draw();
 }

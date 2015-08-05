@@ -341,9 +341,6 @@
     <None Include="data\shaders\normal_mapped_fragment.glsl">
       <Filter>AdvancedTextures</Filter>
     </None>
-    <None Include="data\shaders\skinned_vertex.glsl">
-      <Filter>Animation</Filter>
-    </None>
     <None Include="data\shaders\particles_fragment.glsl">
       <Filter>Particles</Filter>
     </None>
@@ -435,6 +432,18 @@
       <Filter>Animation</Filter>
     </None>
     <None Include="data\shaders\skinned_fragment_pbr.glsl">
+      <Filter>Animation</Filter>
+    </None>
+    <None Include="data\shaders\cloth_vertex.glsl">
+      <Filter>PhysX</Filter>
+    </None>
+    <None Include="data\shaders\directional_light_vertex.glsl">
+      <Filter>DeferredRendering</Filter>
+    </None>
+    <None Include="data\shaders\skinned_vertex.glsl">
+      <Filter>Animation</Filter>
+    </None>
+    <None Include="data\shaders\skinned_vertex_anim.glsl">
       <Filter>Animation</Filter>
     </None>
   </ItemGroup>

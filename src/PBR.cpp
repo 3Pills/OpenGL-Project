@@ -24,7 +24,7 @@ bool PBR::startup(){
 
 	glfwSetWindowSizeCallback(m_window, OnWindowResize);
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	m_model = new FBXModel("./data/models/characters/Pyro/pyro.fbx");
 
@@ -49,7 +49,7 @@ bool PBR::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 
 	m_model->m_ambCol = m_ambCol;
 	m_model->m_lightDir = -m_lightPos;
@@ -77,9 +77,9 @@ bool PBR::update(){
 void PBR::draw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_model->Render(m_oCamera);
+	m_model->Render(&m_oCamera);
 
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	TwDraw();
 	Application::draw();
 }

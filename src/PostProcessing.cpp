@@ -13,7 +13,7 @@ bool PostProcessing::startup(){
 		return false;
 	}
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	GenerateFramebuffer();
 	GenerateQuad();
@@ -30,7 +30,7 @@ bool PostProcessing::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS && m_LastKey != GLFW_PRESS){
 		ReloadShader();
 	}
@@ -56,7 +56,7 @@ void PostProcessing::draw(){
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, m_iWidth, m_iHeight);

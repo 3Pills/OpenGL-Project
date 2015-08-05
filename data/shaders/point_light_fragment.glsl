@@ -61,6 +61,7 @@ void main() {
 	vec3 L = normalize(toLight);
 	vec3 N = normalize(normalSample.xyz);
 	vec3 E = -normalize(positionSample.xyz);
+
 	float falloff = 1 - min(1, (length(toLight) / lightRadius));
 
 	float NdL = max(0.0f, dot(N, L));
@@ -106,5 +107,5 @@ void main() {
 
 	vec4 LightColor = vec4(lightCol, 1);
 
-	LightOutput = LightColor * (OrenNayer + (vec4(specularSample.xyz,1) * CookTorrance)) * falloff;
+	LightOutput = LightColor * (OrenNayer + CookTorrance) * falloff;
 }

@@ -14,7 +14,7 @@ bool Lighting::startup(){
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	Gizmos::create();
 
 	LoadShader("./data/shaders/lighting_vertex.glsl", "", "./data/shaders/lighting_fragment.glsl", &m_programID);
@@ -46,10 +46,10 @@ bool Lighting::update(){
 	}
 	m_LastKey = glfwGetKey(m_window, GLFW_KEY_R);
 
-	vec3 forward = (vec3)m_oCamera.getWorldTransform()[2];
+	vec3 forward = (vec3)m_oCamera.GetWorldTransform()[2];
 	forward.y = 0;
 	forward = glm::normalize(forward);
-	vec3 side = (vec3)m_oCamera.getWorldTransform()[0];
+	vec3 side = (vec3)m_oCamera.GetWorldTransform()[0];
 
 	if (glfwGetKey(m_window, GLFW_KEY_KP_2) == GLFW_PRESS){
 		m_vLightPos += forward * 20 * m_fDeltaTime;
@@ -103,7 +103,7 @@ bool Lighting::update(){
 		m_vAmbCol = vec3(0, 0, 0.35f);
 	}
 
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	return true;
 }
 void Lighting::draw(){
@@ -113,7 +113,7 @@ void Lighting::draw(){
 
 	int view_proj_uniform = glGetUniformLocation(m_programID, "projView");
 	if (view_proj_uniform > -1) {
-		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 	}
 	int amb_color_uniform = glGetUniformLocation(m_programID, "ambCol");
 	if (amb_color_uniform > -1) {
@@ -133,7 +133,7 @@ void Lighting::draw(){
 	}
 	int cam_pos_uniform = glGetUniformLocation(m_programID, "camPos");
 	if (cam_pos_uniform > -1) {
-		glUniform3fv(cam_pos_uniform, 1, (float*)&m_oCamera.getWorldTransform()[3].xyz);
+		glUniform3fv(cam_pos_uniform, 1, (float*)&m_oCamera.GetWorldTransform()[3].xyz);
 	}
 	int spec_pow_uniform = glGetUniformLocation(m_programID, "specPow");
 	if (spec_pow_uniform > -1) {
@@ -155,7 +155,7 @@ void Lighting::draw(){
 	mat4 transformPos = mat4(1);
 	transformPos[3].xyz = m_vLightPos;
 	Gizmos::addTransform(transformPos, 1);
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	Application::draw();
 }
 

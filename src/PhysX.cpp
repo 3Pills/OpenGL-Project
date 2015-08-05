@@ -30,7 +30,7 @@ bool PhysX::startup(){
 		return false;
 	}
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	setupPhysX();
 	setupMotor();
 
@@ -65,7 +65,7 @@ bool PhysX::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	Gizmos::clear();
 	Gizmos::addTransform(mat4(1), 10);
 
@@ -116,7 +116,7 @@ bool PhysX::update(){
 void PhysX::draw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	Application::draw();
 }
 

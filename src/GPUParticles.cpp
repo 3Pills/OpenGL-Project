@@ -27,7 +27,7 @@ bool GPUParticles::startup(){
 	m_emitter[0] = new GPUEmitter(vec3(0), vec3(5), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_WAVE, "./data/textures/particles/glow.png");
 	m_emitter[1] = new GPUEmitter(vec3(5), vec3(5), 100, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_WAVE, "./data/textures/particles/glow.png");
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	TwEnumVal emitTypes[] = { { EMIT_POINT, "Point" }, { EMIT_LINE, "Line" },
 	{ EMIT_PLANE, "Plane" }, { EMIT_RING, "Ring" }, { EMIT_OUTER_RING, "Outer Ring" },
@@ -73,7 +73,7 @@ bool GPUParticles::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS){
 		m_emitter[0]->Reload();
@@ -99,7 +99,7 @@ void GPUParticles::draw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 
 	//Enable transparent rendering
 	glEnable(GL_BLEND);

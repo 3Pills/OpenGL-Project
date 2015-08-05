@@ -15,8 +15,6 @@ out vec2 fTexCoord;
 out vec4 fNormal;
 out vec4 fPosition;
 
-uniform bool deferred;
-
 uniform mat4 view;
 uniform mat4 projView;
 uniform mat4 camTransform;
@@ -47,6 +45,12 @@ void main() {
 	corners[2] = vec3( -halfSize, -halfSize, 0 );
 	corners[3] = vec3( -halfSize, halfSize, 0 );
 
+	vec2 texcoord[4];
+	texcoord[0] = vec2(1,0);
+	texcoord[1] = vec2(1,1);
+	texcoord[2] = vec2(0,0);
+	texcoord[3] = vec2(0,1);
+
 	// billboard
 	vec3 zAxis = normalize( camTransform[3].xyz - vPosition[0] );
 	vec3 xAxis = cross( camTransform[1].xyz, zAxis );
@@ -54,27 +58,12 @@ void main() {
 	mat3 billboard = mat3(xAxis,yAxis,zAxis);
 
 	fNormal = vec4(0,0,1,0);
-	//if (deferred)
-	//	fNormal = (view * vec4(fNormal, 1)).xyz;
 
 	//Assign values to each vertex.
-	gl_Position = projView*vec4(billboard*corners[0]+vPosition[0], 1);
-	fTexCoord = vec2(1,0);
-	fPosition = vec4(gl_Position.xyz, 1);
-	EmitVertex();
-
-	gl_Position = projView*vec4(billboard*corners[1]+vPosition[0], 1);
-	fTexCoord = vec2(1,1);
-	fPosition = vec4(gl_Position.xyz, 1);
-	EmitVertex();
-
-	gl_Position = projView*vec4(billboard*corners[2]+vPosition[0], 1);
-	fTexCoord = vec2(0,0);
-	fPosition = vec4(gl_Position.xyz, 1);
-	EmitVertex();
-
-	gl_Position = projView*vec4(billboard*corners[3]+vPosition[0], 1);
-	fTexCoord = vec2(0,1);
-	fPosition = vec4(gl_Position.xyz, 1);
-	EmitVertex();
+	for (int i = 0 ; i < 4; i++) {
+		gl_Position = projView * vec4(billboard * corners[i] + vPosition[0], 1);
+		fTexCoord = texcoord[i];
+		fPosition = projView * vec4(billboard * corners[i] + vPosition[0], 1);
+		EmitVertex();
+	}
 }

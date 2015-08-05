@@ -8,7 +8,7 @@
 #include "PhysModel.h"
 #include "PhysScene.h"
 
-//Struct for containing point light data.
+//Point light data storage.
 struct PointLight {
 	vec3 m_pos;
 	vec3 m_color;
@@ -17,137 +17,67 @@ struct PointLight {
 	PointLight(vec3 a_pos, vec3 a_color, float a_radius) : m_pos(a_pos), m_color(a_color), m_radius(a_radius) {}
 };
 
+//Directional light data storage.
 struct DirectionalLight {
 	vec3 m_dir;
 	vec3 m_color;
 
-	DirectionalLight(vec3 a_dir, vec3 a_color) : m_dir(a_dir), m_color(a_color) {}
-};
-
-struct ClothData {
-	PxCloth* m_cloth;
-
-	vec3* m_vertices;
-	vec2* m_texCoords;
-	unsigned int* m_indices;
-
-	unsigned int m_texture;
-	unsigned int m_indexCount, m_vertexCount;
-	unsigned int m_VAO, m_VBO, m_textureVBO, m_IBO;
-
-	ClothData(const unsigned int a_springSize, const unsigned int a_rows, const unsigned int a_columns) {
-		// this position will represent the top middle vertex
-		glm::vec3 clothPosition = glm::vec3(0, 12, 0);
-		// shifting grid position for looks
-		float halfWidth = a_rows * a_springSize * 0.5f;
-		// generate vertices for a grid with texture coordinates
-		m_vertexCount = a_rows * a_columns;
-		m_vertices = new glm::vec3[m_vertexCount];
-		m_texCoords = new glm::vec2[m_vertexCount];
-		for (unsigned int r = 0; r < a_rows; ++r) {
-			for (unsigned int c = 0; c < a_columns; ++c) {
-				m_vertices[r * a_columns + c].x = clothPosition.x + a_springSize * c;
-				m_vertices[r * a_columns + c].y = clothPosition.y;
-				m_vertices[r * a_columns + c].z = clothPosition.z + a_springSize * r - halfWidth;
-				m_texCoords[r * a_columns + c].x = 1.0f - r / (a_rows - 1.0f);
-				m_texCoords[r * a_columns + c].y = 1.0f - c / (a_columns - 1.0f);
-			}
-		}
-
-		m_indexCount = (a_rows - 1) * (a_columns - 1) * 2 * 3;
-		m_indices = new unsigned int[m_indexCount];
-		unsigned int* index = m_indices;
-		for (unsigned int r = 0; r < (a_rows - 1); ++r) {
-			for (unsigned int c = 0; c < (a_columns - 1); ++c) {
-				// indices for the 4 quad corner vertices
-				unsigned int i0 = r * a_columns + c;
-				unsigned int i1 = i0 + 1;
-				unsigned int i2 = i0 + a_columns;
-				unsigned int i3 = i2 + 1;
-				// every second quad changes the triangle order
-				if ((c + r) % 2) {
-					*index++ = i0; *index++ = i2; *index++ = i1;
-					*index++ = i1; *index++ = i2; *index++ = i3;
-				}
-				else {
-					*index++ = i0; *index++ = i2; *index++ = i3;
-					*index++ = i0; *index++ = i3; *index++ = i1;
-				}
-			}
-		}
-
-	}
-	~ClothData() {
-		delete[] m_vertices;
-		delete[] m_indices;
-		delete[] m_texCoords;
-	}
-
-	void GLGenBuffers() {
-		glGenVertexArrays(1, &m_VAO);
-		glGenBuffers(1, &m_VBO);
-		glGenBuffers(1, &m_IBO);
-
-		glBindVertexArray(m_VAO);
-		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
-
-		glBufferData(GL_ARRAY_BUFFER, (sizeof(vec3) + sizeof(vec2)) * m_vertexCount, 0, GL_STATIC_DRAW);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * m_vertexCount, m_vertices);
-		glBufferSubData(GL_ARRAY_BUFFER, sizeof(vec3)* m_vertexCount, sizeof(vec2)* m_vertexCount, m_texCoords);
-
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)* m_indexCount, m_indices, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		//glEnableVertexAttribArray(2);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(vec3)* m_vertexCount));
-		//glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
-
-	void draw() {
-		glBindVertexArray(m_VAO);
-		glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
-	}
+	DirectionalLight(vec3 a_dir, vec3 a_color) : m_dir(glm::normalize(a_dir)), m_color(a_color) {}
 };
 
 class VirtualWorld : public Application
 {
-	FlyCamera m_oCamera;
+	TargetCamera m_oCamera;
 	std::vector<GPUEmitter*> m_particleEmitters;
 	std::vector<FBXModel*> m_FBXModels;
 
-	OpenGLData m_screenspaceQuad;
-	OpenGLData m_lightCube;
-	OpenGLData m_planeMesh;
+	OpenGLData m_screenspaceQuad; //Quad which deferred render will render onto
+	OpenGLData m_lightCube; //Cube for point lights
+	OpenGLData m_planeMesh; //Mesh for perlin heightmap
 
-	PhysScene m_physScene;
+	PhysScene m_physScene; //PhysX scene
 
-	vec3 m_ambCol;
+	PxController* m_player; //Player controller for scene
+	vec3 m_playerVelocity; //Player's velocity
+	float m_playerSpeed; //Player's speed
+	bool m_playerGrounded; //Bool for grounded player
 
-	vec2 m_perlinTextureSize, m_perlinWorldSize;
+	vec3 m_ambCol; //Global ambient colour for lighting
 
-	bool m_debug[10];
+	float m_pScale; //Perlin landscape scale
+	float m_pAmp; //Perlin landscape amplitude
+	float m_pPers; //Perlin landscape persistence
+	float* m_perlinData; //Perlin heightmap data
 
-	unsigned int m_gBufferFBO, m_albedoTexture, m_positionTexture, m_normalTexture, m_specularTexture, m_depthTexture; //G-Buffer data
-	unsigned int m_lightFBO, m_lightTexture; //Light Buffer data
-	unsigned int m_fxFBO, m_fxTexture; //Effects Buffer data
+	vec2 m_perlinTextureSize; //Perlin texture size
+	vec2 m_perlinWorldSize; //Perlin mesh size (X/Z Axis)
+	vec3 m_perlinPos; //Position transform for perlin mesh
+	vec3 m_perlinScale; //Scale transform for perlin mesh
+	quat m_perlinRot; //Rotation transform for perlin mesh
+	mat4 m_perlinTransform; //Final transform for perlin mesh
+
+	bool m_debug[10]; //Debug rendering bools. 0:Z-Buffer, 1:Grid, 2:PhysX, 3:Particles, 4:Point Lights, 5:Directional Lights
+
+	unsigned int m_shadowFBO; //Shadow buffer framebuffer object
+	unsigned int m_shadowMap; //Shadow buffer texture data
+
+	unsigned int m_gBufferFBO; //G-buffer framebuffer object
+	unsigned int m_albedoTexture, m_positionTexture, m_worldPosTexture, m_normalTexture, m_specularTexture, m_depthTexture; //G-Buffer texture data
+
+	unsigned int m_lightFBO; //Light buffer framebuffer object
+	unsigned int m_lightTexture; //Light buffer texture data
+
+	unsigned int m_fxFBO; //Effects framebuffer object
+	unsigned int m_fxTexture; //Effects buffer data
 
 	unsigned int m_perlinTexture, m_pOct; //Procedural data
-	float m_pScale, m_pAmp, m_pPers;
-	float* m_perlinData;
 
-	unsigned int m_gBufferProgram, m_compositeProgram, m_dirLightProgram, m_pointLightProgram, m_proceduralProgram; //Shader Program Data
-	unsigned int m_lastKey[2];
+	unsigned int m_gBufferProgram, m_compositeProgram, m_dirLightProgram, m_pointLightProgram, m_proceduralProgram, m_shadowProgram; //Shader Program Data
+	unsigned int m_lastKey[2]; //Input key logging
 public:
-	std::vector<PointLight> m_pointLights;
-	std::vector<DirectionalLight> m_dirLights;
-	std::vector<ClothData*> m_cloths;
+	std::vector<PointLight> m_pointLights; //Point light storage array
+	std::vector<DirectionalLight> m_dirLights; //Directional light storage array
+	std::vector<ClothData*> m_cloths; //Cloth storage array
 
 	VirtualWorld();
 	virtual ~VirtualWorld();
@@ -159,24 +89,26 @@ public:
 	virtual void draw();
 	virtual void resize(int a_width, int a_height);
 
+	void ReloadShaders();
+
 	void BuildFrameBuffers();
 	void BuildQuad();
 	void BuildCube();
+
 	void BuildProceduralGrid(vec2 a_realDims, glm::ivec2 a_dims);
 	void BuildPerlinTexture(glm::ivec2 a_dims, const int a_octaves, const float a_amplitude, const float a_persistance);
-
-	void RenderDirectionalLights();
-	void RenderPointLights();
-
-	void ReloadShaders();
 
 	void AddDirectionalLight(vec3 a_dir = vec3(0, -1, 0), vec3 a_color = vec3(1));
 	void AddPointLight(vec3 a_pos = vec3(0), vec3 a_color = vec3(1), float a_radius = 25.0f);
 
+	void RenderDirectionalLights();
+	void RenderPointLights();
+
 	void AddFBXModel(FBXModel* a_model);
 	void AddParticleEmitter(GPUEmitter* a_particle);
-
 	void AddCloth(PxCloth* a_cloth);
+
+	void PlayerUpdate();
 };
 
 #endif//VIRTUAL_WORLD_H_

@@ -10,7 +10,7 @@ bool Quaternions::startup() {
 	if (!Application::startup()) 
 		return false;
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	Gizmos::create();
 	glm::quat boringQuaternion(1, 0, 0, 0);
@@ -62,7 +62,7 @@ bool Quaternions::update() {
 	if (!Application::update())
 		return false;
 
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 
 	return true;
 }
@@ -106,6 +106,6 @@ void Quaternions::draw() {
 		Gizmos::addLine(vec3(-10, 0, -10 + i), i != 10 ? vec3(10, 0, -10 + i) : vec3(0, 0, -10 + i), i != 10 ? black : white);
 	}
 
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	Application::draw();
 }

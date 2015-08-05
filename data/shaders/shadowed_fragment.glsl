@@ -3,5 +3,5 @@
 out float fragDepth;
 
 void main(){
-	fragDepth = gl_FragCoord.z;
+	fragDepth = pow(gl_FragCoord.z, 1);
 }

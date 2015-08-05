@@ -1,8 +1,9 @@
 #include "Shadows.h"
+#include "AntTweakBar.h"
 #include "tiny_obj_loader.h"
 #include "Utility.h"
 
-Shadows::Shadows(): m_oCamera(50){
+Shadows::Shadows(): m_oCamera(50), m_lightExtents(50), m_lightNearZ(-20), m_lightFarZ(100){
 	Application::Application();
 }
 Shadows::~Shadows(){}
@@ -12,7 +13,26 @@ bool Shadows::startup(){
 		return false;
 	}
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	//AntTweakBar Initialisation.
+	TwInit(TW_OPENGL_CORE, nullptr);
+	TwWindowSize(m_iWidth, m_iHeight);
+
+	//Binding input callbacks for ATB GUI.
+	glfwSetMouseButtonCallback(m_window, OnMouseButton);
+	glfwSetCursorPosCallback(m_window, OnMousePosition);
+	glfwSetScrollCallback(m_window, OnMouseScroll);
+	glfwSetKeyCallback(m_window, OnKey);
+	glfwSetCharCallback(m_window, OnChar);
+	glfwSetWindowSizeCallback(m_window, OnWindowResize);
+
+
+	TwBar* m_lightingBar = TwNewBar("Lighting"); //Lighting window. Allows modification of lighting data.
+	TwAddVarRW(m_lightingBar, "Direction", TW_TYPE_DIR3F, &m_lightDir, "");
+	TwAddVarRW(m_lightingBar, "Extents", TW_TYPE_FLOAT, &m_lightExtents, "step=0.01 min=0");
+	TwAddVarRW(m_lightingBar, "NearZ", TW_TYPE_FLOAT, &m_lightNearZ, "step=0.01");
+	TwAddVarRW(m_lightingBar, "FarZ", TW_TYPE_FLOAT, &m_lightFarZ, "step=0.01 min=0");
+
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	Gizmos::create();
 
@@ -22,26 +42,32 @@ bool Shadows::startup(){
 	BuildMeshes();
 	BuildShadowMap();
 
-	m_lightDir = glm::normalize(glm::vec3(1, 2.5f, 1));
-
-	mat4 lightProj = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
-	mat4 lightView = glm::lookAt(m_lightDir, vec3(0), vec3(0, 1, 0));
-	m_lightMatrix = lightProj * lightView * mat4(1);
+	m_lightDir = glm::normalize(-glm::vec3(1, 2.5f, 1));
 
 	return true;
 }
 
 bool Shadows::shutdown(){
+	glDeleteVertexArrays(1, &m_bunny.m_VAO);
+	glDeleteBuffers(1, &m_bunny.m_VBO);
+	glDeleteVertexArrays(1, &m_plane.m_VAO);
+	glDeleteBuffers(1, &m_plane.m_VBO);
+	TwTerminate();
+	Gizmos::destroy();
 	return Application::shutdown();
 }
 bool Shadows::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS){
 		ReloadShader();
 	}
+
+	mat4 lightProj = glm::ortho<float>(-m_lightExtents, m_lightExtents, -m_lightExtents, m_lightExtents, m_lightNearZ, m_lightFarZ);
+	mat4 lightView = glm::lookAt(vec3(0), m_lightDir, vec3(0, 1, 0));
+	m_lightMatrix = lightProj * lightView * mat4(1);
 
 	return true;
 }
@@ -57,10 +83,8 @@ void Shadows::draw(){
 	int lightMatrix_uniform = glGetUniformLocation(m_shadowProgramID, "lightMatrix");
 	glUniformMatrix4fv(lightMatrix_uniform, 1, GL_FALSE, (float*)&m_lightMatrix);
 
-	//glCullFace(GL_FRONT);
 	glBindVertexArray(m_bunny.m_VAO);
 	glDrawElements(GL_TRIANGLES, m_bunny.m_indexCount, GL_UNSIGNED_INT, 0);
-	//glCullFace(GL_BACK);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, m_iWidth, m_iHeight);
@@ -69,7 +93,7 @@ void Shadows::draw(){
 	glUseProgram(m_diffuseShadowProgramID);
 
 	int projView_uniform = glGetUniformLocation(m_diffuseShadowProgramID, "projView");
-	glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+	glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 
 	mat4 offsetScale = mat4(
 		0.5f, 0.0f, 0.0f, 0.0f,
@@ -87,8 +111,12 @@ void Shadows::draw(){
 
 	int shadowMap_uniform = glGetUniformLocation(m_diffuseShadowProgramID, "shadowMap");
 	glUniform1i(shadowMap_uniform, 0);
+	int shadowTexture_uniform = glGetUniformLocation(m_diffuseShadowProgramID, "shadowTexture");
+	glUniform1i(shadowTexture_uniform, 1);
 
 	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_fboDepth);
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, m_fboDepth);
 
 	glBindVertexArray(m_bunny.m_VAO);
@@ -107,7 +135,8 @@ void Shadows::draw(){
 		Gizmos::addLine(vec3(-10 + i, 0, -10), i != 10 ? vec3(-10 + i, 0, 10) : vec3(-10 + i, 0, 0), i != 10 ? black : white);
 		Gizmos::addLine(vec3(-10, 0, -10 + i), i != 10 ? vec3(10, 0, -10 + i) : vec3(0, 0, -10 + i), i != 10 ? black : white);
 	}
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
+	TwDraw();
 	Application::draw();
 }
 
@@ -125,6 +154,9 @@ void Shadows::BuildMeshes(){
 
 	vertexData.insert(vertexData.end(), mesh->positions.begin(), mesh->positions.end());
 	vertexData.insert(vertexData.end(), mesh->normals.begin(), mesh->normals.end());
+	vertexData.insert(vertexData.end(), mesh->normals.begin(), mesh->normals.end());
+	vertexData.insert(vertexData.end(), mesh->texcoords.begin(), mesh->texcoords.end());
+	
 
 	glGenVertexArrays(1, &m_bunny.m_VAO);
 	glGenBuffers(1, &m_bunny.m_VBO);
@@ -139,9 +171,13 @@ void Shadows::BuildMeshes(){
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float)* mesh->positions.size()));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float)* (mesh->positions.size() + mesh->normals.size())));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, (void*)(sizeof(float)* (mesh->positions.size() + mesh->normals.size() + mesh->normals.size())));
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -162,7 +198,6 @@ void Shadows::BuildMeshes(){
 	vertex_Data[1].tangent = vec4(1, 0, 0, 0);
 	vertex_Data[2].tangent = vec4(1, 0, 0, 0);
 	vertex_Data[3].tangent = vec4(1, 0, 0, 0);
-
 
 	vertex_Data[0].tex_coord = vec2(0, 0);
 	vertex_Data[1].tex_coord = vec2(0, 1);

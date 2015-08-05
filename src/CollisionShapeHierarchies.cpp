@@ -26,7 +26,7 @@ bool CollisionShapeHierarchies::startup(){
 	}
 	glEnable(GL_DEPTH_TEST);
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	setupPhysx();
 	PxTransform transform = PxTransform(PxVec3(0, 0, 0), PxQuat((float)PxHalfPi, PxVec3(0, 0, 1)));
@@ -50,7 +50,7 @@ bool CollisionShapeHierarchies::startup(){
 	CreateOpenGLBuffers(shapes);
 
 	PxBoxGeometry box = PxBoxGeometry(1, 1, 1);
-	PxTransform transformtwo(*(PxMat44*)(&m_oCamera.getWorldTransform()[0]));
+	PxTransform transformtwo(*(PxMat44*)(&m_oCamera.GetWorldTransform()[0]));
 
 	auto dynamicActor = PxCreateDynamic(*m_physics, transformtwo, box, *m_physics_material, PxReal(1));
 	dynamicActor->userData = &shapes;
@@ -103,7 +103,7 @@ bool CollisionShapeHierarchies::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	Gizmos::clear();
 	Gizmos::addTransform(mat4(1), 10);
 
@@ -119,7 +119,7 @@ bool CollisionShapeHierarchies::update(){
 	while (m_physics_scene->fetchResults() == false);
 
 	if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_1)) {
-		vec3 pos(m_oCamera.getWorldTransform()[3]), dir(m_oCamera.getWorldTransform()[2]);
+		vec3 pos(m_oCamera.GetWorldTransform()[3]), dir(m_oCamera.GetWorldTransform()[2]);
 		PxVec3 vel(dir.x, dir.y, dir.z);
 		vel *= -100;
 
@@ -159,7 +159,7 @@ void CollisionShapeHierarchies::draw(){
 
 	int view_proj_uniform = glGetUniformLocation(m_programID, "projView");
 	if (view_proj_uniform > -1) 
-		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 
 	for (unsigned int i = 0; i < m_meshes.size(); ++i){
 		glBindVertexArray(m_meshes[i].m_VAO);
@@ -167,7 +167,7 @@ void CollisionShapeHierarchies::draw(){
 	}
 
 	Gizmos::addAABBFilled(vec3(0,-0.02,0), vec3(1000,0.01,1000), vec4(1));
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	Application::draw();
 }
 

@@ -11,7 +11,7 @@ bool GameTreeSearch::startup(){
 		return false;
 	}
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	m_game = new ConnectFour();
 	m_ai = new MCTS(4000);
@@ -31,7 +31,7 @@ bool GameTreeSearch::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	Gizmos::clear();
 	gameUpdate();
 	//Gizmos::addTransform(mat4(1), 10);
@@ -50,7 +50,7 @@ void GameTreeSearch::draw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	m_game->draw();
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	Application::draw();
 }
 
@@ -62,7 +62,7 @@ void GameTreeSearch::gameUpdate(){
 
 				double x = 0, y = 0;
 				glfwGetCursorPos(m_window, &x, &y);
-				vec3 m_pickPosition = m_oCamera.pickAgainstPlane((float)x, (float)y, vec4(0, 1, 0, 0));
+				vec3 m_pickPosition = m_oCamera.PickAgainstPlane((float)x, (float)y, vec4(0, 1, 0, 0));
 
 				int column = (int)((m_pickPosition.z + ConnectFour::COLUMNS) / 2);
 

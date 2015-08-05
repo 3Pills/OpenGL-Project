@@ -9,6 +9,7 @@ layout(location = 0) out vec4 gPassAlbedo;
 layout(location = 1) out vec4 gPassPosition;
 layout(location = 2) out vec4 gPassNormal;
 layout(location = 3) out vec4 gPassSpecular;
+layout(location = 4) out vec4 gPassWorldPos;
 
 uniform sampler2D diffuse;
 uniform sampler2D normal;
@@ -17,16 +18,12 @@ uniform sampler2D specular;
 uniform float roughness;
 uniform float fresnelScale;
 
+uniform mat4 view;
+
 void main() {
 	gPassAlbedo = texture(diffuse, fTexCoord) * fColor;
-
-	gPassPosition = vec4(fPosition.xyz, pow(gl_FragCoord.z, 25));
-
-	vec4 finalNormal = texture(normal, fTexCoord) * fNormal;
-	finalNormal.a = roughness;
-	gPassNormal = finalNormal;
-	
-	vec4 finalSpecular = texture(specular, fTexCoord);
-	finalSpecular.a = fresnelScale;
-	gPassSpecular = finalSpecular;
+	gPassWorldPos = fPosition;
+	gPassPosition = view * fPosition;
+	gPassNormal = vec4((view * fNormal).xyz, roughness);
+	gPassSpecular = vec4(texture(specular, fTexCoord).xyz, fresnelScale);
 }

@@ -6,38 +6,39 @@
 #include "tiny_obj_loader.h"
 #include "Vertex.h"
 
-bool LoadShader(char* a_filename, GLenum a_shaderType, unsigned int* a_output) {
+//Convenience function for attaching a single shader to a program.
+bool LoadShader(const char* a_filename, GLenum a_shaderType, unsigned int* a_output) {
 	bool succeeded = true;
 
 	FILE* shaderFile = fopen(a_filename, "r");
 
-	//did it open successfully
+	//Ensure the file was found
 	if (shaderFile == 0)
 		return false;
 	else {
-		// find out how long the file is
+		//Enumerate file length
 		fseek(shaderFile, 0, SEEK_END);
 		int shaderFileLen = ftell(shaderFile);
 		fseek(shaderFile, 0, SEEK_SET);
 
-		//allocate enough space for the shader
+		//Create buffer and update the file length
 		char *shaderSource = new char[shaderFileLen];
-		//read the file anmd update the length to be accurate
 		shaderFileLen = fread(shaderSource, 1, shaderFileLen, shaderFile);
-
 
 		int logLength = 0;
 
-		//create the shader handle
+		//Create the shader handle
 		unsigned int shaderHandle = glCreateShader(a_shaderType);
-		//compile the shader
+
+		//Compile the shader
 		glShaderSource(shaderHandle, 1, &shaderSource, &shaderFileLen);
 		glCompileShader(shaderHandle);
-		//catch for errors
+
+		//Catch for errors
 		int success = GL_FALSE;
 		glGetShaderiv(shaderHandle, GL_COMPILE_STATUS, &success);
-		if (success == GL_FALSE)
-		{
+
+		if (success == GL_FALSE) {
 			glGetShaderiv(shaderHandle, GL_INFO_LOG_LENGTH, &logLength);
 			char* log = new char[logLength];
 			glGetShaderInfoLog(shaderHandle, logLength, NULL, log);
@@ -45,6 +46,7 @@ bool LoadShader(char* a_filename, GLenum a_shaderType, unsigned int* a_output) {
 			delete[] log;
 			succeeded = false;
 		}
+
 		if (succeeded)
 			*a_output = shaderHandle;
 
@@ -54,11 +56,14 @@ bool LoadShader(char* a_filename, GLenum a_shaderType, unsigned int* a_output) {
 	return succeeded;
 }
 
-bool LoadShader(char* a_vertexFileName, char* a_geometryFileName, char* a_fragmentFileName, GLuint* a_result) {
+//Convenience function for attaching vertex, geometry and fragment shaders to a program.
+bool LoadShader(const char* a_vertexFileName, const char* a_geometryFileName, const char* a_fragmentFileName, GLuint* a_result) {
 	bool succeeded = true;
 
+	//Make the program
 	*a_result = glCreateProgram();
 
+	//Create each type of shader using the code within the file
 	if (a_vertexFileName != nullptr && a_vertexFileName != 0) {
 		unsigned int vertexShader;
 		LoadShader(a_vertexFileName, GL_VERTEX_SHADER, &vertexShader);
@@ -82,12 +87,10 @@ bool LoadShader(char* a_vertexFileName, char* a_geometryFileName, char* a_fragme
 
 	glLinkProgram(*a_result);
 
+	//Error handling 
 	GLint success;
-
 	glGetProgramiv(*a_result, GL_LINK_STATUS, &success);
-
-	if (success == GL_FALSE)
-	{
+	if (success == GL_FALSE) {
 		GLint log_length;
 		glGetProgramiv(*a_result, GL_INFO_LOG_LENGTH, &log_length);
 
@@ -146,7 +149,7 @@ OpenGLData LoadOBJ(const char* filename){
 	return result;
 }
 
-void RenderPlane(vec4 a_plane) {
+void RenderPlane(const vec4 a_plane) {
 	vec3 up = vec3(0, 1, 0);
 	if (a_plane.xyz() == vec3(0, 1, 0))
 	{

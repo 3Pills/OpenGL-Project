@@ -5,15 +5,15 @@
 #include "Vertex.h"	
 
 typedef unsigned int GLuint;
-bool LoadShader(char* a_filename, GLenum a_shaderType, unsigned int* a_output);
-bool LoadShader(char* a_vertexFileName, char* a_geometryFileName, char* a_fragmentFileName, GLuint* a_result);
+bool LoadShader(const char* a_filename, GLenum a_shaderType, unsigned int* a_output);
+bool LoadShader(const char* a_vertexFileName, const char* a_geometryFileName, const char* a_fragmentFileName, GLuint* a_result);
 void OnMouseButton(GLFWwindow* window, int button, int pressed, int altKeys);
 void OnMousePosition(GLFWwindow* window, double x, double y);
 void OnMouseScroll(GLFWwindow* window, double x, double y);
 void OnKey(GLFWwindow* window, int key, int scanCode, int pressed, int modKeys);
 void OnChar(GLFWwindow* window, unsigned int c);
 void OnWindowResize(GLFWwindow* window, int width, int height);
-void RenderPlane(vec4 a_plane);
+void RenderPlane(const vec4 a_plane);
 
 OpenGLData LoadOBJ(const char* filename);
 

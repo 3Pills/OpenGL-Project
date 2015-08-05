@@ -2,20 +2,26 @@
 #include "AntTweakBar.h"
 #include <string>
 #include "stb_image.h"
+#include <cmath>
 
-VirtualWorld::VirtualWorld(): m_oCamera(50), m_pScale(50.f), m_pOct(6), m_pAmp(0.9f), m_pPers(0.2f), m_ambCol(vec3(0.2f)){
+//VirtualWorld app stored as a global variable. Mainly for AntTweakBar to access the application during button callbacks.
+VirtualWorld* m_app;
+
+//Projection used for rendering all directional lights.
+const mat4 dirLightProj = glm::ortho<float>(-100, 100, -100, 100, -500, 10);
+
+VirtualWorld::VirtualWorld() : m_oCamera(50), m_pScale(50.f), m_pOct(6), m_pAmp(0.9f), m_pPers(0.2f), m_ambCol(vec3(0.f)), 
+m_perlinPos(vec3(1)), m_perlinScale(vec3(1)), m_playerVelocity(vec3(0)), m_playerSpeed(2.0f), m_playerGrounded(false)
+{
 	Application::Application();
+	m_app = this;
 }
 VirtualWorld::~VirtualWorld(){}
-
-//Virtual world app stored as a global variable. Mainly for AntTweakBar to access the application during button callbacks.
-VirtualWorld* m_app;
 
 bool VirtualWorld::startup(){
 	if (!Application::startup()){
 		return false;
 	}
-	m_app = this;
 
 	//AntTweakBar Initialisation.
 	TwInit(TW_OPENGL_CORE, nullptr);
@@ -32,15 +38,18 @@ bool VirtualWorld::startup(){
 	});
 
 	//Initialise camera
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	//Shader Initialisation
+	//Shadow Shader
+	LoadShader("./data/shaders/shadowed_vertex.glsl", 0, "./data/shaders/shadowed_fragment.glsl", &m_shadowProgram);
+
 	//Opaque Geometry Shaders
 	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
 	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_proceduralProgram);
 
 	//Light Pre-Pass Shaders
-	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_dirLightProgram);
+	LoadShader("./data/shaders/directional_light_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_dirLightProgram);
 	LoadShader("./data/shaders/point_light_vertex.glsl", 0, "./data/shaders/point_light_fragment.glsl", &m_pointLightProgram);
 
 	//Final Render Shader
@@ -53,6 +62,7 @@ bool VirtualWorld::startup(){
 
 	//AntTweakBar GUI Settings Initialisation
 	TwBar* m_generalBar = TwNewBar("Debugging");
+	TwAddVarRW(m_generalBar, "Lock Camera", TW_TYPE_BOOL8, &m_oCamera.m_locked, "");
 	TwAddVarRW(m_generalBar, "No Z-Buffer", TW_TYPE_BOOL8, &m_debug[0], "group=Gizmos");
 	TwAddVarRW(m_generalBar, "Draw Grid", TW_TYPE_BOOL8, &m_debug[1], "group=Gizmos");
 	TwAddVarRW(m_generalBar, "Draw PhysX", TW_TYPE_BOOL8, &m_debug[2], "group=Gizmos");
@@ -61,16 +71,23 @@ bool VirtualWorld::startup(){
 	TwAddVarRW(m_generalBar, "Draw Directional Lights", TW_TYPE_BOOL8, &m_debug[5], "group=Gizmos");
 
 	TwBar* m_modelsBar = TwNewBar("Models");
-	//AddFBXModel(new FBXModel("./data/models/characters/Pyro/pyro.fbx", 0.3f, 2.0f));
+	AddFBXModel(new FBXModel("./data/models/characters/Pyro/pyro.fbx", 0.3f, 2.0f, glm::scale(vec3(0.01f))));
+	m_player = m_physScene.AddPlayerController(PxExtendedVec3(0.f, 55.f, 0.f), m_physScene.m_physics->createMaterial(0.5f, 0.5f, 0.5f), m_FBXModels.back());
+	m_FBXModels.back()->m_parentTransform = false; //Disable player model rotating with PlayerCollider (It doesn't rotate)
+
+	AddFBXModel(new FBXModel("./data/models/characters/SoulSpear/soulspear.fbx", 0.3f, 2.0f));
+	m_physScene.AttachRigidBodyConvex(PxTransform(20, 60, 20), m_physScene.m_physics->createMaterial(1, 1, .2f), m_FBXModels.back(), 100.f, 100.f);
 
 	//modTransform for bombs.
-	mat4 bombTransform = glm::translate(vec3(0.1f, 0.4f, 0)) * glm::scale(vec3(0.1f)) * glm::rotate(glm::radians(-90.0f), vec3(1, 0, 0));
-	//AddFBXModel("./data/models/items/bomb.fbx", vec3(5), 0.3f, 2.0f, );
-	//AddFBXModel(new FBXModel("./data/models/characters/SoulSpear/soulspear.fbx", 0.3f, 2.0f));
-	//m_physScene.AttachRigidBodyConvex(PxTransform(0, 10, 0), m_physScene.m_physics->createMaterial(1, 1, .2f), m_FBXModels.back(), 100.f, 100.f);
-
+	mat4 bombTransform = glm::translate(vec3(0.1f, 0.4f, 0)) * glm::scale(vec3(0.125f)) * glm::rotate(glm::radians(-90.0f), vec3(1, 0, 0));
+	AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
+	m_physScene.AddRigidBodyDynamic(PxTransform(-20, 60, -20), &PxSphereGeometry(2.0f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 10.f);
 	//AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
-	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 10, 0), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 100.f);
+	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 28, 1), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 100.f);
+	//AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
+	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 24, 0), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 100.f);
+	//AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
+	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 32, 0), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 100.f);
 
 	//AddFBXModel(new FBXModel("./data/models/characters/SoulSpear/soulspear.fbx", 0.3f, 2.0f));
 	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 7, 0), &PxCapsuleGeometry(0.25f, 4.0f), m_physScene.m_physics->createMaterial(1, 1, .2f), m_FBXModels.back(), 400.f);
@@ -108,7 +125,7 @@ bool VirtualWorld::startup(){
 	}, nullptr, "");
 
 	//Buttons to add and remove directional lights from the program
-	TwAddButton(m_lightingBar, "Add Directional Light", [](void*){m_app->AddDirectionalLight(); }, nullptr, "");
+	TwAddButton(m_lightingBar, "Add Directional Light", [](void*){ m_app->AddDirectionalLight(); }, nullptr, "");
 	TwAddButton(m_lightingBar, "Remove Directional Light", [](void*){
 		TwBar* m_lightingBar = TwGetBarByName("Lighting");
 		if (m_lightingBar == nullptr || m_app->m_dirLights.size() <= 0) return;
@@ -123,7 +140,7 @@ bool VirtualWorld::startup(){
 
 	TwAddVarRW(m_lightingBar, "Ambient Color", TW_TYPE_COLOR3F, &m_ambCol, "");
 	AddPointLight(vec3(0, 20, 10), vec3(1), 100);
-	AddDirectionalLight(vec3(0, -1, 0), vec3(1)); 
+	AddDirectionalLight(vec3(-1), vec3(1)); 
 	
 	//Initialise Procedural Landscape
 	vec2 meshDims = glm::vec2(800, 800);
@@ -131,18 +148,27 @@ bool VirtualWorld::startup(){
 
 	BuildProceduralGrid(meshDims, textDims);
 	BuildPerlinTexture(textDims, m_pOct, m_pAmp, m_pPers);
-	m_physScene.AddHeightMap(m_perlinData, m_physScene.m_physics->createMaterial(1, 1, 1), textDims, vec3(meshDims.x, m_pScale, meshDims.y));
+	m_physScene.AddHeightMap(m_perlinData, m_physScene.m_physics->createMaterial(1, 1, 1), textDims, vec3(meshDims.x, m_pScale + 2.f, meshDims.y), 4);
+
+	//Add a wall around the world, based on the size of the perlin mesh.
+	m_physScene.AddWorldBounds(vec3(meshDims.x / 2, 1000, meshDims.y / 2));
 
 	//Add procedural generation variables to debugging GUI window. 
-	TwAddVarRW(m_generalBar, "Scale",		TW_TYPE_FLOAT, &m_pScale,	"group=ProceduralGeneration min=0 step=0.05");
-	TwAddVarRW(m_generalBar, "Octaves",		TW_TYPE_INT32, &m_pOct,		"group=ProceduralGeneration min=1 max=10"); //Don't want octaves to go too high. Will choke CPU on reload.
-	TwAddVarRW(m_generalBar, "Amplitude",	TW_TYPE_FLOAT, &m_pAmp,		"group=ProceduralGeneration min=0 step=0.01");
-	TwAddVarRW(m_generalBar, "Persistance", TW_TYPE_FLOAT, &m_pPers,	"group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Scale",		TW_TYPE_FLOAT, &m_pScale,		 "group=ProceduralGeneration min=0 step=0.05");
+	TwAddVarRW(m_generalBar, "Octaves",		TW_TYPE_INT32, &m_pOct,			 "group=ProceduralGeneration min=1 max=10"); //Don't want octaves to go too high. Will choke CPU if reloaded.
+	TwAddVarRW(m_generalBar, "Amplitude",	TW_TYPE_FLOAT, &m_pAmp,			 "group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Persistance", TW_TYPE_FLOAT, &m_pPers,		 "group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Position_X",	TW_TYPE_FLOAT, &m_perlinPos.x,	 "group=ProceduralGeneration step=0.01");
+	TwAddVarRW(m_generalBar, "Position_Y",	TW_TYPE_FLOAT, &m_perlinPos.y,	 "group=ProceduralGeneration step=0.01");
+	TwAddVarRW(m_generalBar, "Position_Z",	TW_TYPE_FLOAT, &m_perlinPos.z,	 "group=ProceduralGeneration step=0.01");
+	TwAddVarRW(m_generalBar, "Scale_X",		TW_TYPE_FLOAT, &m_perlinScale.x, "group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Scale_Y",		TW_TYPE_FLOAT, &m_perlinScale.y, "group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Scale_Z",		TW_TYPE_FLOAT, &m_perlinScale.z, "group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Rotation",	TW_TYPE_QUAT4F,&m_perlinRot,	 "");
 	//Only the scale variable affects simulation in realtime. All others require recreating the perlinTexture.
 
-	m_cloths.push_back(new ClothData(1, 10, 20));
-	AddCloth(m_physScene.AddCloth(vec3(0, 40, 0), m_cloths.back()->m_vertexCount, m_cloths.back()->m_indexCount, m_cloths.back()->m_vertices, m_cloths.back()->m_indices));
-	m_cloths.back()->GLGenBuffers();
+	//m_cloths.push_back(new ClothData(4, 4, 8));
+	//AddCloth(m_physScene.AddCloth(vec3(0, 40, 0), m_cloths.back()->m_vertexCount, m_cloths.back()->m_indexCount, m_cloths.back()->m_vertices, m_cloths.back()->m_indices));
 
 	Gizmos::create();
 	return true;
@@ -158,7 +184,6 @@ bool VirtualWorld::shutdown(){
 	for (FBXModel* model : m_FBXModels) {
 		delete model;
 	}
-
 
 	for (ClothData* cloth : m_cloths) {
 		delete cloth;
@@ -176,6 +201,7 @@ bool VirtualWorld::shutdown(){
 	glDeleteProgram(m_dirLightProgram);
 	glDeleteProgram(m_pointLightProgram);
 	glDeleteProgram(m_proceduralProgram);
+	glDeleteProgram(m_shadowProgram);
 
 	//GUI Termination
 	TwTerminate(); //End ATB
@@ -189,7 +215,6 @@ bool VirtualWorld::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
 	Gizmos::clear();
 
 	//Button Input for shader reloading. Uses lastKey variable to only pass the first frame the key is pressed.
@@ -204,6 +229,15 @@ bool VirtualWorld::update(){
 	m_lastKey[0] = glfwGetKey(m_window, GLFW_KEY_R);
 	m_lastKey[1] = glfwGetKey(m_window, GLFW_KEY_T);
 
+	m_physScene.Update(m_fDeltaTime, m_debug[2]);
+	PlayerUpdate();
+
+	for (FBXModel* model : m_FBXModels) {
+		model->Update(m_fDeltaTime);
+	}
+
+	m_oCamera.Update(m_fDeltaTime, ((FBXModel*)m_player->getActor()->userData)->m_pos);
+
 	//Defining Gizmos debug colors.
 	vec4 white(1);
 	vec4 black(0.3, 0.3, 0.3, 1); //Black not pure black, as deferred rendering requires a clearcolor of pure black.
@@ -216,18 +250,6 @@ bool VirtualWorld::update(){
 			Gizmos::addLine(vec3(-10, 0, -10 + i), i != 10 ? vec3(10, 0, -10 + i) : vec3(0, 0, -10 + i), i != 10 ? black : white);
 		}
 	}
-
-	m_physScene.Update(m_fDeltaTime, m_debug[2]);
-
-	for (FBXModel* model : m_FBXModels) {
-		model->Update(m_fDeltaTime);
-	}
-
-
-	//Parenting of particle position.
-	//if (m_pointLights.size() > 0)
-	//	m_particleEmitters[0]->m_pos = m_pointLights[0].m_pos;
-
 	return true;
 }
 
@@ -241,7 +263,31 @@ void VirtualWorld::draw(){
 	//Enable Face Culling of polygons facing away from camera.
 	glEnable(GL_CULL_FACE);
 
+	//Shadow Depth Rendering
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
+	glViewport(0, 0, 1024, 1024);
+	glClear(GL_DEPTH_BUFFER_BIT);
+
+	glUseProgram(m_shadowProgram);
+
+	glCullFace(GL_FRONT);
+	for (DirectionalLight light : m_dirLights) {
+		mat4 lightView = glm::lookAt(vec3(0), light.m_dir, vec3(0, 1, 0));
+		mat4 lightMatrix = dirLightProj * lightView * mat4(1);
+
+		int lightMatrix_uniform = glGetUniformLocation(m_shadowProgram, "lightMatrix");
+		glUniformMatrix4fv(lightMatrix_uniform, 1, GL_FALSE, (float*)&lightMatrix);
+
+		for (FBXModel* model : m_FBXModels){
+			model->Render(&m_oCamera, false, &lightMatrix);
+		}
+		glBindVertexArray(m_planeMesh.m_VAO);
+		glDrawElements(GL_TRIANGLES, m_planeMesh.m_indexCount, GL_UNSIGNED_INT, 0);
+	}
+	glCullFace(GL_BACK);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO);
+	glViewport(0, 0, m_iWidth, m_iHeight);
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearBufferfv(GL_COLOR, 0, (float*)&vec4(0.0f));
@@ -252,14 +298,15 @@ void VirtualWorld::draw(){
 	//glDepthMask(GL_FALSE);
 	glUseProgram(m_proceduralProgram);
 
-	//int loc = glGetUniformLocation(m_proceduralProgram, "world");
-	//glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.getWorldTransform());
-
 	int loc = glGetUniformLocation(m_proceduralProgram, "view");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.getView());
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetView());
 
 	loc = glGetUniformLocation(m_proceduralProgram, "projView");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
+
+	m_perlinTransform = glm::translate(m_perlinPos) * glm::scale(m_perlinScale) * glm::toMat4(m_perlinRot);
+	loc = glGetUniformLocation(m_proceduralProgram, "transform");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_perlinTransform);
 
 	loc = glGetUniformLocation(m_proceduralProgram, "scale");
 	glUniform1f(loc, m_pScale);
@@ -285,18 +332,18 @@ void VirtualWorld::draw(){
 	glUseProgram(m_gBufferProgram);
 
 	loc = glGetUniformLocation(m_gBufferProgram, "view");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.getView());
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetView());
 
 	loc = glGetUniformLocation(m_gBufferProgram, "projView");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 
 	//Opaque Drawing
 
 	for (ClothData* cloth : m_cloths) {
-		cloth->draw();
+		cloth->Render(&m_oCamera);
 	}
 	for (FBXModel* model : m_FBXModels){
-		model->RenderDeferred(m_oCamera);
+		model->Render(&m_oCamera, true);
 	}
 
 	//Light Rendering
@@ -334,7 +381,7 @@ void VirtualWorld::draw(){
 
 	//Draw Gizmos at the end of the transparency pass, to retain depth culling without lighting.
 	if (!m_debug[0]) {
-		Gizmos::draw(m_oCamera.getProjectionView());
+		Gizmos::draw(m_oCamera.GetProjectionView());
 	}
 
 	//Composite Rendering
@@ -346,8 +393,9 @@ void VirtualWorld::draw(){
 	glUseProgram(m_compositeProgram);
 
 	glUniform1i(glGetUniformLocation(m_compositeProgram, "albedoTexture"), 0);
-	glUniform1i(glGetUniformLocation(m_compositeProgram, "lightTexture"), 1);
-	glUniform1i(glGetUniformLocation(m_compositeProgram, "fxTexture"), 2);
+	glUniform1i(glGetUniformLocation(m_compositeProgram, "lightTexture"),  1);
+	glUniform1i(glGetUniformLocation(m_compositeProgram, "fxTexture"),	   2);
+	glUniform1i(glGetUniformLocation(m_compositeProgram, "shadowMap"),	   3);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_albedoTexture);
@@ -355,6 +403,8 @@ void VirtualWorld::draw(){
 	glBindTexture(GL_TEXTURE_2D, m_lightTexture);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_fxTexture);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 
 	loc = glGetUniformLocation(m_compositeProgram, "ambCol");
 	glUniform3fv(loc, 1, (float*)&m_ambCol);
@@ -369,7 +419,7 @@ void VirtualWorld::draw(){
 
 	//Gizmos without any depth culling.
 	if (m_debug[0]) {
-		Gizmos::draw(m_oCamera.getProjectionView());
+		Gizmos::draw(m_oCamera.GetProjectionView());
 	}
 
 	TwDraw();
@@ -382,8 +432,10 @@ void VirtualWorld::RenderDirectionalLights() {
 
 	//Tell the shader which slot holds each texture
 	glUniform1i(glGetUniformLocation(m_dirLightProgram, "positionTexture"), 0);
-	glUniform1i(glGetUniformLocation(m_dirLightProgram, "normalTexture"),   1);
+	glUniform1i(glGetUniformLocation(m_dirLightProgram, "normalTexture"), 1);
 	glUniform1i(glGetUniformLocation(m_dirLightProgram, "specularTexture"), 2);
+	glUniform1i(glGetUniformLocation(m_dirLightProgram, "worldPosTexture"), 3);
+	glUniform1i(glGetUniformLocation(m_dirLightProgram, "shadowMap"), 4);
 
 	//Bind the textures to the slots
 	glActiveTexture(GL_TEXTURE0);
@@ -392,19 +444,42 @@ void VirtualWorld::RenderDirectionalLights() {
 	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, m_worldPosTexture);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+
+	mat4 offsetScale = mat4(
+		0.5f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.5f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.5f, 0.0f,
+		0.5f, 0.5f, 0.5f, 1.0f);
 
 	//Assign uniform locations outside of loop, for efficiency.
 	int lightDir_uniform = glGetUniformLocation(m_dirLightProgram, "lightDir");
 	int lightCol_uniform = glGetUniformLocation(m_dirLightProgram, "lightCol");
+	int lightMat_uniform = glGetUniformLocation(m_dirLightProgram, "lightMatrix");
+
+	int loc = glGetUniformLocation(m_dirLightProgram, "projView");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
+	loc = glGetUniformLocation(m_dirLightProgram, "world");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetWorldTransform());
+
 
 	for (DirectionalLight light : m_dirLights) {
-		vec4 viewspaceLightDir = m_oCamera.getView() * vec4(glm::normalize(light.m_dir), 0);
+		mat4 lightView = glm::lookAt(vec3(0), light.m_dir, vec3(0, 1, 0));
+		mat4 lightMatrix = dirLightProj * lightView * mat4(1);
+		lightMatrix = offsetScale * lightMatrix;
+
+		vec4 viewspaceLightDir = m_oCamera.GetView() * vec4(glm::normalize(light.m_dir), 0);
 		if (m_debug[5]) {
 			Gizmos::addSphere(-light.m_dir * 15000, 350, 8, 8, vec4(light.m_color, 0.5));
 		}
 
+		//Assign uniforms during loop
 		glUniform3fv(lightDir_uniform, 1, (float*)&viewspaceLightDir);
 		glUniform3fv(lightCol_uniform, 1, (float*)&light.m_color);
+		glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&lightMatrix);
 
 		glBindVertexArray(m_screenspaceQuad.m_VAO);
 		glDrawElements(GL_TRIANGLES, m_screenspaceQuad.m_indexCount, GL_UNSIGNED_INT, 0);
@@ -415,11 +490,13 @@ void VirtualWorld::RenderPointLights() {
 	glUseProgram(m_pointLightProgram);
 
 	int loc = glGetUniformLocation(m_pointLightProgram, "projView");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "positionTexture"), 0);
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "normalTexture"),   1);
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "specularTexture"), 2);
+	glUniform1i(glGetUniformLocation(m_pointLightProgram, "worldPosTexture"), 3);
+	glUniform1i(glGetUniformLocation(m_pointLightProgram, "shadowMap"), 4);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_positionTexture);
@@ -427,6 +504,10 @@ void VirtualWorld::RenderPointLights() {
 	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, m_worldPosTexture);
+	glActiveTexture(GL_TEXTURE4);
+	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 
 	//Assign uniform locations outside of loop, for efficiency.
 	int lightPos_uniform = glGetUniformLocation(m_pointLightProgram, "lightPos");
@@ -436,7 +517,7 @@ void VirtualWorld::RenderPointLights() {
 
 
 	for (PointLight light : m_pointLights) {
-		vec4 viewspaceLightPos = m_oCamera.getView() * vec4(light.m_pos, 1);
+		vec4 viewspaceLightPos = m_oCamera.GetView() * vec4(light.m_pos, 1);
 		if (m_debug[4]) {
 			Gizmos::addAABB(light.m_pos, vec3(0.5), vec4(light.m_color, 1));
 		}
@@ -550,7 +631,8 @@ void VirtualWorld::AddParticleEmitter(GPUEmitter* a_particle) {
 }
 
 void VirtualWorld::AddCloth(PxCloth* a_cloth) {
-	//m_cloths.push_back(a_cloth);
+	m_cloths.back()->m_cloth = a_cloth;
+	m_cloths.back()->GenerateGLBuffers();
 }
 
 //Build the screenspace quad that will display the final render graphic.
@@ -646,6 +728,32 @@ void VirtualWorld::BuildCube() {
 }
 
 void VirtualWorld::BuildFrameBuffers() {
+	//ShadowMap Framebuffer
+	glGenFramebuffers(1, &m_shadowFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
+
+	glGenTextures(1, &m_shadowMap);
+	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	//Define special parameter to force red channel to be compared to depth channel.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadowMap, 0);
+
+	glDrawBuffer(GL_NONE);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+		printf("Error creating Shadow Buffer!\n");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	//Geometry Framebuffer
 	glGenFramebuffers(1, &m_gBufferFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO);
@@ -659,19 +767,25 @@ void VirtualWorld::BuildFrameBuffers() {
 
 	glGenTextures(1, &m_positionTexture);
 	glBindTexture(GL_TEXTURE_2D, m_positionTexture);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16F, m_iWidth, m_iHeight);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, m_iWidth, m_iHeight);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	glGenTextures(1, &m_normalTexture);
 	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16F, m_iWidth, m_iHeight);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, m_iWidth, m_iHeight);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 	glGenTextures(1, &m_specularTexture);
 	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA16F, m_iWidth, m_iHeight);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, m_iWidth, m_iHeight);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	glGenTextures(1, &m_worldPosTexture);
+	glBindTexture(GL_TEXTURE_2D, m_worldPosTexture);
+	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, m_iWidth, m_iHeight);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
@@ -683,12 +797,13 @@ void VirtualWorld::BuildFrameBuffers() {
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_positionTexture, 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_normalTexture, 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_specularTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, m_worldPosTexture, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthTexture);
 
-	GLenum gPassTargets[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-	glDrawBuffers(4, gPassTargets);
+	GLenum gPassTargets[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
+	glDrawBuffers(5, gPassTargets);
 
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 		printf("Error creating gbuffer!\n");
 
@@ -836,11 +951,14 @@ void VirtualWorld::ReloadShaders(){
 	glDeleteProgram(m_compositeProgram);
 	glDeleteProgram(m_dirLightProgram);
 	glDeleteProgram(m_pointLightProgram);
+	glDeleteProgram(m_proceduralProgram);
+	glDeleteProgram(m_shadowProgram);
 
+	LoadShader("./data/shaders/shadowed_vertex.glsl", 0, "./data/shaders/shadowed_fragment.glsl", &m_shadowProgram);
 	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
 	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_proceduralProgram);
 	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/composite_fragment.glsl", &m_compositeProgram);
-	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_dirLightProgram);
+	LoadShader("./data/shaders/directional_light_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_dirLightProgram);
 	LoadShader("./data/shaders/point_light_vertex.glsl", 0, "./data/shaders/point_light_fragment.glsl", &m_pointLightProgram);
 
 	for (GPUEmitter* particle : m_particleEmitters) {
@@ -859,4 +977,76 @@ void VirtualWorld::resize(int a_width, int a_height){
 	m_iHeight = a_height;
 	BuildFrameBuffers();
 	BuildQuad();
+}
+
+void VirtualWorld::PlayerUpdate() {
+	//Access the FBXModel class of the player, stored as userData within the actor
+	FBXModel* playerModel = (FBXModel*)m_player->getActor()->userData;
+
+	//scan the keys and set up our intended velocity
+	vec3 velocity(0, 0, 0);
+	if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS) {
+		velocity.z -= 1;
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		velocity.z += 1;
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		velocity.x -= 1;
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		velocity.x += 1;
+	}
+	//Normalize velocity vector, to stop diagonals getting more speed.
+	if (velocity != vec3(0)) {
+		glm::normalize(velocity);
+		playerModel->SetAnimation(eRUN);
+	}
+	else {
+		playerModel->SetAnimation(eIDLE);
+	}
+	velocity *= m_playerSpeed * m_fDeltaTime;
+
+	//Make controls relative to camera direction.
+	//Flatten the camera foward and player positions so a camera looking up or down will not affect the final velocity.
+	vec3 camForward = vec3(m_oCamera.GetWorldTransform()[2].x, 0, m_oCamera.GetWorldTransform()[2].z);
+	vec3 playerFlat = vec3(m_player->getPosition().x, 0, m_player->getPosition().z); 
+
+	//Create a rotation quaternion to rotate the velocity in the direction of the camera forward.
+	quat cameraRot = glm::conjugate(glm::toQuat(glm::lookAt(playerFlat, playerFlat - camForward, vec3(0, 1, 0))));
+	vec3 rotVelocity = cameraRot * velocity;
+
+	m_playerVelocity += rotVelocity;
+
+	//Create a flattened movement direction for ground movement.
+	vec3 moveDir = vec3(m_playerVelocity.x, 0, m_playerVelocity.z);
+
+	//Dampen movement on X and Z axis, but not the Y axis.
+	moveDir *= 0.95f;
+	m_playerVelocity = vec3(moveDir.x, m_playerVelocity.y, moveDir.z);
+
+	//Access the hitreport, stored as userdata within the controller.
+	PlayerHitReport* hitReport = (PlayerHitReport*)m_player->getUserData();
+	//check if we have a contact normal. if y is greater than .3 we assume this is solid ground.This is a rather primitive way to do this.Can you do better ?
+	if (hitReport->getPlayerContactNormal().y > .3f) {
+		m_playerVelocity.y = -0.1f;
+		m_playerGrounded = true;
+
+		if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+			m_playerVelocity.y = 0.5f;
+		}
+	}
+	else {
+		m_playerVelocity.y += -1.5f * m_fDeltaTime;
+		m_playerGrounded = false;
+	}
+	hitReport->clearPlayerContactNormal();
+
+	//Move the controller.
+	m_player->move(PxVec3(moveDir.x, m_playerVelocity.y, moveDir.z), 0.001f, m_fDeltaTime, PxControllerFilters());
+	
+	//Rotate the player model if the controller is moving fast enough.
+	if (glm::length(moveDir) > 0.001f) {
+		playerModel->m_rot = conjugate(glm::toQuat(glm::lookAt(vec3(0), -moveDir, vec3(0, 1, 0))));
+	}
 }

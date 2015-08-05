@@ -25,7 +25,7 @@ bool DeferredRendering::startup(){
 
 	glfwSetWindowSizeCallback(m_window, OnWindowResize);
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	BuildMesh();
 	BuildQuad();
@@ -53,7 +53,7 @@ bool DeferredRendering::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	Gizmos::clear();
 	Gizmos::addTransform(mat4(1), 10);
 
@@ -91,9 +91,9 @@ void DeferredRendering::draw(){
 	int projView_uniform = glGetUniformLocation(m_gBufferProgram, "projView");
 
 	if (view_uniform > -1)
-		glUniformMatrix4fv(view_uniform, 1, GL_FALSE, (float*)&m_oCamera.getView());
+		glUniformMatrix4fv(view_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetView());
 	if (projView_uniform > -1)
-		glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+		glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 
 	glBindVertexArray(m_bunny.m_VAO);
 	glDrawElements(GL_TRIANGLES, m_bunny.m_indexCount, GL_UNSIGNED_INT, 0);
@@ -132,7 +132,7 @@ void DeferredRendering::draw(){
 	int normalTexture_uniform = glGetUniformLocation(m_pointLightProgram, "normalTexture");
 
 	if (projView_uniform > -1)
-		glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+		glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 	if (positionTexture_uniform > -1)
 		glUniform1i(positionTexture_uniform, 0);
 	if (normalTexture_uniform > -1)
@@ -384,7 +384,7 @@ void DeferredRendering::BuildCube() {
 
 void DeferredRendering::RenderDirectionalLight(vec3 a_lightDir, vec3 a_lightColor)
 {
-	vec4 viewspaceLightDir = m_oCamera.getView() * vec4(glm::normalize(a_lightDir), 0);
+	vec4 viewspaceLightDir = m_oCamera.GetView() * vec4(glm::normalize(a_lightDir), 0);
 
 	int lightDir_uniform = glGetUniformLocation(m_directionalLightProgram, "lightDir");
 	int lightColor_uniform = glGetUniformLocation(m_directionalLightProgram, "lightColor");
@@ -397,7 +397,7 @@ void DeferredRendering::RenderDirectionalLight(vec3 a_lightDir, vec3 a_lightColo
 }
 
 void DeferredRendering::RenderPointLight(vec3 a_lightPos, float a_radius, vec3 a_lightColor){
-	vec4 viewspaceLightPos = m_oCamera.getView() * vec4(a_lightPos, 1);
+	vec4 viewspaceLightPos = m_oCamera.GetView() * vec4(a_lightPos, 1);
 
 	int lightPos_uniform = glGetUniformLocation(m_pointLightProgram, "lightPos");
 	int lightViewPos_uniform = glGetUniformLocation(m_pointLightProgram, "lightViewPos");

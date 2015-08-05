@@ -25,7 +25,7 @@ bool ProceduralGeneration::startup(){
 
 	glfwSetWindowSizeCallback(m_window, OnWindowResize);
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	glm::ivec2 dims = glm::ivec2(256, 256);
 	BuildGrid(vec2(40, 40), dims);
@@ -53,7 +53,7 @@ bool ProceduralGeneration::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 	Gizmos::clear();
 	Gizmos::addTransform(mat4(1), 10);
 
@@ -83,7 +83,7 @@ void ProceduralGeneration::draw(){
 	int perlinTexture_uniform = glGetUniformLocation(m_programID, "perlinTexture");
 	int scale_uniform = glGetUniformLocation(m_programID, "scale");
 
-	glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+	glUniformMatrix4fv(projView_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 	glUniform1f(scale_uniform, m_pScale);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -94,7 +94,7 @@ void ProceduralGeneration::draw(){
 	glDrawElements(GL_TRIANGLES, m_planeMesh.m_indexCount, GL_UNSIGNED_INT, 0);
 
 	TwDraw();
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	Application::draw();
 }
 

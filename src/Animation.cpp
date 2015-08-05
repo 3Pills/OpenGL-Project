@@ -24,7 +24,7 @@ bool Animation::startup(){
 
 	glfwSetWindowSizeCallback(m_window, OnWindowResize);
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	m_model = new FBXModel("./data/models/characters/Pyro/pyro.fbx");
 
@@ -48,7 +48,7 @@ bool Animation::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 
 	m_model->m_ambCol = m_vAmbCol;
 	m_model->m_lightDir = -m_vLightPos;
@@ -75,7 +75,7 @@ bool Animation::update(){
 void Animation::draw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	m_model->Render(m_oCamera);
+	m_model->Render(&m_oCamera);
 
 	//for (unsigned int i = 0; i < skeleton->m_boneCount; ++i) {
 	//	skeleton->m_nodes[i]->updateGlobalTransform();
@@ -89,7 +89,7 @@ void Animation::draw(){
 	//	}
 	//}
 
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	TwDraw();
 	Application::draw();
 }

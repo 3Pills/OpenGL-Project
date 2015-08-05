@@ -13,7 +13,7 @@ bool SceneManagement::startup(){
 		return false;
 	}
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	LoadMesh("./data/models/stanford/bunny.obj");
 	float extents = 1000.0f;
@@ -46,7 +46,7 @@ bool SceneManagement::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 
 	return true;
 }
@@ -68,7 +68,7 @@ void SceneManagement::draw(){
 
 	int viewProj_uniform = glGetUniformLocation(m_programID, "projView");
 	if (viewProj_uniform > -1) {
-		glUniformMatrix4fv(viewProj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+		glUniformMatrix4fv(viewProj_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 	}
 	int ambCol_uniform = glGetUniformLocation(m_programID, "ambCol");
 	if (ambCol_uniform > -1) {
@@ -88,7 +88,7 @@ void SceneManagement::draw(){
 	}
 	int camPos_uniform = glGetUniformLocation(m_programID, "camPos");
 	if (camPos_uniform > -1) {
-		glUniform3fv(camPos_uniform, 1, (float*)&m_oCamera.getWorldTransform()[3].xyz);
+		glUniform3fv(camPos_uniform, 1, (float*)&m_oCamera.GetWorldTransform()[3].xyz);
 	}
 	int specPow_uniform = glGetUniformLocation(m_programID, "specPow");
 	if (specPow_uniform > -1) {
@@ -97,7 +97,7 @@ void SceneManagement::draw(){
 	int world_uniform = glGetUniformLocation(m_programID, "world");
 
 	vec4 planes[6];
-	m_oCamera.getFrustumPlanes(planes);
+	m_oCamera.GetFrustumPlanes(planes);
 
 	for (unsigned int mesh_index = 0; mesh_index < m_meshes.size(); ++mesh_index) {
 		bool isInFrustum = true;
@@ -116,7 +116,7 @@ void SceneManagement::draw(){
 		RenderPlane(m_meshes[mesh_index].m_transform[3]);
 	}
 
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 	Application::draw();
 }
 

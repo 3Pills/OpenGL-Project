@@ -11,7 +11,7 @@ bool RenderTargets::startup(){
 		return false;
 	}
 
-	m_oCamera.setPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
+	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	GenerateFramebuffer();
 	GeneratePlane();
@@ -29,7 +29,7 @@ bool RenderTargets::update(){
 	if (!Application::update()){
 		return false;
 	}
-	m_oCamera.update(m_fDeltaTime);
+	m_oCamera.Update(m_fDeltaTime);
 
 	return true;
 }
@@ -54,7 +54,7 @@ void RenderTargets::draw(){
 	glClearColor(0.75f, 0.75f, 0.75f, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	mat4 world = m_oCamera.getWorldTransform();
+	mat4 world = m_oCamera.GetWorldTransform();
 
 	vec4 plane = vec4(0, 0, 1, -5);
 	vec3 reflected = glm::reflect(-world[2].xyz(), plane.xyz());
@@ -73,13 +73,13 @@ void RenderTargets::draw(){
 
 
 	mat4 view = glm::inverse(world);
-	mat4 projView = m_oCamera.getProjection() * view;
+	mat4 projView = m_oCamera.GetProjection() * view;
 
 	glUseProgram(m_programID);
 
 	int view_proj_uniform = glGetUniformLocation(m_programID, "projView");
 	if (view_proj_uniform > -1)
-		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.getProjectionView());
+		glUniformMatrix4fv(view_proj_uniform, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
@@ -99,7 +99,7 @@ void RenderTargets::draw(){
 	glClearColor(0.3f, 0.3f, 0.3f, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	Gizmos::draw(m_oCamera.getProjectionView());
+	Gizmos::draw(m_oCamera.GetProjectionView());
 
 	int view_proj_reflected_uniform = glGetUniformLocation(m_programID, "projViewReflected");
 	if (view_proj_reflected_uniform > -1)
