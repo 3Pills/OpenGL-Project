@@ -346,18 +346,6 @@ PxRigidStatic* PhysScene::AddHeightMap(float* a_heightMap, PxMaterial* a_physMat
 
 	int heightMapResolution = 20000;
 
-	//index variable used to advance the perlinData array by the downscale factor.
-	//Pass perlinData into a PXHeightFieldSample
-	//for (int i = 0; i < sampleCount; i++) {
-	//	//Advance to the next set of perlin data appropriate to the collision mesh
-	//	if (i != 0 && i % hfDesc.nbColumns == 0) {
-	//		index += (hfDesc.nbColumns * (a_downScale - 1));
-	//	}
-	//	heightSampleData[i].height = PxI16(a_heightMap[(index * a_downScale)] * heightMapResolution);
-	//	heightSampleData[i].materialIndex0 = 0;
-	//	heightSampleData[i].materialIndex1 = 0;
-	//	index++;
-	//}
 	int index = 0;
 	for (unsigned int i = 0; i < hfDesc.nbRows; i++) {
 		for (unsigned int j = 0; j < hfDesc.nbColumns; j++) {
@@ -373,7 +361,7 @@ PxRigidStatic* PhysScene::AddHeightMap(float* a_heightMap, PxMaterial* a_physMat
 	hfDesc.samples.stride = sizeof(PxHeightFieldSample);
 
 	//Conversion from texture size to mesh size.
-	float xRatio = (a_scale.x / (hfDesc.nbRows-1)), yRatio = (a_scale.z / (hfDesc.nbColumns-1));
+	float xRatio = (a_scale.x / (hfDesc.nbRows - 1)), yRatio = (a_scale.z / (hfDesc.nbColumns - 1));
 
 	PxHeightField* aHeightField = m_physics->createHeightField(hfDesc);
 	PxHeightFieldGeometry hfGeom(aHeightField, PxMeshGeometryFlags(), (1.0f / heightMapResolution) * (a_scale.y), xRatio, yRatio);
