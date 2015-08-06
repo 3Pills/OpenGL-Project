@@ -4,6 +4,7 @@
 #include <GLFW\glfw3.h>
 #include "Gizmos.h"
 #include "tiny_obj_loader.h"
+#include "stb_image.h"
 #include "Vertex.h"
 
 //Convenience function for attaching a single shader to a program.
@@ -106,6 +107,18 @@ bool LoadShader(const char* a_vertexFileName, const char* a_geometryFileName, co
 	return succeeded;
 }
 
+void LoadTexture(const char* a_filename, unsigned int* a_textureHandle) {
+	int width, height, channels;
+	unsigned char* data = stbi_load(a_filename, &width, &height, &channels, STBI_default);
+
+	glGenTextures(1, a_textureHandle);
+	glBindTexture(GL_TEXTURE_2D, *a_textureHandle);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
 
 OpenGLData LoadOBJ(const char* filename){
 	OpenGLData result = {};

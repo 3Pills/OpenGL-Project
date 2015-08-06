@@ -7,6 +7,7 @@
 typedef unsigned int GLuint;
 bool LoadShader(const char* a_filename, GLenum a_shaderType, unsigned int* a_output);
 bool LoadShader(const char* a_vertexFileName, const char* a_geometryFileName, const char* a_fragmentFileName, GLuint* a_result);
+void LoadTexture(const char* a_filename, unsigned int* a_textureHandle);
 void OnMouseButton(GLFWwindow* window, int button, int pressed, int altKeys);
 void OnMousePosition(GLFWwindow* window, double x, double y);
 void OnMouseScroll(GLFWwindow* window, double x, double y);
@@ -15,6 +16,6 @@ void OnChar(GLFWwindow* window, unsigned int c);
 void OnWindowResize(GLFWwindow* window, int width, int height);
 void RenderPlane(const vec4 a_plane);
 
-OpenGLData LoadOBJ(const char* filename);
+OpenGLData LoadOBJ(const char* a_filename);
 
 #endif//_UTILITY_H_

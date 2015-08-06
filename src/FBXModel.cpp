@@ -123,6 +123,9 @@ void FBXModel::Render(Camera* a_camera, bool a_deferred, mat4* a_projView) {
 	loc = glGetUniformLocation(program, "fresnelScale");
 	glUniform1f(loc, m_fresnelScale);
 
+	loc = glGetUniformLocation(program, "textureScale");
+	glUniform1f(loc, 1.0f);
+
 	loc = glGetUniformLocation(program, "diffuse");
 	glUniform1i(loc, 0);
 

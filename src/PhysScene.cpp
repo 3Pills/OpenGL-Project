@@ -554,6 +554,9 @@ void ClothData::Render(Camera* a_camera) {
 	loc = glGetUniformLocation(m_program, "projView");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&a_camera->GetProjectionView());
 
+	loc = glGetUniformLocation(m_program, "textureScale");
+	glUniform1f(loc, 1.0f);
+
 	//Updating the position and normal data of the cloth. To access this data the cloth must be locked.
 	PxClothParticleData* data = m_cloth->lockParticleData(PxDataAccessFlag::eREADABLE);
 	unsigned int particleCount = m_cloth->getNbParticles();

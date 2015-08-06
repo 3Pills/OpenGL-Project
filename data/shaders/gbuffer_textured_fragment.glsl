@@ -16,11 +16,12 @@ uniform sampler2D specular;
 
 uniform float roughness;
 uniform float fresnelScale;
+uniform float textureScale;
 
 uniform mat4 view;
 
 void main() {
-	gPassAlbedo = texture(diffuse, fTexCoord) * fColor;
+	gPassAlbedo = texture(diffuse, fTexCoord * 1 / textureScale) * fColor;
 	gPassPosition = view * fPosition;
 	gPassNormal = vec4((view * fNormal).xyz, roughness);
 	gPassSpecular = vec4(texture(specular, fTexCoord).xyz, fresnelScale);

@@ -11,41 +11,12 @@ uniform sampler2D positionTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D specularTexture;
 
-/*
-void main() {
-	//texture coord
-	vec2 texcoord = gl_FragCoord.xy / textureSize(positionTexture, 0).xy;
-
-	//sample from textures
-	vec4 positionSample = texture(positionTexture, texcoord);
-	vec4 normalSample = texture(normalTexture, texcoord);
-	vec4 specularSample = texture(specularTexture, texcoord);
-
-	vec3 toLight = lightViewPos - positionSample.xyz;
-	vec3 L = -normalize(toLight);
-	vec3 N = normalize(normalSample.xyz);
-	float falloff = 1 - min(1, (length(toLight) / lightRadius));
-
-	float d = max(0.0, dot(-L, N));
-	vec3 D = d * lightColor;
-	
-	vec3 E = -normalize(positionSample.xyz);
-	vec3 R = reflect(L, N);
-	float s = max(0, dot(R,E));
-	s = pow(s, 1) * pow(falloff, 1);
-
-	vec3 S = vec3(s) * lightColor;
-
-	LightOutput = vec4(D + S,1) * falloff;
-}
-*/
-
 void main() {
 	//Numerical Constants
 	float e = 2.71828182845904523536028747135f;
 	float pi = 3.1415926535897932384626433832f;
 	
-	//texture coord
+	//convert screenspace to texture coordinates
 	vec2 texcoord = gl_FragCoord.xy / textureSize(positionTexture, 0).xy;
 
 	//sample from textures
@@ -55,6 +26,10 @@ void main() {
 	
 	float roughness = normalSample.a; //Roughness is stored in normal alpha
 	float fresnelScale = specularSample.a; //Likewise, fresnel scale is stored in the specular alpha.
+	
+	//Set the w values to the correct value after sampling for other data
+	positionSample.w = 1;
+	normalSample.w = 0;
 
 	//Oren-Nayer Start
 	vec3 toLight = lightViewPos - positionSample.xyz;
@@ -99,11 +74,11 @@ void main() {
 	float F = mix( pow( 1 - HdE, 5 ), 1, fresnelScale);
 
 	//Geometric Attenutation
-	float X = (2.0f * NdH) / dot( E, H );
+	float X = 2.0f * NdH / dot( E, H );
 	float G = min(1, min(X * NdE, X * NdL));
 
 	//Final Cook-Torrance Equation
-	float CookTorrance = max(0.0f, (F*G*D) / (NdE * pi));
+	float CookTorrance = max(0.0f, (D*G*F) / (NdE * pi));
 
 	vec4 LightColor = vec4(lightCol, 1);
 

@@ -146,10 +146,10 @@ void GPUEmitter::Render(float a_currTime, FlyCamera a_camera, bool a_deferred) {
 	loc = glGetUniformLocation(renderer, "fadeOut");
 	glUniform1f(loc, m_fadeOut);
 
-	loc = glGetUniformLocation(renderer, "deferred");
-	glUniform1i(loc, a_deferred);
+	loc = glGetUniformLocation(renderer, "textureScale");
+	glUniform1f(loc, 1.0f);
 
-	loc = glGetUniformLocation(renderer, "projView");
+	loc = glGetUniformLocation(renderer, "view");
 	glUniformMatrix4fv(loc, 1, false, &a_camera.GetView()[0][0]);
 
 	loc = glGetUniformLocation(renderer, "projView");

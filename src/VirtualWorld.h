@@ -44,17 +44,24 @@ class VirtualWorld : public Application
 
 	vec3 m_ambCol; //Global ambient colour for lighting
 
-	float m_pScale; //Perlin landscape scale
+	float m_pHeightScale; //Perlin landscape scale
 	float m_pAmp; //Perlin landscape amplitude
 	float m_pPers; //Perlin landscape persistence
-	float* m_perlinData; //Perlin heightmap data
+	unsigned int m_pOct; //Perlin landscape octaves
 
-	vec2 m_perlinTextureSize; //Perlin texture size
-	vec2 m_perlinWorldSize; //Perlin mesh size (X/Z Axis)
-	vec3 m_perlinPos; //Position transform for perlin mesh
-	vec3 m_perlinScale; //Scale transform for perlin mesh
-	quat m_perlinRot; //Rotation transform for perlin mesh
-	mat4 m_perlinTransform; //Final transform for perlin mesh
+	float m_pRoughness, m_pFresnelScale; //Perlin lighting value
+
+	float* m_pData; //Perlin heightmap data
+	unsigned int m_pHeightTexture; //Procedural heightmap data
+	float m_pTextureScale; //Texture UV scale on perlin mesh
+	unsigned int m_pTexture; //Procedural diffuse texture data
+
+	vec2 m_pTextureSize; //Perlin texture size
+	vec2 m_pWorldSize; //Perlin mesh size (X/Z Axis)
+	vec3 m_pPos; //Position transform for perlin mesh
+	vec3 m_pScale; //Scale transform for perlin mesh
+	quat m_pRot; //Rotation transform for perlin mesh
+	mat4 m_pTransform; //Final transform for perlin mesh
 
 	bool m_debug[10]; //Debug rendering bools. 0:Z-Buffer, 1:Grid, 2:PhysX, 3:Particles, 4:Point Lights, 5:Directional Lights
 
@@ -69,8 +76,6 @@ class VirtualWorld : public Application
 
 	unsigned int m_fxFBO; //Effects framebuffer object
 	unsigned int m_fxTexture; //Effects buffer data
-
-	unsigned int m_perlinTexture, m_pOct; //Procedural data
 
 	unsigned int m_gBufferProgram, m_compositeProgram, m_dirLightProgram, m_pointLightProgram, m_proceduralProgram; //Shader Program Data
 	unsigned int m_lastKey[2]; //Input key logging

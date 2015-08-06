@@ -10,8 +10,9 @@ VirtualWorld* m_app;
 //Projection used for rendering all directional lights.
 const mat4 dirLightProj = glm::ortho<float>(-400, 400, -400, 400, -650, 650);
 
-VirtualWorld::VirtualWorld() : m_oCamera(50), m_pScale(50.f), m_pOct(6), m_pAmp(0.9f), m_pPers(0.2f), m_ambCol(vec3(0.f)), 
-m_perlinPos(vec3(0)), m_perlinScale(vec3(1)), m_playerVelocity(vec3(0)), m_playerSpeed(2.0f), m_playerGrounded(false)
+VirtualWorld::VirtualWorld() : m_oCamera(50), m_pHeightScale(50.f), m_pOct(6), m_pAmp(0.9f), m_pPers(0.2f), m_ambCol(vec3(0.35f)),
+m_pPos(vec3(0)), m_pScale(vec3(1)), m_playerVelocity(vec3(0)), m_playerSpeed(2.0f), m_playerGrounded(false), 
+m_pTextureScale(0.2f), m_pFresnelScale(1.f), m_pRoughness(2.f)
 {
 	Application::Application();
 	m_app = this;
@@ -43,7 +44,7 @@ bool VirtualWorld::startup(){
 	//Shader Initialisation
 	//Opaque Geometry Shaders
 	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
-	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_proceduralProgram);
+	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_textured_fragment.glsl", &m_proceduralProgram);
 
 	//Light Pre-Pass Shaders
 	LoadShader("./data/shaders/directional_light_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_dirLightProgram);
@@ -100,7 +101,7 @@ bool VirtualWorld::startup(){
 	//Create Particle GUI bar and add particle emitters.
 	TwBar* m_particlesBar = TwNewBar("Particles");
 	AddParticleEmitter(new GPUEmitter(vec3(0), vec3(1), 50, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_LINEAR, "./data/textures/particles/glow.png"));
-	AddParticleEmitter(new GPUEmitter(vec3(0, 10, 0), vec3(30), 20, 3.0f, 5.5f, 1.0f, 2.0f, 1.0f, 0.75f, 1.0f, 1.0f, vec4(1, 1, 0.5, 1), vec4(0.65, 0.65, 0, 1), EMIT_RECTANGLE, PMOVE_WAVE, "./data/textures/particles/glow.png"));
+	AddParticleEmitter(new GPUEmitter(vec3(0, 10, 0), vec3(80), 120, 1.5f, 3.5f, 1.0f, 2.0f, 1.0f, 0.75f, 1.0f, 1.0f, vec4(1, 1, 0.65f, 1), vec4(0.65, 0.65, 0, 1), EMIT_RECTANGLE, PMOVE_WAVE, "./data/textures/particles/glow.png"));
 
 	TwBar* m_lightingBar = TwNewBar("Lighting"); //Lighting window. Allows modification of lighting data.
 
@@ -145,23 +146,28 @@ bool VirtualWorld::startup(){
 
 	BuildProceduralGrid(meshDims, textDims);
 	BuildPerlinTexture(textDims, m_pOct, m_pAmp, m_pPers);
-	m_physScene.AddHeightMap(m_perlinData, m_physScene.m_physics->createMaterial(1, 1, 1), textDims, vec3(meshDims.x, m_pScale + 2.f, meshDims.y), 4);
+	m_physScene.AddHeightMap(m_pData, m_physScene.m_physics->createMaterial(1, 1, 1), textDims, vec3(meshDims.x, m_pHeightScale + 2.f, meshDims.y), 4);
+
+	//Load Perlin Diffuse texture
+	LoadTexture("./data/textures/grass.tga", &m_pTexture);
 
 	//Add a wall around the world, based on the size of the perlin mesh.
 	m_physScene.AddWorldBounds(vec3(meshDims.x / 2, 1000, meshDims.y / 2));
 
 	//Add procedural generation variables to debugging GUI window. 
-	TwAddVarRW(m_generalBar, "Scale",		TW_TYPE_FLOAT, &m_pScale,		 "group=ProceduralGeneration min=0 step=0.05");
-	TwAddVarRW(m_generalBar, "Octaves",		TW_TYPE_INT32, &m_pOct,			 "group=ProceduralGeneration min=1 max=10"); //Don't want octaves to go too high. Will choke CPU if reloaded.
-	TwAddVarRW(m_generalBar, "Amplitude",	TW_TYPE_FLOAT, &m_pAmp,			 "group=ProceduralGeneration min=0 step=0.01");
-	TwAddVarRW(m_generalBar, "Persistance", TW_TYPE_FLOAT, &m_pPers,		 "group=ProceduralGeneration min=0 step=0.01");
-	TwAddVarRW(m_generalBar, "Position_X",	TW_TYPE_FLOAT, &m_perlinPos.x,	 "group=ProceduralGeneration step=0.01");
-	TwAddVarRW(m_generalBar, "Position_Y",	TW_TYPE_FLOAT, &m_perlinPos.y,	 "group=ProceduralGeneration step=0.01");
-	TwAddVarRW(m_generalBar, "Position_Z",	TW_TYPE_FLOAT, &m_perlinPos.z,	 "group=ProceduralGeneration step=0.01");
-	TwAddVarRW(m_generalBar, "Scale_X",		TW_TYPE_FLOAT, &m_perlinScale.x, "group=ProceduralGeneration min=0 step=0.01");
-	TwAddVarRW(m_generalBar, "Scale_Y",		TW_TYPE_FLOAT, &m_perlinScale.y, "group=ProceduralGeneration min=0 step=0.01");
-	TwAddVarRW(m_generalBar, "Scale_Z",		TW_TYPE_FLOAT, &m_perlinScale.z, "group=ProceduralGeneration min=0 step=0.01");
-	TwAddVarRW(m_generalBar, "Rotation",	TW_TYPE_QUAT4F,&m_perlinRot,	 "");
+	TwAddVarRW(m_generalBar, "Roughness",		TW_TYPE_FLOAT, &m_pRoughness,	"group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Fresnel Scale",	TW_TYPE_FLOAT, &m_pFresnelScale,"group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Scale",			TW_TYPE_FLOAT, &m_pHeightScale, "group=ProceduralGeneration min=0 step=0.05");
+	TwAddVarRW(m_generalBar, "Octaves",			TW_TYPE_INT32, &m_pOct,			"group=ProceduralGeneration min=1 max=10"); //Don't want octaves to go too high. Will choke CPU if reloaded.
+	TwAddVarRW(m_generalBar, "Amplitude",		TW_TYPE_FLOAT, &m_pAmp,			"group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Persistance",		TW_TYPE_FLOAT, &m_pPers,		"group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Position_X",		TW_TYPE_FLOAT, &m_pPos.x,		"group=ProceduralGeneration step=0.01");
+	TwAddVarRW(m_generalBar, "Position_Y",		TW_TYPE_FLOAT, &m_pPos.y,		"group=ProceduralGeneration step=0.01");
+	TwAddVarRW(m_generalBar, "Position_Z",		TW_TYPE_FLOAT, &m_pPos.z,		"group=ProceduralGeneration step=0.01");
+	TwAddVarRW(m_generalBar, "Scale_X",			TW_TYPE_FLOAT, &m_pScale.x,		"group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Scale_Y",			TW_TYPE_FLOAT, &m_pScale.y,		"group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Scale_Z",			TW_TYPE_FLOAT, &m_pScale.z,		"group=ProceduralGeneration min=0 step=0.01");
+	TwAddVarRW(m_generalBar, "Rotation",		TW_TYPE_QUAT4F,&m_pRot,			"");
 	//Only the scale variable affects simulation in realtime. All others require recreating the perlinTexture.
 
 	//m_cloths.push_back(new ClothData(4, 4, 8));
@@ -294,27 +300,38 @@ void VirtualWorld::draw(){
 	loc = glGetUniformLocation(m_proceduralProgram, "projView");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 
-	m_perlinTransform = glm::translate(m_perlinPos) * glm::scale(m_perlinScale) * glm::toMat4(m_perlinRot);
+	m_pTransform = glm::translate(m_pPos) * glm::scale(m_pScale) * glm::toMat4(m_pRot);
 	loc = glGetUniformLocation(m_proceduralProgram, "transform");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_perlinTransform);
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_pTransform);
 
 	loc = glGetUniformLocation(m_proceduralProgram, "scale");
-	glUniform1f(loc, m_pScale);
+	glUniform1f(loc, m_pHeightScale);
 
 	loc = glGetUniformLocation(m_proceduralProgram, "perlinTexture");
 	glUniform1i(loc, 0);
 
-	loc = glGetUniformLocation(m_proceduralProgram, "deferred");
-	glUniform1i(loc, true);
+	loc = glGetUniformLocation(m_proceduralProgram, "diffuse");
+	glUniform1i(loc, 1);
+
+	loc = glGetUniformLocation(m_proceduralProgram, "roughness");
+	glUniform1f(loc, m_pRoughness);
+
+	loc = glGetUniformLocation(m_proceduralProgram, "fresnelScale");
+	glUniform1f(loc, m_pFresnelScale);
+
+	loc = glGetUniformLocation(m_proceduralProgram, "textureScale");
+	glUniform1f(loc, m_pTextureScale);
 
 	loc = glGetUniformLocation(m_proceduralProgram, "worldSize");
-	glUniform2fv(loc, 1, (float*)&m_perlinWorldSize);
+	glUniform2fv(loc, 1, (float*)&m_pWorldSize);
 
 	loc = glGetUniformLocation(m_proceduralProgram, "textureSize");
-	glUniform2fv(loc, 1, (float*)&m_perlinTextureSize);
+	glUniform2fv(loc, 1, (float*)&m_pTextureSize);
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_perlinTexture);
+	glBindTexture(GL_TEXTURE_2D, m_pHeightTexture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_pTexture);
 
 	glBindVertexArray(m_planeMesh.m_VAO);
 	glDrawElements(GL_TRIANGLES, m_planeMesh.m_indexCount, GL_UNSIGNED_INT, 0);
@@ -825,8 +842,8 @@ void VirtualWorld::BuildFrameBuffers() {
 }
 
 void VirtualWorld::BuildProceduralGrid(vec2 a_realDims, glm::ivec2 a_dims){
-	m_perlinWorldSize = a_realDims;
-	m_perlinTextureSize = a_dims;
+	m_pWorldSize = a_realDims;
+	m_pTextureSize = a_dims;
 
 	int vertexCount = (a_dims.x + 1) * (a_dims.y + 1);
 
@@ -885,7 +902,7 @@ void VirtualWorld::BuildProceduralGrid(vec2 a_realDims, glm::ivec2 a_dims){
 void VirtualWorld::BuildPerlinTexture(glm::ivec2 a_dims, const int a_octaves, const float a_amplitude, const float a_persistance) {
 	float scale = (1.0f / a_dims.x) * 5.0f;
 
-	m_perlinData = new float[a_dims.x * a_dims.y];
+	m_pData = new float[a_dims.x * a_dims.y];
 
 	for (int y = 0; y < a_dims.y; y++) {
 		for (int x = 0; x < a_dims.x; x++) {
@@ -893,13 +910,13 @@ void VirtualWorld::BuildPerlinTexture(glm::ivec2 a_dims, const int a_octaves, co
 			float amplitude = a_amplitude;
 			float freq = 1;
 
-			m_perlinData[y*a_dims.x + x] = 0;
+			m_pData[y*a_dims.x + x] = 0;
 
 			for (int o = 0; o < a_octaves; o++) {
 				float perlinSample = glm::perlin(vec2((float)x, (float)y) * scale * freq) * 0.5f + 0.5f;
 
 				perlinSample *= amplitude;
-				m_perlinData[y*a_dims.x + x] += perlinSample;
+				m_pData[y*a_dims.x + x] += perlinSample;
 
 				amplitude *= a_persistance;
 				freq *= 2;
@@ -907,9 +924,9 @@ void VirtualWorld::BuildPerlinTexture(glm::ivec2 a_dims, const int a_octaves, co
 		}
 	}
 
-	glGenTextures(1, &m_perlinTexture);
-	glBindTexture(GL_TEXTURE_2D, m_perlinTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, a_dims.x, a_dims.y, 0, GL_RED, GL_FLOAT, m_perlinData);
+	glGenTextures(1, &m_pHeightTexture);
+	glBindTexture(GL_TEXTURE_2D, m_pHeightTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, a_dims.x, a_dims.y, 0, GL_RED, GL_FLOAT, m_pData);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -928,7 +945,7 @@ void VirtualWorld::ReloadShaders(){
 	glDeleteProgram(m_proceduralProgram);
 
 	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
-	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_proceduralProgram);
+	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_textured_fragment.glsl", &m_proceduralProgram);
 	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/composite_fragment.glsl", &m_compositeProgram);
 	LoadShader("./data/shaders/directional_light_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_dirLightProgram);
 	LoadShader("./data/shaders/point_light_vertex.glsl", 0, "./data/shaders/point_light_fragment.glsl", &m_pointLightProgram);
@@ -1021,4 +1038,6 @@ void VirtualWorld::PlayerUpdate() {
 	if (glm::length(moveDir) > 0.001f) {
 		playerModel->m_rot = conjugate(glm::toQuat(glm::lookAt(vec3(0), -moveDir, vec3(0, 1, 0))));
 	}
+
+	m_particleEmitters[1]->m_pos = playerModel->m_pos;
 }

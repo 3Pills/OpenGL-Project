@@ -36,17 +36,18 @@ void main() {
 	vec4 normalSample = texture(normalTexture, texcoord);
 	vec4 specularSample = texture(specularTexture, texcoord);
 	vec4 shadowCoord = lightMatrix * world * positionSample;
-
-	positionSample.w = 1;
-	normalSample.w = 0;
 	
 	float roughness = normalSample.a; //Roughness is stored in normal alpha
 	float fresnelScale = specularSample.a; //Likewise, fresnel scale is stored in the specular alpha.
+	
+	//Set the w values to the correct value after sampling for other data
+	positionSample.w = 1;
+	normalSample.w = 0;
 
 	//Oren-Nayer Start
-	vec3 L = normalize(-lightDir);
 	vec3 N = normalize(normalSample.xyz);
-	vec3 E = -normalize(positionSample.xyz);
+	vec3 L = normalize(-lightDir);
+	vec3 E = normalize(-positionSample.xyz);
 
 	float NdL = max(0.0f, dot(N, L));
 	float NdE = max(0.0f, dot(N, E));
@@ -83,36 +84,38 @@ void main() {
 	float F = mix( pow( 1 - HdE, 5 ), 1, fresnelScale);
 
 	//Geometric Attenutation
-	float X = (2.0f * NdH) / dot( E, H );
+	float X = 2.0f * NdH / dot( E, H );
 	float G = min(1, min(X * NdE, X * NdL));
 
 	//Final Cook-Torrance Equation
-	float CookTorrance = max(0.0f, (F*G*D) / (NdE * pi));
+	float CookTorrance = max(0.0f, (D*G*F) / (NdE * pi));
 
 	//Shadow-Mapping Start
 
 	//Random offset vectors for shadow blurring
 	vec2 offsetVectors[8] = vec2[](
-		vec2( -0.74201624, -0.39906216 ),
-		vec2( 0.64558609, -0.36890725 ),
-		vec2( -0.044184101, -0.52938870 ),
-		vec2( 0.14495938, 0.19387760 ),
-		vec2( -0.4777346, -0.228894 ),
-		vec2( 0.3227544, -0.276863 ),
-		vec2( -0.235635, -0.15796734 ),
-		vec2( 0.4153677, -0.515336 )
+		vec2( -0.75, -0.25 ),
+		vec2( 0.65, -0.65 ),
+		vec2( -0.05, -0.55 ),
+		vec2( 0.15, 0.25 ),
+		vec2( -0.50, -0.25 ),
+		vec2( 0.45, 0.10 ),
+		vec2( -0.25, 0.15 ),
+		vec2( 0.40, -0.5 )
 	);
 
 	float d = OrenNayer;
 
 	//Bias calculated
-	float bias = 0.005 * tan(acos(d));
+	float bias = 0.0005 * tan(acos(d));
 	bias = clamp(bias, 0.f,0.01f);
 	
-	float distribution = 1.0f/18.0f;
-	for (int i=0;i<8;i++) {
+	float distribution = 1.0f / 16.0f;
+	float spreadFactor = 0.0004f;
+
+	for (int i=0; i<8; i++) {
 		int index = int(8.0*rand(positionSample, i))%8;
-		if ( texture(shadowMap, vec3(shadowCoord.xy + offsetVectors[index]/1000.0, shadowCoord.z - bias))  == 0.0f ){
+		if ( texture(shadowMap, vec3(shadowCoord.xy + offsetVectors[index] * spreadFactor, shadowCoord.z - bias))  == 0.0f ){
 			d -= distribution;
 		}
 	}
