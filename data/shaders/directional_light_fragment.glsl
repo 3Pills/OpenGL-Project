@@ -12,7 +12,6 @@ uniform float specPow;
 uniform sampler2D positionTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D specularTexture;
-uniform sampler2D worldPosTexture;
 uniform sampler2DShadow shadowMap;
 
 uniform mat4 world;
@@ -36,10 +35,7 @@ void main() {
 	vec4 positionSample = texture(positionTexture, texcoord);
 	vec4 normalSample = texture(normalTexture, texcoord);
 	vec4 specularSample = texture(specularTexture, texcoord);
-	
-	vec4 worldPosSample = texture(worldPosTexture, texcoord);
-	vec4 lightPos = worldPosSample;
-	vec4 shadowCoord = lightMatrix * lightPos;
+	vec4 shadowCoord = lightMatrix * world * positionSample;
 
 	positionSample.w = 1;
 	normalSample.w = 0;
@@ -113,10 +109,10 @@ void main() {
 	float bias = 0.005 * tan(acos(d));
 	bias = clamp(bias, 0.f,0.01f);
 	
-	float distribution = 1.0f/9.0f;
+	float distribution = 1.0f/18.0f;
 	for (int i=0;i<8;i++) {
-		int index = int(8.0*rand(lightPos, i))%8;
-		if ( texture(shadowMap, vec3(shadowCoord.xy + offsetVectors[index]/400.0, shadowCoord.z - bias))  == 0.0f ){
+		int index = int(8.0*rand(positionSample, i))%8;
+		if ( texture(shadowMap, vec3(shadowCoord.xy + offsetVectors[index]/1000.0, shadowCoord.z - bias))  == 0.0f ){
 			d -= distribution;
 		}
 	}
@@ -129,5 +125,5 @@ void main() {
 	vec4 finalDiffuse = vec4(d,d,d,1);
 	vec4 LightColor = vec4(lightCol, 1);
 	//Use either ambient light hue or the OrenNayer calculations
-	LightOutput = LightColor * (OrenNayer + CookTorrance);
+	LightOutput = LightColor * (finalDiffuse + CookTorrance);
 }

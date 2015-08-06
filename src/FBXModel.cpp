@@ -76,19 +76,19 @@ void FBXModel::Update(float dt) {
 }
 
 //Renders with individual shader data.
-void FBXModel::Render(Camera* a_camera, bool a_deferred, mat4* a_lightMatrix) {
+void FBXModel::Render(Camera* a_camera, bool a_deferred, mat4* a_projView) {
 	int loc = -1;
 	//Get the correct index in the shader program array, then use program
 	unsigned int program = (m_file->getSkeletonCount() > 0) ? 3 : 0;
 	if (a_deferred) { program += 1; }
-	else if (a_lightMatrix != nullptr) { program += 2; }
+	else if (a_projView != nullptr) { program += 2; }
 	program = m_shaders[program];
 
 	glUseProgram(program);
 
 	//If a light matrix has been passed in, replace the camera projection view with the light's projection view.
 	loc = glGetUniformLocation(program, "projView");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&((a_lightMatrix != nullptr) ? *a_lightMatrix : a_camera->GetProjectionView()));
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&((a_projView != nullptr) ? *a_projView : a_camera->GetProjectionView()));
 
 	//If the framebuffer is not being deferred pass an identity matrix as the view matrix.
 	loc = glGetUniformLocation(program, "view");

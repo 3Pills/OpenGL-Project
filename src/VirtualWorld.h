@@ -62,7 +62,7 @@ class VirtualWorld : public Application
 	unsigned int m_shadowMap; //Shadow buffer texture data
 
 	unsigned int m_gBufferFBO; //G-buffer framebuffer object
-	unsigned int m_albedoTexture, m_positionTexture, m_worldPosTexture, m_normalTexture, m_specularTexture, m_depthTexture; //G-Buffer texture data
+	unsigned int m_albedoTexture, m_positionTexture, m_normalTexture, m_specularTexture, m_depthTexture; //G-Buffer texture data
 
 	unsigned int m_lightFBO; //Light buffer framebuffer object
 	unsigned int m_lightTexture; //Light buffer texture data
@@ -72,7 +72,7 @@ class VirtualWorld : public Application
 
 	unsigned int m_perlinTexture, m_pOct; //Procedural data
 
-	unsigned int m_gBufferProgram, m_compositeProgram, m_dirLightProgram, m_pointLightProgram, m_proceduralProgram, m_shadowProgram; //Shader Program Data
+	unsigned int m_gBufferProgram, m_compositeProgram, m_dirLightProgram, m_pointLightProgram, m_proceduralProgram; //Shader Program Data
 	unsigned int m_lastKey[2]; //Input key logging
 public:
 	std::vector<PointLight> m_pointLights; //Point light storage array

@@ -418,22 +418,21 @@ PxController* PhysScene::AddPlayerController(const PxExtendedVec3 a_pos, PxMater
 	PxControllerManager* characterManager = PxCreateControllerManager(*m_physicsScene);
 
 	PxCapsuleControllerDesc desc;
-	desc.height = 10.f;
+	desc.height = 9.f;
 	desc.radius = 5.f;
 	desc.position.set(a_pos.x, a_pos.y, a_pos.z);
 	desc.material = a_physMaterial;
 	desc.reportCallback = hitReport; //connect it to our collision detection routine
 	desc.density = 100.0f;
-	desc.contactOffset = 0.001f;
+	desc.stepOffset = 0.1f;
 
 	PxController* playerController = characterManager->createController(desc);
-	playerController->setUserData(hitReport);
-	PxRigidDynamic* actor = playerController->getActor();
-	actor->userData = a_userData;
+	playerController->setUserData(hitReport); //Attach the hitReport to the controller as userdata
+	playerController->getActor()->userData = a_userData; //Attach FBXModel argument to the actor of the playercontroller.
 
 	FBXModel* model = ((FBXModel*)a_userData);
 	//Capsules are angled 90 degrees, rotate the attached model, and centre it.
-	model->m_modTransform = glm::translate(-vec3(0, (desc.height + desc.radius) / 2, 0)) * model->m_modTransform;
+	model->m_modTransform = glm::translate(-vec3(0, (desc.height + desc.radius) / 1.35f, 0)) * model->m_modTransform;
 
 	hitReport->clearPlayerContactNormal(); //initialize the contact normal (what we are in contact with)
 

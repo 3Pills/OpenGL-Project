@@ -51,7 +51,7 @@ public:
 
 	virtual void Update(float dt);
 
-	void Render(Camera* a_camera, bool a_deferred = false, mat4* a_lightMatrix = nullptr);
+	void Render(Camera* a_camera, bool a_deferred = false, mat4* a_projView = nullptr);
 	void ReloadShader();
 
 	void SetAnimation(const int a_animationID);

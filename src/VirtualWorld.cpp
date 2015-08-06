@@ -8,10 +8,10 @@
 VirtualWorld* m_app;
 
 //Projection used for rendering all directional lights.
-const mat4 dirLightProj = glm::ortho<float>(-100, 100, -100, 100, -500, 10);
+const mat4 dirLightProj = glm::ortho<float>(-400, 400, -400, 400, -650, 650);
 
 VirtualWorld::VirtualWorld() : m_oCamera(50), m_pScale(50.f), m_pOct(6), m_pAmp(0.9f), m_pPers(0.2f), m_ambCol(vec3(0.f)), 
-m_perlinPos(vec3(1)), m_perlinScale(vec3(1)), m_playerVelocity(vec3(0)), m_playerSpeed(2.0f), m_playerGrounded(false)
+m_perlinPos(vec3(0)), m_perlinScale(vec3(1)), m_playerVelocity(vec3(0)), m_playerSpeed(2.0f), m_playerGrounded(false)
 {
 	Application::Application();
 	m_app = this;
@@ -41,9 +41,6 @@ bool VirtualWorld::startup(){
 	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
 	//Shader Initialisation
-	//Shadow Shader
-	LoadShader("./data/shaders/shadowed_vertex.glsl", 0, "./data/shaders/shadowed_fragment.glsl", &m_shadowProgram);
-
 	//Opaque Geometry Shaders
 	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
 	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_proceduralProgram);
@@ -79,9 +76,9 @@ bool VirtualWorld::startup(){
 	m_physScene.AttachRigidBodyConvex(PxTransform(20, 60, 20), m_physScene.m_physics->createMaterial(1, 1, .2f), m_FBXModels.back(), 100.f, 100.f);
 
 	//modTransform for bombs.
-	mat4 bombTransform = glm::translate(vec3(0.1f, 0.4f, 0)) * glm::scale(vec3(0.125f)) * glm::rotate(glm::radians(-90.0f), vec3(1, 0, 0));
+	mat4 bombTransform = glm::translate(vec3(0.1f, 0.4f, 0)) * glm::scale(vec3(0.1875f)) * glm::rotate(glm::radians(-90.0f), vec3(1, 0, 0));
 	AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
-	m_physScene.AddRigidBodyDynamic(PxTransform(-20, 60, -20), &PxSphereGeometry(2.0f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 10.f);
+	m_physScene.AddRigidBodyDynamic(PxTransform(-20, 60, -20), &PxSphereGeometry(3.0f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 10.f);
 	//AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
 	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 28, 1), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 100.f);
 	//AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
@@ -143,7 +140,7 @@ bool VirtualWorld::startup(){
 	AddDirectionalLight(vec3(-1), vec3(1)); 
 	
 	//Initialise Procedural Landscape
-	vec2 meshDims = glm::vec2(800, 800);
+	vec2 meshDims = glm::vec2(512, 512);
 	glm::ivec2 textDims = glm::ivec2(256,256);
 
 	BuildProceduralGrid(meshDims, textDims);
@@ -201,7 +198,6 @@ bool VirtualWorld::shutdown(){
 	glDeleteProgram(m_dirLightProgram);
 	glDeleteProgram(m_pointLightProgram);
 	glDeleteProgram(m_proceduralProgram);
-	glDeleteProgram(m_shadowProgram);
 
 	//GUI Termination
 	TwTerminate(); //End ATB
@@ -265,26 +261,20 @@ void VirtualWorld::draw(){
 
 	//Shadow Depth Rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
-	glViewport(0, 0, 1024, 1024);
+	glViewport(0, 0, 4096, 4096);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
-	glUseProgram(m_shadowProgram);
-
-	glCullFace(GL_FRONT);
 	for (DirectionalLight light : m_dirLights) {
+		//Create a projection view matrix for the light
 		mat4 lightView = glm::lookAt(vec3(0), light.m_dir, vec3(0, 1, 0));
 		mat4 lightMatrix = dirLightProj * lightView * mat4(1);
 
-		int lightMatrix_uniform = glGetUniformLocation(m_shadowProgram, "lightMatrix");
-		glUniformMatrix4fv(lightMatrix_uniform, 1, GL_FALSE, (float*)&lightMatrix);
-
+		//Models have specialised shadow handling; no need to use one in the main loop
 		for (FBXModel* model : m_FBXModels){
+			//Pass the lightMatrix in as an override of the camera projection view matrix
 			model->Render(&m_oCamera, false, &lightMatrix);
 		}
-		glBindVertexArray(m_planeMesh.m_VAO);
-		glDrawElements(GL_TRIANGLES, m_planeMesh.m_indexCount, GL_UNSIGNED_INT, 0);
 	}
-	glCullFace(GL_BACK);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO);
 	glViewport(0, 0, m_iWidth, m_iHeight);
@@ -395,7 +385,6 @@ void VirtualWorld::draw(){
 	glUniform1i(glGetUniformLocation(m_compositeProgram, "albedoTexture"), 0);
 	glUniform1i(glGetUniformLocation(m_compositeProgram, "lightTexture"),  1);
 	glUniform1i(glGetUniformLocation(m_compositeProgram, "fxTexture"),	   2);
-	glUniform1i(glGetUniformLocation(m_compositeProgram, "shadowMap"),	   3);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_albedoTexture);
@@ -403,8 +392,6 @@ void VirtualWorld::draw(){
 	glBindTexture(GL_TEXTURE_2D, m_lightTexture);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_fxTexture);
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 
 	loc = glGetUniformLocation(m_compositeProgram, "ambCol");
 	glUniform3fv(loc, 1, (float*)&m_ambCol);
@@ -434,8 +421,7 @@ void VirtualWorld::RenderDirectionalLights() {
 	glUniform1i(glGetUniformLocation(m_dirLightProgram, "positionTexture"), 0);
 	glUniform1i(glGetUniformLocation(m_dirLightProgram, "normalTexture"), 1);
 	glUniform1i(glGetUniformLocation(m_dirLightProgram, "specularTexture"), 2);
-	glUniform1i(glGetUniformLocation(m_dirLightProgram, "worldPosTexture"), 3);
-	glUniform1i(glGetUniformLocation(m_dirLightProgram, "shadowMap"), 4);
+	glUniform1i(glGetUniformLocation(m_dirLightProgram, "shadowMap"), 3);
 
 	//Bind the textures to the slots
 	glActiveTexture(GL_TEXTURE0);
@@ -445,8 +431,6 @@ void VirtualWorld::RenderDirectionalLights() {
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, m_worldPosTexture);
-	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 
 	mat4 offsetScale = mat4(
@@ -479,7 +463,7 @@ void VirtualWorld::RenderDirectionalLights() {
 		//Assign uniforms during loop
 		glUniform3fv(lightDir_uniform, 1, (float*)&viewspaceLightDir);
 		glUniform3fv(lightCol_uniform, 1, (float*)&light.m_color);
-		glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&lightMatrix);
+		glUniformMatrix4fv(lightMat_uniform, 1, GL_FALSE, (float*)&lightMatrix);
 
 		glBindVertexArray(m_screenspaceQuad.m_VAO);
 		glDrawElements(GL_TRIANGLES, m_screenspaceQuad.m_indexCount, GL_UNSIGNED_INT, 0);
@@ -495,8 +479,7 @@ void VirtualWorld::RenderPointLights() {
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "positionTexture"), 0);
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "normalTexture"),   1);
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "specularTexture"), 2);
-	glUniform1i(glGetUniformLocation(m_pointLightProgram, "worldPosTexture"), 3);
-	glUniform1i(glGetUniformLocation(m_pointLightProgram, "shadowMap"), 4);
+	glUniform1i(glGetUniformLocation(m_pointLightProgram, "shadowMap"), 3);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_positionTexture);
@@ -505,8 +488,6 @@ void VirtualWorld::RenderPointLights() {
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
 	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, m_worldPosTexture);
-	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 
 	//Assign uniform locations outside of loop, for efficiency.
@@ -734,7 +715,7 @@ void VirtualWorld::BuildFrameBuffers() {
 
 	glGenTextures(1, &m_shadowMap);
 	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 4096, 4096, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -783,12 +764,6 @@ void VirtualWorld::BuildFrameBuffers() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	glGenTextures(1, &m_worldPosTexture);
-	glBindTexture(GL_TEXTURE_2D, m_worldPosTexture);
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA32F, m_iWidth, m_iHeight);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
 	glGenRenderbuffers(1, &m_depthTexture);
 	glBindRenderbuffer(GL_RENDERBUFFER, m_depthTexture);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_iWidth, m_iHeight);
@@ -797,11 +772,10 @@ void VirtualWorld::BuildFrameBuffers() {
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_positionTexture, 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, m_normalTexture, 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_specularTexture, 0);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, m_worldPosTexture, 0);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthTexture);
 
-	GLenum gPassTargets[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
-	glDrawBuffers(5, gPassTargets);
+	GLenum gPassTargets[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+	glDrawBuffers(4, gPassTargets);
 
 	status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -952,9 +926,7 @@ void VirtualWorld::ReloadShaders(){
 	glDeleteProgram(m_dirLightProgram);
 	glDeleteProgram(m_pointLightProgram);
 	glDeleteProgram(m_proceduralProgram);
-	glDeleteProgram(m_shadowProgram);
 
-	LoadShader("./data/shaders/shadowed_vertex.glsl", 0, "./data/shaders/shadowed_fragment.glsl", &m_shadowProgram);
 	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
 	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_proceduralProgram);
 	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/composite_fragment.glsl", &m_compositeProgram);
