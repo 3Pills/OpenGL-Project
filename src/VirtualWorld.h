@@ -14,7 +14,11 @@ struct PointLight {
 	vec3 m_color;
 	float m_radius;
 
-	PointLight(vec3 a_pos, vec3 a_color, float a_radius) : m_pos(a_pos), m_color(a_color), m_radius(a_radius) {}
+	unsigned int m_shadowFBO; //Shadow buffer framebuffer object
+	unsigned int m_shadowMap; //Shadow buffer texture data
+	unsigned int m_depthMap; //Shadow buffer texture data
+
+	PointLight(const vec3 a_pos, const vec3 a_color, const float a_radius);
 };
 
 //Directional light data storage.
@@ -22,7 +26,10 @@ struct DirectionalLight {
 	vec3 m_dir;
 	vec3 m_color;
 
-	DirectionalLight(vec3 a_dir, vec3 a_color) : m_dir(glm::normalize(a_dir)), m_color(a_color) {}
+	unsigned int m_shadowFBO; //Shadow buffer framebuffer object
+	unsigned int m_shadowMap; //Shadow buffer texture data
+
+	DirectionalLight(const vec3 a_dir, const vec3 a_color);
 };
 
 class VirtualWorld : public Application
@@ -65,9 +72,6 @@ class VirtualWorld : public Application
 
 	bool m_debug[10]; //Debug rendering bools. 0:Z-Buffer, 1:Grid, 2:PhysX, 3:Particles, 4:Point Lights, 5:Directional Lights
 
-	unsigned int m_shadowFBO; //Shadow buffer framebuffer object
-	unsigned int m_shadowMap; //Shadow buffer texture data
-
 	unsigned int m_gBufferFBO; //G-buffer framebuffer object
 	unsigned int m_albedoTexture, m_positionTexture, m_normalTexture, m_specularTexture, m_depthTexture; //G-Buffer texture data
 
@@ -80,8 +84,8 @@ class VirtualWorld : public Application
 	unsigned int m_gBufferProgram, m_compositeProgram, m_dirLightProgram, m_pointLightProgram, m_proceduralProgram; //Shader Program Data
 	unsigned int m_lastKey[2]; //Input key logging
 public:
-	std::vector<PointLight> m_pointLights; //Point light storage array
-	std::vector<DirectionalLight> m_dirLights; //Directional light storage array
+	std::vector<PointLight*> m_pointLights; //Point light storage array
+	std::vector<DirectionalLight*> m_dirLights; //Directional light storage array
 	std::vector<ClothData*> m_cloths; //Cloth storage array
 
 	VirtualWorld();

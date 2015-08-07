@@ -10,6 +10,14 @@ uniform float lightRadius;
 uniform sampler2D positionTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D specularTexture;
+uniform samplerCube shadowMap;
+
+uniform mat4 world;
+
+float rand(vec4 vec, int number) {
+	float dot_product = dot(vec * number, vec4(12.9898,78.233,45.164,94.673));
+    return fract(sin(dot_product) * 43758.5453);
+}
 
 void main() {
 	//Numerical Constants
@@ -23,6 +31,7 @@ void main() {
 	vec4 positionSample = texture(positionTexture, texcoord);
 	vec4 normalSample = texture(normalTexture, texcoord);
 	vec4 specularSample = texture(specularTexture, texcoord);
+	vec4 worldLightDir = (vec4(lightViewPos, 1) * world) - positionSample;
 	
 	float roughness = normalSample.a; //Roughness is stored in normal alpha
 	float fresnelScale = specularSample.a; //Likewise, fresnel scale is stored in the specular alpha.
@@ -79,8 +88,45 @@ void main() {
 
 	//Final Cook-Torrance Equation
 	float CookTorrance = max(0.0f, (D*G*F) / (NdE * pi));
+	
+	//Shadow-Mapping Start
 
+	//Random offset vectors for shadow blurring
+	vec2 offsetVectors[8] = vec2[](
+		vec2( -0.75, -0.25 ),
+		vec2( 0.65, -0.65 ),
+		vec2( -0.05, -0.55 ),
+		vec2( 0.15, 0.25 ),
+		vec2( -0.50, -0.25 ),
+		vec2( 0.45, 0.10 ),
+		vec2( -0.25, 0.15 ),
+		vec2( 0.40, -0.5 )
+	);
+
+	float d = OrenNayer;
+
+	//Bias calculated
+	float bias = 0.0005 * tan(acos(d));
+	bias = clamp(bias, 0.f,0.01f);
+	
+	float distribution = 1.0f / 16.0f;
+	float spreadFactor = 0.0004f;
+
+	for (int i = 0; i < 8; i++) {
+		int index = int(8.0 * rand(positionSample, i)) % 8;
+
+		vec3 samplePoint = vec3(worldLightDir.xy + offsetVectors[index] * spreadFactor, worldLightDir.z);
+
+		if ( texture(shadowMap, samplePoint).r > length(samplePoint) ){
+			d -= distribution;
+		}
+	}
+	if ( texture(shadowMap, worldLightDir.xyz).r > length(worldLightDir.xyz) ) {
+		d -= distribution;
+	}
+
+	vec4 finalDiffuse = vec4(d,d,d,1);
 	vec4 LightColor = vec4(lightCol, 1);
 
-	LightOutput = LightColor * (OrenNayer + CookTorrance) * falloff;
+	LightOutput = LightColor * (finalDiffuse + CookTorrance) * falloff;
 }

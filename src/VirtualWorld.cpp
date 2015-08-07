@@ -9,10 +9,95 @@ VirtualWorld* m_app;
 
 //Projection used for rendering all directional lights.
 const mat4 dirLightProj = glm::ortho<float>(-400, 400, -400, 400, -650, 650);
+const mat4 pointLightProj = glm::perspective<float>(90, 1, -650, 650);
+
+struct CameraDirection {
+	GLenum CubemapFace;
+	vec3 Target;
+	vec3 Up;
+};
+
+const CameraDirection cubemapDirection[6] = {
+	{ GL_TEXTURE_CUBE_MAP_POSITIVE_X, vec3(1.0f, 0.0f, 0.0f),  vec3(0.0f, -1.0f,  0.0f) },
+	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_X, vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f,  0.0f) },
+	{ GL_TEXTURE_CUBE_MAP_POSITIVE_Y, vec3(0.0f, 1.0f, 0.0f),  vec3(0.0f,  0.0f, -1.0f) },
+	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, vec3(0.0f, -1.0f, 0.0f), vec3(0.0f,  0.0f,  1.0f) },
+	{ GL_TEXTURE_CUBE_MAP_POSITIVE_Z, vec3(0.0f, 0.0f, 1.0f),  vec3(0.0f, -1.0f,  0.0f) },
+	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f,  0.0f) }
+};
+
+
+PointLight::PointLight(const vec3 a_pos, const vec3 a_color, const float a_radius) : m_pos(a_pos), m_color(a_color), m_radius(a_radius) {
+	//ShadowMap Framebuffer
+	glGenFramebuffers(1, &m_shadowFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
+
+	glGenTextures(1, &m_depthMap);
+	glBindTexture(GL_TEXTURE_2D, m_depthMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, 512, 512, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Create the cube map
+	glGenTextures(1, &m_shadowMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_shadowMap);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	for (unsigned int i = 0; i < 6; i++) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_R32F, 512, 512, 0, GL_RED, GL_FLOAT, NULL);
+	}
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthMap, 0);
+
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+		printf("Error creating Shadow Buffer!\n");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+DirectionalLight::DirectionalLight(const vec3 a_dir, const vec3 a_color) : m_dir(glm::normalize(a_dir)), m_color(a_color) {
+	//ShadowMap Framebuffer
+	glGenFramebuffers(1, &m_shadowFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
+
+	glGenTextures(1, &m_shadowMap);
+	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, 4096, 4096, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	//Define special parameter to force red channel to be compared to depth channel.
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadowMap, 0);
+
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (status != GL_FRAMEBUFFER_COMPLETE)
+		printf("Error creating Shadow Buffer!\n");
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 VirtualWorld::VirtualWorld() : m_oCamera(50), m_pHeightScale(50.f), m_pOct(6), m_pAmp(0.9f), m_pPers(0.2f), m_ambCol(vec3(0.35f)),
 m_pPos(vec3(0)), m_pScale(vec3(1)), m_playerVelocity(vec3(0)), m_playerSpeed(2.0f), m_playerGrounded(false), 
-m_pTextureScale(0.2f), m_pFresnelScale(1.f), m_pRoughness(2.f)
+m_pTextureScale(0.2f), m_pFresnelScale(0.5f), m_pRoughness(0.75f)
 {
 	Application::Application();
 	m_app = this;
@@ -111,7 +196,7 @@ bool VirtualWorld::startup(){
 		TwBar* m_lightingBar = TwGetBarByName("Lighting");
 		if (m_lightingBar == nullptr || m_app->m_pointLights.size() <= 0) return;
 
-		std::string prefix("P" + std::to_string(m_app->m_pointLights.size()) + "_");
+		std::string prefix("PL" + std::to_string(m_app->m_pointLights.size()) + "_");
 
 		TwRemoveVar(m_lightingBar, std::string(prefix + "X").c_str());
 		TwRemoveVar(m_lightingBar, std::string(prefix + "Y").c_str());
@@ -128,7 +213,7 @@ bool VirtualWorld::startup(){
 		TwBar* m_lightingBar = TwGetBarByName("Lighting");
 		if (m_lightingBar == nullptr || m_app->m_dirLights.size() <= 0) return;
 
-		std::string prefix("D" + std::to_string(m_app->m_dirLights.size()) + "_");
+		std::string prefix("DL" + std::to_string(m_app->m_dirLights.size()) + "_");
 
 		TwRemoveVar(m_lightingBar, std::string(prefix + "Direction").c_str());
 		TwRemoveVar(m_lightingBar, std::string(prefix + "Color").c_str());
@@ -179,18 +264,13 @@ bool VirtualWorld::startup(){
 
 bool VirtualWorld::shutdown(){
 	//Game Asset Termination
-	//Delete all particles and their texture memory
-	for (GPUEmitter* particle : m_particleEmitters) {
-		delete particle;
-	}
-	//Delete all models and their texture memory
-	for (FBXModel* model : m_FBXModels) {
-		delete model;
-	}
 
-	for (ClothData* cloth : m_cloths) {
-		delete cloth;
-	}
+	//Clear all pointer arrays of their stored memory.
+	for (GPUEmitter* particle : m_particleEmitters) { delete particle; }
+	for (FBXModel* model : m_FBXModels) { delete model; }
+	for (ClothData* cloth : m_cloths) { delete cloth; }
+	for (DirectionalLight* light : m_dirLights) { delete light; }
+	for (PointLight* light : m_pointLights) { delete light; }
 
 	//Delete Buffers for deferred rendering quad and lightcube.
 	glDeleteVertexArrays(1, &m_screenspaceQuad.m_VAO);
@@ -266,19 +346,37 @@ void VirtualWorld::draw(){
 	glEnable(GL_CULL_FACE);
 
 	//Shadow Depth Rendering
-	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
 	glViewport(0, 0, 4096, 4096);
-	glClear(GL_DEPTH_BUFFER_BIT);
 
-	for (DirectionalLight light : m_dirLights) {
+	for (DirectionalLight* light : m_dirLights) {
+		glBindFramebuffer(GL_FRAMEBUFFER, light->m_shadowFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
 		//Create a projection view matrix for the light
-		mat4 lightView = glm::lookAt(vec3(0), light.m_dir, vec3(0, 1, 0));
+		mat4 lightView = glm::lookAt(vec3(0), light->m_dir, vec3(0, 1, 0));
 		mat4 lightMatrix = dirLightProj * lightView * mat4(1);
 
 		//Models have specialised shadow handling; no need to use one in the main loop
 		for (FBXModel* model : m_FBXModels){
 			//Pass the lightMatrix in as an override of the camera projection view matrix
 			model->Render(&m_oCamera, false, &lightMatrix);
+		}
+	}
+
+	glViewport(0, 0, 512, 512);
+	for (PointLight* light : m_pointLights) {
+		for (int i = 0; i < 6; i++) {
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, light->m_shadowFBO);
+			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubemapDirection[i].CubemapFace, light->m_shadowFBO, 0);
+			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+			mat4 lightView = glm::lookAt(cubemapDirection[i].Up, cubemapDirection[i].Target, vec3(0, 1, 0));
+			mat4 lightMatrix = pointLightProj * lightView * mat4(1);
+
+			for (FBXModel* model : m_FBXModels){
+				model->Render(&m_oCamera, false, &lightMatrix);
+			}
 		}
 	}
 
@@ -447,8 +545,6 @@ void VirtualWorld::RenderDirectionalLights() {
 	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 
 	mat4 offsetScale = mat4(
 		0.5f, 0.0f, 0.0f, 0.0f,
@@ -467,19 +563,22 @@ void VirtualWorld::RenderDirectionalLights() {
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetWorldTransform());
 
 
-	for (DirectionalLight light : m_dirLights) {
-		mat4 lightView = glm::lookAt(vec3(0), light.m_dir, vec3(0, 1, 0));
+	for (DirectionalLight* light : m_dirLights) {
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, light->m_shadowMap);
+
+		mat4 lightView = glm::lookAt(vec3(0), light->m_dir, vec3(0, 1, 0));
 		mat4 lightMatrix = dirLightProj * lightView * mat4(1);
 		lightMatrix = offsetScale * lightMatrix;
 
-		vec4 viewspaceLightDir = m_oCamera.GetView() * vec4(glm::normalize(light.m_dir), 0);
+		vec4 viewspaceLightDir = m_oCamera.GetView() * vec4(glm::normalize(light->m_dir), 0);
 		if (m_debug[5]) {
-			Gizmos::addSphere(-light.m_dir * 15000, 350, 8, 8, vec4(light.m_color, 0.5));
+			Gizmos::addSphere(-light->m_dir * 15000, 350, 8, 8, vec4(light->m_color, 0.5));
 		}
 
 		//Assign uniforms during loop
 		glUniform3fv(lightDir_uniform, 1, (float*)&viewspaceLightDir);
-		glUniform3fv(lightCol_uniform, 1, (float*)&light.m_color);
+		glUniform3fv(lightCol_uniform, 1, (float*)&light->m_color);
 		glUniformMatrix4fv(lightMat_uniform, 1, GL_FALSE, (float*)&lightMatrix);
 
 		glBindVertexArray(m_screenspaceQuad.m_VAO);
@@ -489,9 +588,6 @@ void VirtualWorld::RenderDirectionalLights() {
 
 void VirtualWorld::RenderPointLights() {
 	glUseProgram(m_pointLightProgram);
-
-	int loc = glGetUniformLocation(m_pointLightProgram, "projView");
-	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "positionTexture"), 0);
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "normalTexture"),   1);
@@ -504,8 +600,6 @@ void VirtualWorld::RenderPointLights() {
 	glBindTexture(GL_TEXTURE_2D, m_normalTexture);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 
 	//Assign uniform locations outside of loop, for efficiency.
 	int lightPos_uniform = glGetUniformLocation(m_pointLightProgram, "lightPos");
@@ -513,17 +607,24 @@ void VirtualWorld::RenderPointLights() {
 	int lightRadius_uniform = glGetUniformLocation(m_pointLightProgram, "lightRadius");
 	int lightCol_uniform = glGetUniformLocation(m_pointLightProgram, "lightCol");
 
+	int loc = glGetUniformLocation(m_pointLightProgram, "projView");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
+	loc = glGetUniformLocation(m_pointLightProgram, "world");
+	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetWorldTransform());
 
-	for (PointLight light : m_pointLights) {
-		vec4 viewspaceLightPos = m_oCamera.GetView() * vec4(light.m_pos, 1);
+	for (PointLight* light : m_pointLights) {
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, light->m_shadowMap);
+
+		vec4 viewspaceLightPos = m_oCamera.GetView() * vec4(light->m_pos, 1);
 		if (m_debug[4]) {
-			Gizmos::addAABB(light.m_pos, vec3(0.5), vec4(light.m_color, 1));
+			Gizmos::addAABB(light->m_pos, vec3(0.5), vec4(light->m_color, 1));
 		}
 
-		glUniform3fv(lightPos_uniform, 1, (float*)&light.m_pos);
+		glUniform3fv(lightPos_uniform, 1, (float*)&light->m_pos);
 		glUniform3fv(lightViewPos_uniform, 1, (float*)&viewspaceLightPos);
-		glUniform1f(lightRadius_uniform, light.m_radius);
-		glUniform3fv(lightCol_uniform, 1, (float*)&light.m_color);
+		glUniform1f(lightRadius_uniform, light->m_radius);
+		glUniform3fv(lightCol_uniform, 1, (float*)&light->m_color);
 
 		glBindVertexArray(m_lightCube.m_VAO);
 		glDrawElements(GL_TRIANGLES, m_lightCube.m_indexCount, GL_UNSIGNED_INT, 0);
@@ -532,7 +633,7 @@ void VirtualWorld::RenderPointLights() {
 
 //Convenience function to initialise directional light data within simulation and add it to GUI.
 void VirtualWorld::AddDirectionalLight(vec3 a_dir, vec3 a_color) {
-	m_dirLights.push_back(DirectionalLight(a_dir, a_color));
+	m_dirLights.push_back(new DirectionalLight(a_dir, a_color));
 
 	TwBar* m_lightingBar = TwGetBarByName("Lighting");
 
@@ -542,14 +643,14 @@ void VirtualWorld::AddDirectionalLight(vec3 a_dir, vec3 a_color) {
 	std::string prefix("DL" + std::to_string(m_dirLights.size()) + "_");
 	std::string group = std::string("group=DirectionalLight" + std::to_string(m_dirLights.size()));
 
-	TwAddVarRW(m_lightingBar, std::string(prefix + "Direction").c_str(), TW_TYPE_DIR3F, &m_dirLights.back().m_dir, group.c_str());
-	TwAddVarRW(m_lightingBar, std::string(prefix + "Color").c_str(), TW_TYPE_COLOR3F, &m_dirLights.back().m_color, group.c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Direction").c_str(), TW_TYPE_DIR3F, &m_dirLights.back()->m_dir, group.c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Color").c_str(), TW_TYPE_COLOR3F, &m_dirLights.back()->m_color, group.c_str());
 
 }
 
 //Convenience function that creates point light data and adds it to the lighting GUI window.
 void VirtualWorld::AddPointLight(vec3 a_pos, vec3 a_color, float a_radius) {
-	m_pointLights.push_back(PointLight(a_pos, a_color, a_radius));
+	m_pointLights.push_back(new PointLight(a_pos, a_color, a_radius));
 
 	TwBar* m_lightingBar = TwGetBarByName("Lighting");
 
@@ -558,11 +659,11 @@ void VirtualWorld::AddPointLight(vec3 a_pos, vec3 a_color, float a_radius) {
 	std::string prefix("PL" + std::to_string(m_pointLights.size()) + "_");
 	std::string group = std::string("group=PointLight" + std::to_string(m_pointLights.size()));
 
-	TwAddVarRW(m_lightingBar, std::string(prefix + "X").c_str(), TW_TYPE_FLOAT, &m_pointLights.back().m_pos.x, (std::string("step=0.1 ") + group).c_str());
-	TwAddVarRW(m_lightingBar, std::string(prefix + "Y").c_str(), TW_TYPE_FLOAT, &m_pointLights.back().m_pos.y, (std::string("step=0.1 ") + group).c_str());
-	TwAddVarRW(m_lightingBar, std::string(prefix + "Z").c_str(), TW_TYPE_FLOAT, &m_pointLights.back().m_pos.z, (std::string("step=0.1 ") + group).c_str());
-	TwAddVarRW(m_lightingBar, std::string(prefix + "Color").c_str(), TW_TYPE_COLOR3F, &m_pointLights.back().m_color, group.c_str());
-	TwAddVarRW(m_lightingBar, std::string(prefix + "Radius").c_str(), TW_TYPE_FLOAT, &m_pointLights.back().m_radius, (std::string("min=0 ") + group).c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "X").c_str(), TW_TYPE_FLOAT, &m_pointLights.back()->m_pos.x, (std::string("step=0.1 ") + group).c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Y").c_str(), TW_TYPE_FLOAT, &m_pointLights.back()->m_pos.y, (std::string("step=0.1 ") + group).c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Z").c_str(), TW_TYPE_FLOAT, &m_pointLights.back()->m_pos.z, (std::string("step=0.1 ") + group).c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Color").c_str(), TW_TYPE_COLOR3F, &m_pointLights.back()->m_color, group.c_str());
+	TwAddVarRW(m_lightingBar, std::string(prefix + "Radius").c_str(), TW_TYPE_FLOAT, &m_pointLights.back()->m_radius, (std::string("min=0 ") + group).c_str());
 }
 
 //Convenience function that add an FBXModel to the vector array, while also adding it to the Model GUI window.
@@ -726,32 +827,6 @@ void VirtualWorld::BuildCube() {
 }
 
 void VirtualWorld::BuildFrameBuffers() {
-	//ShadowMap Framebuffer
-	glGenFramebuffers(1, &m_shadowFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
-
-	glGenTextures(1, &m_shadowMap);
-	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 4096, 4096, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	//Define special parameter to force red channel to be compared to depth channel.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadowMap, 0);
-
-	glDrawBuffer(GL_NONE);
-
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE)
-		printf("Error creating Shadow Buffer!\n");
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	//Geometry Framebuffer
 	glGenFramebuffers(1, &m_gBufferFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_gBufferFBO);
@@ -794,7 +869,7 @@ void VirtualWorld::BuildFrameBuffers() {
 	GLenum gPassTargets[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 	glDrawBuffers(4, gPassTargets);
 
-	status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
 		printf("Error creating gbuffer!\n");
 

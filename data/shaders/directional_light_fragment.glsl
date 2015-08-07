@@ -113,8 +113,8 @@ void main() {
 	float distribution = 1.0f / 16.0f;
 	float spreadFactor = 0.0004f;
 
-	for (int i=0; i<8; i++) {
-		int index = int(8.0*rand(positionSample, i))%8;
+	for (int i = 0; i < 8; i++) {
+		int index = int(8.0 * rand(positionSample, i)) % 8;
 		if ( texture(shadowMap, vec3(shadowCoord.xy + offsetVectors[index] * spreadFactor, shadowCoord.z - bias))  == 0.0f ){
 			d -= distribution;
 		}
@@ -122,9 +122,7 @@ void main() {
 	if ( texture(shadowMap, vec3(shadowCoord.xy, shadowCoord.z - bias)) == 0.0f ){
 		d -= distribution;
 	}
-	//if (readShadowMap(lightProjected)) {
-	//	d = 0;
-	//}
+
 	vec4 finalDiffuse = vec4(d,d,d,1);
 	vec4 LightColor = vec4(lightCol, 1);
 	//Use either ambient light hue or the OrenNayer calculations
