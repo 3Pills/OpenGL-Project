@@ -176,7 +176,7 @@ void GPUEmitter::Reload() {
 	glDeleteProgram(m_updateShader);
 
 	unsigned int vs;
-	LoadShader("./data/shaders/gpuparticles_update_vertex.glsl", GL_VERTEX_SHADER, &vs);
+	LoadShader("./data/shaders/gpuparticles_update.vs", GL_VERTEX_SHADER, &vs);
 
 	m_updateShader = glCreateProgram();
 	glAttachShader(m_updateShader, vs);
@@ -188,8 +188,8 @@ void GPUEmitter::Reload() {
 	glLinkProgram(m_updateShader);
 	glDeleteShader(vs);
 
-	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gpuparticles_fragment.glsl", &m_instantRender);
-	LoadShader("./data/shaders/gpuparticles_vertex.glsl", "./data/shaders/gpuparticles_geometry.glsl", "./data/shaders/gbuffer_textured_fragment.glsl", &m_deferredRender);
+	LoadShader("./data/shaders/gpuparticles.vs", "./data/shaders/gpuparticles.gs", "./data/shaders/gpuparticles.fs", &m_instantRender);
+	LoadShader("./data/shaders/gpuparticles.vs", "./data/shaders/gpuparticles.gs", "./data/shaders/gbuffer_textured.fs", &m_deferredRender);
 }
 
 void GPUEmitter::RenderGizmos(){

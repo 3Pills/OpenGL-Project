@@ -12,7 +12,7 @@ bool RenderingGeometry::startup(){
 		return false;
 	}
 
-	if (!LoadShader("shaders/vertex.glsl", "", "shaders/geometry_fragment.glsl", &m_programID)){
+	if (!LoadShader("shaders/vertex.glsl", "", "shaders/geometry.fs", &m_programID)){
 		return false;
 	}
 	generateGrid(100,100);

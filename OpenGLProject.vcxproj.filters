@@ -76,6 +76,9 @@
     <Filter Include="PhysX">
       <UniqueIdentifier>{ca9e359d-b66b-470e-9a5e-764b54ce038b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{cbb9398e-db11-412e-a1ca-b21cb8e9f9b1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\CameraAndProjections.cpp">
@@ -189,6 +192,12 @@
     </ClCompile>
     <ClCompile Include="src\PhysScene.cpp">
       <Filter>PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Entity.cpp">
+      <Filter>VirtualWorld</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Lights.cpp">
+      <Filter>VirtualWorld</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -318,133 +327,145 @@
     <ClInclude Include="src\PhysScene.h">
       <Filter>PhysX</Filter>
     </ClInclude>
+    <ClInclude Include="src\Entity.h">
+      <Filter>VirtualWorld</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Lights.h">
+      <Filter>VirtualWorld</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\shaders\lighting_fragment.glsl">
-      <Filter>Lighting</Filter>
+    <None Include="data\shaders\basic.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\geometry_fragment.glsl">
-      <Filter>RenderingGeometry</Filter>
+    <None Include="data\shaders\basic.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\geometry_vertex.glsl">
-      <Filter>RenderingGeometry</Filter>
+    <None Include="data\shaders\cloth.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\textures_vertex.glsl">
-      <Filter>Textures</Filter>
+    <None Include="data\shaders\composite.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\textures_fragment.glsl">
-      <Filter>Textures</Filter>
+    <None Include="data\shaders\composite.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\normal_mapped_vertex.glsl">
-      <Filter>AdvancedTextures</Filter>
+    <None Include="data\shaders\diffuse_shadowed.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\normal_mapped_fragment.glsl">
-      <Filter>AdvancedTextures</Filter>
+    <None Include="data\shaders\diffuse_shadowed.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\particles_fragment.glsl">
-      <Filter>Particles</Filter>
+    <None Include="data\shaders\directional_light.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\particles_vertex.glsl">
-      <Filter>Particles</Filter>
+    <None Include="data\shaders\directional_light.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\fragment.glsl">
-      <Filter>Application</Filter>
+    <None Include="data\shaders\gbuffer.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\vertex.glsl">
-      <Filter>Application</Filter>
+    <None Include="data\shaders\gbuffer.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\gpuparticles_fragment.glsl">
-      <Filter>GPUParticles</Filter>
+    <None Include="data\shaders\gbuffer_textured.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\gpuparticles_geometry.glsl">
-      <Filter>GPUParticles</Filter>
+    <None Include="data\shaders\geometry.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\gpuparticles_update_vertex.glsl">
-      <Filter>GPUParticles</Filter>
+    <None Include="data\shaders\geometry.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\gpuparticles_vertex.glsl">
-      <Filter>GPUParticles</Filter>
+    <None Include="data\shaders\gpuparticles.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\lighting_vertex.glsl">
-      <Filter>Lighting</Filter>
+    <None Include="data\shaders\gpuparticles.gs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\reflective_fragment.glsl">
-      <Filter>RenderTargets</Filter>
+    <None Include="data\shaders\gpuparticles.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\reflective_vertex.glsl">
-      <Filter>RenderTargets</Filter>
+    <None Include="data\shaders\gpuparticles_update.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\post_fragment.glsl">
-      <Filter>PostProcessing</Filter>
+    <None Include="data\shaders\lighting.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\post_vertex.glsl">
-      <Filter>PostProcessing</Filter>
+    <None Include="data\shaders\lighting.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\diffuse_shadowed_fragment.glsl">
-      <Filter>Shadows</Filter>
+    <None Include="data\shaders\navmesh.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\diffuse_shadowed_vertex.glsl">
-      <Filter>Shadows</Filter>
+    <None Include="data\shaders\navmesh.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\shadowed_fragment.glsl">
-      <Filter>Shadows</Filter>
+    <None Include="data\shaders\normal_mapped.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\shadowed_vertex.glsl">
-      <Filter>Shadows</Filter>
+    <None Include="data\shaders\normal_mapped.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\composite_fragment.glsl">
-      <Filter>DeferredRendering</Filter>
+    <None Include="data\shaders\particles.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\composite_vertex.glsl">
-      <Filter>DeferredRendering</Filter>
+    <None Include="data\shaders\particles.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\gbuffer_fragment.glsl">
-      <Filter>DeferredRendering</Filter>
+    <None Include="data\shaders\perlin.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\gbuffer_vertex.glsl">
-      <Filter>DeferredRendering</Filter>
+    <None Include="data\shaders\perlin.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\point_light_fragment.glsl">
-      <Filter>DeferredRendering</Filter>
+    <None Include="data\shaders\point_light.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\point_light_vertex.glsl">
-      <Filter>DeferredRendering</Filter>
+    <None Include="data\shaders\point_light.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\directional_light_fragment.glsl">
-      <Filter>DeferredRendering</Filter>
+    <None Include="data\shaders\post.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\perlin_fragment.glsl">
-      <Filter>ProceduralGeneration</Filter>
+    <None Include="data\shaders\post.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\perlin_vertex.glsl">
-      <Filter>ProceduralGeneration</Filter>
+    <None Include="data\shaders\reflective.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\navmesh_vertex.glsl">
-      <Filter>AdvancedNavigation</Filter>
+    <None Include="data\shaders\reflective.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\navmesh_fragment.glsl">
-      <Filter>AdvancedNavigation</Filter>
+    <None Include="data\shaders\shadowed.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\gbuffer_textured_fragment.glsl">
-      <Filter>DeferredRendering</Filter>
+    <None Include="data\shaders\shadowed.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\skinned_fragment_phong.glsl">
-      <Filter>Animation</Filter>
+    <None Include="data\shaders\skinned.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\skinned_fragment_pbr.glsl">
-      <Filter>Animation</Filter>
+    <None Include="data\shaders\skinned_anim.vs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\cloth_vertex.glsl">
-      <Filter>PhysX</Filter>
+    <None Include="data\shaders\skinned_pbr.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\directional_light_vertex.glsl">
-      <Filter>DeferredRendering</Filter>
+    <None Include="data\shaders\skinned_phong.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\skinned_vertex.glsl">
-      <Filter>Animation</Filter>
+    <None Include="data\shaders\textures.fs">
+      <Filter>Shaders</Filter>
     </None>
-    <None Include="data\shaders\skinned_vertex_anim.glsl">
-      <Filter>Animation</Filter>
+    <None Include="data\shaders\textures.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="data\shaders\wavy.vs">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="data\shaders\sprite.vs">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

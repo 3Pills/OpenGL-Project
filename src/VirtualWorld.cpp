@@ -7,97 +7,8 @@
 //VirtualWorld app stored as a global variable. Mainly for AntTweakBar to access the application during button callbacks.
 VirtualWorld* m_app;
 
-//Projection used for rendering all directional lights.
-const mat4 dirLightProj = glm::ortho<float>(-400, 400, -400, 400, -650, 650);
-const mat4 pointLightProj = glm::perspective<float>(90, 1, -650, 650);
-
-struct CameraDirection {
-	GLenum CubemapFace;
-	vec3 Target;
-	vec3 Up;
-};
-
-const CameraDirection cubemapDirection[6] = {
-	{ GL_TEXTURE_CUBE_MAP_POSITIVE_X, vec3(1.0f, 0.0f, 0.0f),  vec3(0.0f, -1.0f,  0.0f) },
-	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_X, vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f,  0.0f) },
-	{ GL_TEXTURE_CUBE_MAP_POSITIVE_Y, vec3(0.0f, 1.0f, 0.0f),  vec3(0.0f,  0.0f, -1.0f) },
-	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, vec3(0.0f, -1.0f, 0.0f), vec3(0.0f,  0.0f,  1.0f) },
-	{ GL_TEXTURE_CUBE_MAP_POSITIVE_Z, vec3(0.0f, 0.0f, 1.0f),  vec3(0.0f, -1.0f,  0.0f) },
-	{ GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f,  0.0f) }
-};
-
-
-PointLight::PointLight(const vec3 a_pos, const vec3 a_color, const float a_radius) : m_pos(a_pos), m_color(a_color), m_radius(a_radius) {
-	//ShadowMap Framebuffer
-	glGenFramebuffers(1, &m_shadowFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
-
-	glGenTextures(1, &m_depthMap);
-	glBindTexture(GL_TEXTURE_2D, m_depthMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, 512, 512, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	// Create the cube map
-	glGenTextures(1, &m_shadowMap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, m_shadowMap);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	for (unsigned int i = 0; i < 6; i++) {
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_R32F, 512, 512, 0, GL_RED, GL_FLOAT, NULL);
-	}
-
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthMap, 0);
-
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE)
-		printf("Error creating Shadow Buffer!\n");
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-DirectionalLight::DirectionalLight(const vec3 a_dir, const vec3 a_color) : m_dir(glm::normalize(a_dir)), m_color(a_color) {
-	//ShadowMap Framebuffer
-	glGenFramebuffers(1, &m_shadowFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFBO);
-
-	glGenTextures(1, &m_shadowMap);
-	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, 4096, 4096, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	//Define special parameter to force red channel to be compared to depth channel.
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_shadowMap, 0);
-
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-
-	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	if (status != GL_FRAMEBUFFER_COMPLETE)
-		printf("Error creating Shadow Buffer!\n");
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 VirtualWorld::VirtualWorld() : m_oCamera(50), m_pHeightScale(50.f), m_pOct(6), m_pAmp(0.9f), m_pPers(0.2f), m_ambCol(vec3(0.35f)),
-m_pPos(vec3(0)), m_pScale(vec3(1)), m_playerVelocity(vec3(0)), m_playerSpeed(2.0f), m_playerGrounded(false), 
-m_pTextureScale(0.2f), m_pFresnelScale(0.5f), m_pRoughness(0.75f)
+m_pPos(vec3(0)), m_pScale(vec3(1)), m_pTextureScale(0.2f), m_pFresnelScale(0.5f), m_pRoughness(0.75f)
 {
 	Application::Application();
 	m_app = this;
@@ -108,6 +19,7 @@ bool VirtualWorld::startup(){
 	if (!Application::startup()){
 		return false;
 	}
+	Gizmos::create();
 
 	//AntTweakBar Initialisation.
 	TwInit(TW_OPENGL_CORE, nullptr);
@@ -126,22 +38,26 @@ bool VirtualWorld::startup(){
 	//Initialise camera
 	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 
+	//Initialise PhysX
+	PhysScene::Init();
+
 	//Shader Initialisation
 	//Opaque Geometry Shaders
-	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
-	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_textured_fragment.glsl", &m_proceduralProgram);
+	LoadShader("./data/shaders/gbuffer.vs", 0, "./data/shaders/gbuffer.fs", &m_gBufferProgram);
+	LoadShader("./data/shaders/perlin.vs", 0, "./data/shaders/gbuffer_textured.fs", &m_proceduralProgram);
 
 	//Light Pre-Pass Shaders
-	LoadShader("./data/shaders/directional_light_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_dirLightProgram);
-	LoadShader("./data/shaders/point_light_vertex.glsl", 0, "./data/shaders/point_light_fragment.glsl", &m_pointLightProgram);
+	LoadShader("./data/shaders/directional_light.vs", 0, "./data/shaders/directional_light.fs", &m_dirLightProgram);
+	LoadShader("./data/shaders/point_light.vs", 0, "./data/shaders/point_light.fs", &m_pointLightProgram);
 
 	//Final Render Shader
-	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/composite_fragment.glsl", &m_compositeProgram);
+	LoadShader("./data/shaders/composite.vs", 0, "./data/shaders/composite.fs", &m_compositeProgram);
 
 	//Add some models.
 	BuildQuad();
 	BuildCube();
 	BuildFrameBuffers();
+
 
 	//AntTweakBar GUI Settings Initialisation
 	TwBar* m_generalBar = TwNewBar("Debugging");
@@ -152,45 +68,77 @@ bool VirtualWorld::startup(){
 	TwAddVarRW(m_generalBar, "Draw Particles", TW_TYPE_BOOL8, &m_debug[3], "group=Gizmos");
 	TwAddVarRW(m_generalBar, "Draw Point Lights", TW_TYPE_BOOL8, &m_debug[4], "group=Gizmos");
 	TwAddVarRW(m_generalBar, "Draw Directional Lights", TW_TYPE_BOOL8, &m_debug[5], "group=Gizmos");
+	TwAddVarRW(m_generalBar, "Draw AI Nodes", TW_TYPE_BOOL8, &m_debug[6], "group=Gizmos");
+
+	//AI node position initialisation
+	m_nodes[0].m_pos = vec3(-200, 27, -200);
+	m_nodes[1].m_pos = vec3(-130, 35, -213);
+	m_nodes[2].m_pos = vec3(0, 50, -235);
+	m_nodes[3].m_pos = vec3(150, 20, -205);
+	m_nodes[4].m_pos = vec3(200, 50, 15);
+	m_nodes[5].m_pos = vec3(170, 45, 180);
+	m_nodes[6].m_pos = vec3(30, 53, 200);
+	m_nodes[7].m_pos = vec3(-110, 50, 230);
+	m_nodes[8].m_pos = vec3(-140, 55, 110);
+	m_nodes[9].m_pos = vec3(-190, 45, -75);
+
+	//Link nodes between each other
+	for (unsigned int i = 0; i < 10; i++) {
+		m_nodes[i].m_next = (i != 9) ? &m_nodes[i + 1] : &m_nodes[0];
+		m_nodes[i].m_prev = (i != 0) ? &m_nodes[i - 1] : &m_nodes[9];
+	}
 
 	TwBar* m_modelsBar = TwNewBar("Models");
 	AddFBXModel(new FBXModel("./data/models/characters/Pyro/pyro.fbx", 0.3f, 2.0f, glm::scale(vec3(0.01f))));
-	m_player = m_physScene.AddPlayerController(PxExtendedVec3(0.f, 55.f, 0.f), m_physScene.m_physics->createMaterial(0.5f, 0.5f, 0.5f), m_FBXModels.back());
 	m_FBXModels.back()->m_parentTransform = false; //Disable player model rotating with PlayerCollider (It doesn't rotate)
+	m_player = new Player(vec3(0.0f, 55.0f, 0.0f), 2.0f, m_FBXModels.back());
+	m_navi = new Navi(m_player->GetController()->getActor());
 
-	AddFBXModel(new FBXModel("./data/models/characters/SoulSpear/soulspear.fbx", 0.3f, 2.0f));
-	m_physScene.AttachRigidBodyConvex(PxTransform(20, 60, 20), m_physScene.m_physics->createMaterial(1, 1, .2f), m_FBXModels.back(), 100.f, 100.f);
+	//Add a bunch of AI entities
+	//Create the transform override for the skeleton models.
+	mat4 spookyTransform = glm::translate(vec3(0.1f, 0.4f, 0)) * glm::scale(vec3(0.1f)) * glm::rotate(glm::radians(-90.0f), vec3(1, 0, 0));
 
-	//modTransform for bombs.
+	AddFBXModel(new FBXModel("./data/models/characters/Spooky/skeleton.fbx", 0.3f, 2.0f, spookyTransform));
+	m_FBXModels.back()->m_parentTransform = false;
+	m_AIEntities.push_back(new AIEntity(vec3(-130, 85, -213), 2.0f, &m_nodes[1], m_FBXModels.back()));
+
+	AddFBXModel(new FBXModel("./data/models/characters/Spooky/skeleton.fbx", 0.3f, 2.0f, spookyTransform));
+	m_FBXModels.back()->m_parentTransform = false;
+	m_AIEntities.push_back(new AIEntity(vec3(30, 83, 200), 2.0f, &m_nodes[6], m_FBXModels.back()));
+
+	AddFBXModel(new FBXModel("./data/models/characters/Spooky/skeleton.fbx", 0.3f, 2.0f, spookyTransform));
+	m_FBXModels.back()->m_parentTransform = false;
+	m_AIEntities.push_back(new AIEntity(vec3(-190, 85, -75), 2.0f, &m_nodes[9], m_FBXModels.back()));
+
+	//Add a static tank to the scene.
+	AddFBXModel(new FBXModel("./data/models/tank/battle_tank.fbx", 0.3f, 2.0f, glm::scale(vec3(0.3f))));
+	PhysScene::AddRigidBodyStatic(PxTransform(PxVec3(-80, 37, -40), PxQuat(PxReal(glm::radians(25.0f)), PxVec3(1,0,0))), &PxBoxGeometry(35, 16, 55), PhysScene::m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back());
+
+	//Add some physics-enabled bombs
 	mat4 bombTransform = glm::translate(vec3(0.1f, 0.4f, 0)) * glm::scale(vec3(0.1875f)) * glm::rotate(glm::radians(-90.0f), vec3(1, 0, 0));
 	AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
-	m_physScene.AddRigidBodyDynamic(PxTransform(-20, 60, -20), &PxSphereGeometry(3.0f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 10.f);
-	//AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
-	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 28, 1), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 100.f);
-	//AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
-	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 24, 0), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 100.f);
-	//AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
-	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 32, 0), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 100.f);
+	PhysScene::AddRigidBodyDynamic(PxTransform(-20, 60, -20), &PxSphereGeometry(3.0f), PhysScene::m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 10.f);
 
-	//AddFBXModel(new FBXModel("./data/models/characters/SoulSpear/soulspear.fbx", 0.3f, 2.0f));
-	//m_physScene.AddRigidBodyDynamic(PxTransform(0, 7, 0), &PxCapsuleGeometry(0.25f, 4.0f), m_physScene.m_physics->createMaterial(1, 1, .2f), m_FBXModels.back(), 400.f);
+	AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
+	PhysScene::AddRigidBodyDynamic(PxTransform(-20, 60, -20), &PxSphereGeometry(3.0f), PhysScene::m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 10.f);
 
-	//AddPhysModel(new PhysModel("./data/models/items/bomb.fbx", vec3(0.0f, 10.0f, 0.0f), nullptr, m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), &m_physScene, 100.0f, 0.3f, 2.0f, 3.2f, bombTransform));
-	//AddPhysModel(new PhysModel("./data/models/items/bomb.fbx", vec3(0.1f, 16.0f, 0.0f), nullptr, m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), &m_physScene, 100.0f, 0.3f, 2.0f, 3.2f, bombTransform));
+	AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
+	PhysScene::AddRigidBodyDynamic(PxTransform(-20, 60, -20), &PxSphereGeometry(3.0f), PhysScene::m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 10.f);
 
-	//AddPhysModel(new PhysModel("./data/models/items/bomb.fbx", vec3(0.1f, 23.0f, 0.0f), &PxSphereGeometry(1.5f), m_physScene.m_physics->createMaterial(0.0f, 0.0f, 0.1f), &m_physScene, 100.0f, 0.3f, 2.0f, 3.2f, bombTransform));
-	////AddPhysModel(new PhysModel("./data/models/tank/battle_tank.fbx", vec3(0, 10, 0), &PxBoxGeometry(PxVec3(3)), m_physScene.m_physics->createMaterial(1, 1, .2f), &m_physScene, 400.0f, 0.3f, 2.0f, 100.0f));
-	//AddPhysModel(new PhysModel("./data/models/characters/SoulSpear/soulspear.fbx", vec3(0, 7, 0), &PxCapsuleGeometry(0.25f, 4.0f), m_physScene.m_physics->createMaterial(1, 1, .2f), &m_physScene, 400.0f, 0.3f, 2.0f, 100.0f));
-	//AddPhysModel(new PhysModel("./data/models/characters/SoulSpear/soulspear.fbx", vec3(0, 5, 0), &PxCapsuleGeometry(0.25f, 4.0f), m_physScene.m_physics->createMaterial(1, 1, .2f), &m_physScene, 400.0f, 0.3f, 2.0f, 100.0f));
+	AddFBXModel(new FBXModel("./data/models/items/bomb.fbx", 0.3f, 2.0f, bombTransform));
+	PhysScene::AddRigidBodyDynamic(PxTransform(-20, 60, -20), &PxSphereGeometry(3.0f), PhysScene::m_physics->createMaterial(0.0f, 0.0f, 0.1f), m_FBXModels.back(), 10.f);
 
+	
 	//Create Particle GUI bar and add particle emitters.
 	TwBar* m_particlesBar = TwNewBar("Particles");
-	AddParticleEmitter(new GPUEmitter(vec3(0), vec3(1), 50, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_LINEAR, "./data/textures/particles/glow.png"));
+	AddParticleEmitter(new GPUEmitter(vec3(0), vec3(1), 35, 0.5f, 1.5f, 1.0f, 2.0f, 0.0f, 0.75f, 1.0f, 0.75f, vec4(1), vec4(1), EMIT_POINT, PMOVE_LINEAR, "./data/textures/particles/glow.png"));
 	AddParticleEmitter(new GPUEmitter(vec3(0, 10, 0), vec3(80), 120, 1.5f, 3.5f, 1.0f, 2.0f, 1.0f, 0.75f, 1.0f, 1.0f, vec4(1, 1, 0.65f, 1), vec4(0.65, 0.65, 0, 1), EMIT_RECTANGLE, PMOVE_WAVE, "./data/textures/particles/glow.png"));
+	AddParticleEmitter(new GPUEmitter(vec3(0), vec3(1), 50, 1.0f, 2.0f, 1.0f, 2.0f, 1.0f, 0.5f, 1.0f, 0.5f, vec4(1, 0.5, 0.5, 1), vec4(1, 0, 0, 1), EMIT_POINT, PMOVE_LINEAR, "./data/textures/particles/glow.png"));
 
 	TwBar* m_lightingBar = TwNewBar("Lighting"); //Lighting window. Allows modification of lighting data.
 
 	//Buttons to add and remove point lights from the program
+	//These buttons use lambda callbacks, accessing the globally available m_app to modify class variables.
 	TwAddButton(m_lightingBar, "Add Point Light", [](void*){m_app->AddPointLight(); }, nullptr, "");
 	TwAddButton(m_lightingBar, "Remove Point Light", [](void*){
 		TwBar* m_lightingBar = TwGetBarByName("Lighting");
@@ -222,7 +170,7 @@ bool VirtualWorld::startup(){
 	}, nullptr, "");
 
 	TwAddVarRW(m_lightingBar, "Ambient Color", TW_TYPE_COLOR3F, &m_ambCol, "");
-	AddPointLight(vec3(0, 20, 10), vec3(1), 100);
+	AddPointLight(vec3(-70.5f, 55.5f, -33.5f), vec3(1,0,0), 25);
 	AddDirectionalLight(vec3(-1), vec3(1)); 
 	
 	//Initialise Procedural Landscape
@@ -231,13 +179,13 @@ bool VirtualWorld::startup(){
 
 	BuildProceduralGrid(meshDims, textDims);
 	BuildPerlinTexture(textDims, m_pOct, m_pAmp, m_pPers);
-	m_physScene.AddHeightMap(m_pData, m_physScene.m_physics->createMaterial(1, 1, 1), textDims, vec3(meshDims.x, m_pHeightScale + 2.f, meshDims.y), 4);
+	PhysScene::AddHeightMap(m_pData, PhysScene::m_physics->createMaterial(1, 1, 1), textDims, vec3(meshDims.x, m_pHeightScale + 2.f, meshDims.y), 4);
 
 	//Load Perlin Diffuse texture
 	LoadTexture("./data/textures/grass.tga", &m_pTexture);
 
 	//Add a wall around the world, based on the size of the perlin mesh.
-	m_physScene.AddWorldBounds(vec3(meshDims.x / 2, 1000, meshDims.y / 2));
+	PhysScene::AddWorldBounds(vec3(meshDims.x / 2, 1000, meshDims.y / 2));
 
 	//Add procedural generation variables to debugging GUI window. 
 	TwAddVarRW(m_generalBar, "Roughness",		TW_TYPE_FLOAT, &m_pRoughness,	"group=ProceduralGeneration min=0 step=0.01");
@@ -252,18 +200,19 @@ bool VirtualWorld::startup(){
 	TwAddVarRW(m_generalBar, "Scale_X",			TW_TYPE_FLOAT, &m_pScale.x,		"group=ProceduralGeneration min=0 step=0.01");
 	TwAddVarRW(m_generalBar, "Scale_Y",			TW_TYPE_FLOAT, &m_pScale.y,		"group=ProceduralGeneration min=0 step=0.01");
 	TwAddVarRW(m_generalBar, "Scale_Z",			TW_TYPE_FLOAT, &m_pScale.z,		"group=ProceduralGeneration min=0 step=0.01");
-	TwAddVarRW(m_generalBar, "Rotation",		TW_TYPE_QUAT4F,&m_pRot,			"");
+	TwAddVarRW(m_generalBar, "Rotation",		TW_TYPE_QUAT4F,&m_pRot,			"group=ProceduralGeneration");
 	//Only the scale variable affects simulation in realtime. All others require recreating the perlinTexture.
 
-	//m_cloths.push_back(new ClothData(4, 4, 8));
-	//AddCloth(m_physScene.AddCloth(vec3(0, 40, 0), m_cloths.back()->m_vertexCount, m_cloths.back()->m_indexCount, m_cloths.back()->m_vertices, m_cloths.back()->m_indices));
+	m_cloths.push_back(new ClothData(4, 4, 8));
+	AddCloth(PhysScene::AddCloth(vec3(0, 40, 0), m_cloths.back()->m_vertexCount, m_cloths.back()->m_indexCount, m_cloths.back()->m_vertices, m_cloths.back()->m_indices));
 
-	Gizmos::create();
 	return true;
 }
 
 bool VirtualWorld::shutdown(){
 	//Game Asset Termination
+	delete m_player;
+	delete m_navi;
 
 	//Clear all pointer arrays of their stored memory.
 	for (GPUEmitter* particle : m_particleEmitters) { delete particle; }
@@ -271,6 +220,23 @@ bool VirtualWorld::shutdown(){
 	for (ClothData* cloth : m_cloths) { delete cloth; }
 	for (DirectionalLight* light : m_dirLights) { delete light; }
 	for (PointLight* light : m_pointLights) { delete light; }
+	for (Sprite* sprite : m_pointLightSprites) { delete sprite; }
+		
+	glDeleteFramebuffers(1, &m_fxFBO);
+	glDeleteFramebuffers(1, &m_gBufferFBO);
+	glDeleteFramebuffers(1, &m_lightFBO);
+
+	glDeleteTextures(1, &m_depthTexture);
+	glDeleteTextures(1, &m_albedoTexture);
+	glDeleteTextures(1, &m_normalTexture);
+	glDeleteTextures(1, &m_positionTexture);
+	glDeleteTextures(1, &m_specularTexture);
+
+	glDeleteTextures(1, &m_lightTexture);
+	glDeleteTextures(1, &m_fxTexture);
+
+	glDeleteTextures(1, &m_pHeightTexture);
+	glDeleteTextures(1, &m_pTexture);
 
 	//Delete Buffers for deferred rendering quad and lightcube.
 	glDeleteVertexArrays(1, &m_screenspaceQuad.m_VAO);
@@ -284,6 +250,8 @@ bool VirtualWorld::shutdown(){
 	glDeleteProgram(m_dirLightProgram);
 	glDeleteProgram(m_pointLightProgram);
 	glDeleteProgram(m_proceduralProgram);
+
+	PhysScene::Shutdown();
 
 	//GUI Termination
 	TwTerminate(); //End ATB
@@ -299,6 +267,9 @@ bool VirtualWorld::update(){
 	}
 	Gizmos::clear();
 
+	//Clamping deltaTime to 1/30 if it exceeds that, to stop crazy things from happening
+	m_fDeltaTime = (m_fDeltaTime > 1.0f / 30.f) ? 1.0f / 30.0f : m_fDeltaTime;
+
 	//Button Input for shader reloading. Uses lastKey variable to only pass the first frame the key is pressed.
 	if (glfwGetKey(m_window, GLFW_KEY_R) == GLFW_PRESS && m_lastKey[0] != GLFW_PRESS){
 		ReloadShaders();
@@ -311,14 +282,46 @@ bool VirtualWorld::update(){
 	m_lastKey[0] = glfwGetKey(m_window, GLFW_KEY_R);
 	m_lastKey[1] = glfwGetKey(m_window, GLFW_KEY_T);
 
-	m_physScene.Update(m_fDeltaTime, m_debug[2]);
-	PlayerUpdate();
+	PhysScene::Update(m_fDeltaTime, m_debug[2]);
+	m_oCamera.Update(m_fDeltaTime, m_player->GetPos());
 
 	for (FBXModel* model : m_FBXModels) {
 		model->Update(m_fDeltaTime);
 	}
 
-	m_oCamera.Update(m_fDeltaTime, ((FBXModel*)m_player->getActor()->userData)->m_pos);
+	for (AIEntity* ent : m_AIEntities) {
+		ent->SetTarget(m_player->GetPos());
+		ent->Update(m_fDeltaTime, m_player->GetPos());
+	}
+
+	if (m_debug[6]) {
+		for (unsigned int i = 0; i < 10; i++) {
+			Gizmos::addSphereFilled(m_nodes[i].m_pos, 1.0f, 6,6, vec4(vec3((float)i/10), 1));
+			Gizmos::addLine(m_nodes[i].m_pos, m_nodes[i].m_next->m_pos, vec4(1, 1, 0, 1), vec4(1, 1, 0, 1));
+		}
+	}
+
+	for (unsigned int i = 0; i < m_pointLights.size(); i++) {
+		m_pointLightSprites[i]->m_pos = m_pointLights[i]->m_pos;
+		m_pointLightSprites[i]->m_maxColor = m_pointLights[i]->m_color;
+		m_pointLightSprites[i]->m_minColor = m_pointLights[i]->m_color;
+		m_pointLightSprites[i]->m_maxSize = m_pointLights[i]->m_radius / 2.5f;
+		m_pointLightSprites[i]->m_minSize = m_pointLights[i]->m_radius / 2.5f;
+		m_pointLightSprites[i]->Update(m_fDeltaTime, m_oCamera.GetWorldTransform());
+	}
+
+	m_player->Update(m_fDeltaTime, m_oCamera.GetWorldTransform());
+	m_navi->Update(m_fDeltaTime, m_oCamera.GetWorldTransform(), m_player->GetPos());
+
+	//Parenting wispy particles to Navi
+	m_particleEmitters[0]->m_pos = m_navi->GetPos();
+	m_particleEmitters[0]->m_startColor = vec4(m_navi->GetColor(), 1);
+	m_particleEmitters[0]->m_endColor = vec4(m_navi->GetColor(), 1);
+	//Parenting floaty particles to the camera
+	m_particleEmitters[1]->m_pos = m_oCamera.GetWorldTransform()[3].xyz;
+
+	//Set the stuck vertex of the cloth to the player's position.
+	m_cloths.back()->m_nailPos = m_player->GetPos();
 
 	//Defining Gizmos debug colors.
 	vec4 white(1);
@@ -339,21 +342,19 @@ bool VirtualWorld::update(){
 void VirtualWorld::draw(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//Enable Depth Culling.
-	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST); //Enable Depth Culling.
+	glEnable(GL_CULL_FACE); //Enable Face Culling of polygons facing away from camera.
 
-	//Enable Face Culling of polygons facing away from camera.
-	glEnable(GL_CULL_FACE);
+	glDepthFunc(GL_LESS); //Only draw objects if they're closer to the camera	
 
 	//Shadow Depth Rendering
-	glViewport(0, 0, 4096, 4096);
-
+	glViewport(0, 0, 4096, 4096); //Set viewport to texture size
 	for (DirectionalLight* light : m_dirLights) {
 		glBindFramebuffer(GL_FRAMEBUFFER, light->m_shadowFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		//Create a projection view matrix for the light
 		mat4 lightView = glm::lookAt(vec3(0), light->m_dir, vec3(0, 1, 0));
-		mat4 lightMatrix = dirLightProj * lightView * mat4(1);
+		mat4 lightMatrix = DirectionalLight::m_lightProj * lightView * mat4(1);
 
 		//Models have specialised shadow handling; no need to use one in the main loop
 		for (FBXModel* model : m_FBXModels){
@@ -362,17 +363,17 @@ void VirtualWorld::draw(){
 		}
 	}
 
-	glViewport(0, 0, 512, 512);
+	glViewport(0, 0, 512, 512); //Viewport to texture size
 	for (PointLight* light : m_pointLights) {
 		for (int i = 0; i < 6; i++) {
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, light->m_shadowFBO);
-			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cubemapDirection[i].CubemapFace, light->m_shadowFBO, 0);
-			glDrawBuffer(GL_COLOR_ATTACHMENT0);
+			glBindFramebuffer(GL_FRAMEBUFFER, light->m_shadowFBO);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, PointLight::m_cubemapDirection[i].CubemapFace, light->m_shadowFBO, 0);
+			glDrawBuffer(GL_NONE);
 
 			glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-			mat4 lightView = glm::lookAt(cubemapDirection[i].Up, cubemapDirection[i].Target, vec3(0, 1, 0));
-			mat4 lightMatrix = pointLightProj * lightView * mat4(1);
+			mat4 lightView = glm::lookAt(PointLight::m_cubemapDirection[i].Up, PointLight::m_cubemapDirection[i].Target, vec3(0, 1, 0));
+			mat4 lightMatrix = PointLight::m_lightProj * lightView * mat4(1);
 
 			for (FBXModel* model : m_FBXModels){
 				model->Render(&m_oCamera, false, &lightMatrix);
@@ -388,7 +389,6 @@ void VirtualWorld::draw(){
 	glClearBufferfv(GL_COLOR, 1, (float*)&vec4(0.0f));
 	glClearBufferfv(GL_COLOR, 2, (float*)&vec4(0.5f));
 
-	glDepthFunc(GL_LESS);
 	//glDepthMask(GL_FALSE);
 	glUseProgram(m_proceduralProgram);
 
@@ -453,8 +453,8 @@ void VirtualWorld::draw(){
 
 	//Light Rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, m_lightFBO);
-	glEnable(GL_BLEND);//Enable transparency blending
 	glClear(GL_COLOR_BUFFER_BIT);
+	glEnable(GL_BLEND);//Enable transparency blending
 
 	
 	//RenderDirectionalLight(vec3(1, 0, 0), vec3(1, 0, 0));
@@ -469,7 +469,7 @@ void VirtualWorld::draw(){
 	glBindFramebuffer(GL_FRAMEBUFFER, m_fxFBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDepthFunc(GL_LEQUAL);
-	glDepthMask(GL_FALSE); //Disable newly drawn objects writing to the depth buffer. Allows all FX to be drawn without culling.
+	glDepthMask(GL_FALSE); //Disable newly drawn objects writing to the depth buffer. Allows all FX to be drawn without causing culling.
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUseProgram(m_gBufferProgram);
@@ -480,14 +480,20 @@ void VirtualWorld::draw(){
 		}
 	}
 
-	glDepthMask(GL_TRUE);
-	glDisable(GL_BLEND); //No more transparent rendering, turn off the blend.
-	glBlendFunc(GL_ONE, GL_ONE);
+	for (Sprite* sprite : m_pointLightSprites) {
+		sprite->Render(&m_oCamera);
+	}
+	//Render navi's sprite
+	m_navi->RenderSprite(&m_oCamera);
 
 	//Draw Gizmos at the end of the transparency pass, to retain depth culling without lighting.
 	if (!m_debug[0]) {
 		Gizmos::draw(m_oCamera.GetProjectionView());
 	}
+
+	glDepthMask(GL_TRUE);
+	glDisable(GL_BLEND); //No more transparent rendering, turn off the blend.
+	glBlendFunc(GL_ONE, GL_ONE);
 
 	//Composite Rendering
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -499,7 +505,8 @@ void VirtualWorld::draw(){
 
 	glUniform1i(glGetUniformLocation(m_compositeProgram, "albedoTexture"), 0);
 	glUniform1i(glGetUniformLocation(m_compositeProgram, "lightTexture"),  1);
-	glUniform1i(glGetUniformLocation(m_compositeProgram, "fxTexture"),	   2);
+	glUniform1i(glGetUniformLocation(m_compositeProgram, "fxTexture"), 2);
+	glUniform1i(glGetUniformLocation(m_compositeProgram, "shadowMap"), 3);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_albedoTexture);
@@ -507,6 +514,10 @@ void VirtualWorld::draw(){
 	glBindTexture(GL_TEXTURE_2D, m_lightTexture);
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_fxTexture);
+	if (m_pointLights.size() > 0) {
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_pointLights[0]->m_shadowMap);
+	}
 
 	loc = glGetUniformLocation(m_compositeProgram, "ambCol");
 	glUniform3fv(loc, 1, (float*)&m_ambCol);
@@ -546,41 +557,16 @@ void VirtualWorld::RenderDirectionalLights() {
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
 
-	mat4 offsetScale = mat4(
-		0.5f, 0.0f, 0.0f, 0.0f,
-		0.0f, 0.5f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.5f, 0.0f,
-		0.5f, 0.5f, 0.5f, 1.0f);
-
-	//Assign uniform locations outside of loop, for efficiency.
-	int lightDir_uniform = glGetUniformLocation(m_dirLightProgram, "lightDir");
-	int lightCol_uniform = glGetUniformLocation(m_dirLightProgram, "lightCol");
-	int lightMat_uniform = glGetUniformLocation(m_dirLightProgram, "lightMatrix");
-
 	int loc = glGetUniformLocation(m_dirLightProgram, "projView");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 	loc = glGetUniformLocation(m_dirLightProgram, "world");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetWorldTransform());
 
-
 	for (DirectionalLight* light : m_dirLights) {
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, light->m_shadowMap);
-
-		mat4 lightView = glm::lookAt(vec3(0), light->m_dir, vec3(0, 1, 0));
-		mat4 lightMatrix = dirLightProj * lightView * mat4(1);
-		lightMatrix = offsetScale * lightMatrix;
-
-		vec4 viewspaceLightDir = m_oCamera.GetView() * vec4(glm::normalize(light->m_dir), 0);
+		light->Render(&m_oCamera, m_dirLightProgram);
 		if (m_debug[5]) {
 			Gizmos::addSphere(-light->m_dir * 15000, 350, 8, 8, vec4(light->m_color, 0.5));
 		}
-
-		//Assign uniforms during loop
-		glUniform3fv(lightDir_uniform, 1, (float*)&viewspaceLightDir);
-		glUniform3fv(lightCol_uniform, 1, (float*)&light->m_color);
-		glUniformMatrix4fv(lightMat_uniform, 1, GL_FALSE, (float*)&lightMatrix);
-
 		glBindVertexArray(m_screenspaceQuad.m_VAO);
 		glDrawElements(GL_TRIANGLES, m_screenspaceQuad.m_indexCount, GL_UNSIGNED_INT, 0);
 	}
@@ -590,7 +576,7 @@ void VirtualWorld::RenderPointLights() {
 	glUseProgram(m_pointLightProgram);
 
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "positionTexture"), 0);
-	glUniform1i(glGetUniformLocation(m_pointLightProgram, "normalTexture"),   1);
+	glUniform1i(glGetUniformLocation(m_pointLightProgram, "normalTexture"), 1);
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "specularTexture"), 2);
 	glUniform1i(glGetUniformLocation(m_pointLightProgram, "shadowMap"), 3);
 
@@ -601,30 +587,21 @@ void VirtualWorld::RenderPointLights() {
 	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_specularTexture);
 
-	//Assign uniform locations outside of loop, for efficiency.
-	int lightPos_uniform = glGetUniformLocation(m_pointLightProgram, "lightPos");
-	int lightViewPos_uniform = glGetUniformLocation(m_pointLightProgram, "lightViewPos");
-	int lightRadius_uniform = glGetUniformLocation(m_pointLightProgram, "lightRadius");
-	int lightCol_uniform = glGetUniformLocation(m_pointLightProgram, "lightCol");
-
 	int loc = glGetUniformLocation(m_pointLightProgram, "projView");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetProjectionView());
 	loc = glGetUniformLocation(m_pointLightProgram, "world");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&m_oCamera.GetWorldTransform());
 
-	for (PointLight* light : m_pointLights) {
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, light->m_shadowMap);
+	//Render the navi light.
+	m_navi->RenderLight(&m_oCamera, m_pointLightProgram);
+	glBindVertexArray(m_lightCube.m_VAO);
+	glDrawElements(GL_TRIANGLES, m_lightCube.m_indexCount, GL_UNSIGNED_INT, 0);
 
-		vec4 viewspaceLightPos = m_oCamera.GetView() * vec4(light->m_pos, 1);
+	for (PointLight* light : m_pointLights) {
+		light->Render(&m_oCamera, m_pointLightProgram);
 		if (m_debug[4]) {
 			Gizmos::addAABB(light->m_pos, vec3(0.5), vec4(light->m_color, 1));
 		}
-
-		glUniform3fv(lightPos_uniform, 1, (float*)&light->m_pos);
-		glUniform3fv(lightViewPos_uniform, 1, (float*)&viewspaceLightPos);
-		glUniform1f(lightRadius_uniform, light->m_radius);
-		glUniform3fv(lightCol_uniform, 1, (float*)&light->m_color);
 
 		glBindVertexArray(m_lightCube.m_VAO);
 		glDrawElements(GL_TRIANGLES, m_lightCube.m_indexCount, GL_UNSIGNED_INT, 0);
@@ -651,6 +628,7 @@ void VirtualWorld::AddDirectionalLight(vec3 a_dir, vec3 a_color) {
 //Convenience function that creates point light data and adds it to the lighting GUI window.
 void VirtualWorld::AddPointLight(vec3 a_pos, vec3 a_color, float a_radius) {
 	m_pointLights.push_back(new PointLight(a_pos, a_color, a_radius));
+	m_pointLightSprites.push_back(new Sprite(a_pos, 20, a_color, "./data/textures/particles/glow2.png"));
 
 	TwBar* m_lightingBar = TwGetBarByName("Lighting");
 
@@ -902,11 +880,11 @@ void VirtualWorld::BuildFrameBuffers() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, m_fxTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_fxTexture, 0);
 	//Pass the depth buffer from the geometry pass into the FX framebuffer, so depth culling is done correctly.
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthTexture);
 
-	GLenum fxTargets[] = { GL_COLOR_ATTACHMENT3 };
+	GLenum fxTargets[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, fxTargets);
 
 	status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -1019,11 +997,11 @@ void VirtualWorld::ReloadShaders(){
 	glDeleteProgram(m_pointLightProgram);
 	glDeleteProgram(m_proceduralProgram);
 
-	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
-	LoadShader("./data/shaders/perlin_vertex.glsl", 0, "./data/shaders/gbuffer_textured_fragment.glsl", &m_proceduralProgram);
-	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/composite_fragment.glsl", &m_compositeProgram);
-	LoadShader("./data/shaders/directional_light_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_dirLightProgram);
-	LoadShader("./data/shaders/point_light_vertex.glsl", 0, "./data/shaders/point_light_fragment.glsl", &m_pointLightProgram);
+	LoadShader("./data/shaders/gbuffer.vs", 0, "./data/shaders/gbuffer.fs", &m_gBufferProgram);
+	LoadShader("./data/shaders/perlin.vs", 0, "./data/shaders/gbuffer_textured.fs", &m_proceduralProgram);
+	LoadShader("./data/shaders/composite.vs", 0, "./data/shaders/composite.fs", &m_compositeProgram);
+	LoadShader("./data/shaders/directional_light.vs", 0, "./data/shaders/directional_light.fs", &m_dirLightProgram);
+	LoadShader("./data/shaders/point_light.vs", 0, "./data/shaders/point_light.fs", &m_pointLightProgram);
 
 	for (GPUEmitter* particle : m_particleEmitters) {
 		particle->Reload();
@@ -1041,78 +1019,4 @@ void VirtualWorld::resize(int a_width, int a_height){
 	m_iHeight = a_height;
 	BuildFrameBuffers();
 	BuildQuad();
-}
-
-void VirtualWorld::PlayerUpdate() {
-	//Access the FBXModel class of the player, stored as userData within the actor
-	FBXModel* playerModel = (FBXModel*)m_player->getActor()->userData;
-
-	//scan the keys and set up our intended velocity
-	vec3 velocity(0, 0, 0);
-	if (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS) {
-		velocity.z -= 1;
-	}
-	if (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-		velocity.z += 1;
-	}
-	if (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-		velocity.x -= 1;
-	}
-	if (glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-		velocity.x += 1;
-	}
-	//Normalize velocity vector, to stop diagonals getting more speed.
-	if (velocity != vec3(0)) {
-		glm::normalize(velocity);
-		playerModel->SetAnimation(eRUN);
-	}
-	else {
-		playerModel->SetAnimation(eIDLE);
-	}
-	velocity *= m_playerSpeed * m_fDeltaTime;
-
-	//Make controls relative to camera direction.
-	//Flatten the camera foward and player positions so a camera looking up or down will not affect the final velocity.
-	vec3 camForward = vec3(m_oCamera.GetWorldTransform()[2].x, 0, m_oCamera.GetWorldTransform()[2].z);
-	vec3 playerFlat = vec3(m_player->getPosition().x, 0, m_player->getPosition().z); 
-
-	//Create a rotation quaternion to rotate the velocity in the direction of the camera forward.
-	quat cameraRot = glm::conjugate(glm::toQuat(glm::lookAt(playerFlat, playerFlat - camForward, vec3(0, 1, 0))));
-	vec3 rotVelocity = cameraRot * velocity;
-
-	m_playerVelocity += rotVelocity;
-
-	//Create a flattened movement direction for ground movement.
-	vec3 moveDir = vec3(m_playerVelocity.x, 0, m_playerVelocity.z);
-
-	//Dampen movement on X and Z axis, but not the Y axis.
-	moveDir *= 0.95f;
-	m_playerVelocity = vec3(moveDir.x, m_playerVelocity.y, moveDir.z);
-
-	//Access the hitreport, stored as userdata within the controller.
-	PlayerHitReport* hitReport = (PlayerHitReport*)m_player->getUserData();
-	//check if we have a contact normal. if y is greater than .3 we assume this is solid ground.This is a rather primitive way to do this.Can you do better ?
-	if (hitReport->getPlayerContactNormal().y > .3f) {
-		m_playerVelocity.y = -0.1f;
-		m_playerGrounded = true;
-
-		if (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-			m_playerVelocity.y = 0.5f;
-		}
-	}
-	else {
-		m_playerVelocity.y += -1.5f * m_fDeltaTime;
-		m_playerGrounded = false;
-	}
-	hitReport->clearPlayerContactNormal();
-
-	//Move the controller.
-	m_player->move(PxVec3(moveDir.x, m_playerVelocity.y, moveDir.z), 0.001f, m_fDeltaTime, PxControllerFilters());
-	
-	//Rotate the player model if the controller is moving fast enough.
-	if (glm::length(moveDir) > 0.001f) {
-		playerModel->m_rot = conjugate(glm::toQuat(glm::lookAt(vec3(0), -moveDir, vec3(0, 1, 0))));
-	}
-
-	m_particleEmitters[1]->m_pos = playerModel->m_pos;
 }

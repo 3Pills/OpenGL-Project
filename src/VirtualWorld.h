@@ -7,47 +7,25 @@
 #include "FBXModel.h"
 #include "PhysModel.h"
 #include "PhysScene.h"
-
-//Point light data storage.
-struct PointLight {
-	vec3 m_pos;
-	vec3 m_color;
-	float m_radius;
-
-	unsigned int m_shadowFBO; //Shadow buffer framebuffer object
-	unsigned int m_shadowMap; //Shadow buffer texture data
-	unsigned int m_depthMap; //Shadow buffer texture data
-
-	PointLight(const vec3 a_pos, const vec3 a_color, const float a_radius);
-};
-
-//Directional light data storage.
-struct DirectionalLight {
-	vec3 m_dir;
-	vec3 m_color;
-
-	unsigned int m_shadowFBO; //Shadow buffer framebuffer object
-	unsigned int m_shadowMap; //Shadow buffer texture data
-
-	DirectionalLight(const vec3 a_dir, const vec3 a_color);
-};
+#include "Lights.h"
+#include "Entity.h"
 
 class VirtualWorld : public Application
 {
 	TargetCamera m_oCamera;
 	std::vector<GPUEmitter*> m_particleEmitters;
 	std::vector<FBXModel*> m_FBXModels;
+	std::vector<AIEntity*> m_AIEntities;
+	std::vector<Sprite*> m_pointLightSprites;
 
 	OpenGLData m_screenspaceQuad; //Quad which deferred render will render onto
 	OpenGLData m_lightCube; //Cube for point lights
 	OpenGLData m_planeMesh; //Mesh for perlin heightmap
 
-	PhysScene m_physScene; //PhysX scene
+	Player* m_player;
+	Navi* m_navi;
 
-	PxController* m_player; //Player controller for scene
-	vec3 m_playerVelocity; //Player's velocity
-	float m_playerSpeed; //Player's speed
-	bool m_playerGrounded; //Bool for grounded player
+	AINode m_nodes[10];
 
 	vec3 m_ambCol; //Global ambient colour for lighting
 
@@ -116,8 +94,6 @@ public:
 	void AddFBXModel(FBXModel* a_model);
 	void AddParticleEmitter(GPUEmitter* a_particle);
 	void AddCloth(PxCloth* a_cloth);
-
-	void PlayerUpdate();
 };
 
 #endif//VIRTUAL_WORLD_H_

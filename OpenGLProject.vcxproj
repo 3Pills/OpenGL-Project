@@ -63,12 +63,17 @@
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
       <PreprocessorDefinitions>WIN32;GLM_FORCE_PURE;_MBCS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>glfw3.lib;opengl32.lib;AntTweakBar.lib;FBXLoader_d.lib;PhysX3DEBUG_x86.lib;PhysX3CharacterKinematicDEBUG_x86.lib;PhysX3CommonDEBUG_x86.lib;PhysX3CookingDEBUG_x86.lib;PhysX3ExtensionsDEBUG.lib;PhysXVisualDebuggerSDKDEBUG.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>./deps/fbxloader;./deps/atb/lib;./deps/glfw/lib-vc2013</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -82,6 +87,7 @@
       <AdditionalUsingDirectories>
       </AdditionalUsingDirectories>
       <PreprocessorDefinitions>WIN32;GLM_FORCE_PURE;_MBCS;_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -89,11 +95,16 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>./deps/fbxloader;./deps/atb/lib;./deps/glfw/lib-vc2013</AdditionalLibraryDirectories>
       <AdditionalDependencies>glfw3.lib;opengl32.lib;AntTweakBar.lib;FBXLoader.lib;PhysX3_x86.lib;PhysX3CharacterKinematic_x86.lib;PhysX3Common_x86.lib;PhysX3Cooking_x86.lib;PhysX3Extensions.lib;PhysXVisualDebuggerSDK.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\AdvancedNavigation.cpp" />
     <ClCompile Include="src\AdvancedTextures.cpp" />
+    <ClCompile Include="src\Entity.cpp" />
     <ClCompile Include="src\AIMCTS.cpp" />
     <ClCompile Include="src\Animation.cpp" />
     <ClCompile Include="src\Application.cpp" />
@@ -112,6 +123,7 @@
     <ClCompile Include="src\GPUParticles.cpp" />
     <ClCompile Include="src\IntroToOpenGL.cpp" />
     <ClCompile Include="src\Lighting.cpp" />
+    <ClCompile Include="src\Lights.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Particles.cpp" />
     <ClCompile Include="src\PBR.cpp" />
@@ -136,6 +148,7 @@
     <ClInclude Include="src\AdvancedNavigation.h" />
     <ClInclude Include="src\AdvancedTextures.h" />
     <ClInclude Include="src\AIBase.h" />
+    <ClInclude Include="src\Entity.h" />
     <ClInclude Include="src\AIMCTS.h" />
     <ClInclude Include="src\Animation.h" />
     <ClInclude Include="src\Application.h" />
@@ -155,6 +168,7 @@
     <ClInclude Include="src\GPUParticles.h" />
     <ClInclude Include="src\IntroToOpenGL.h" />
     <ClInclude Include="src\Lighting.h" />
+    <ClInclude Include="src\Lights.h" />
     <ClInclude Include="src\Particles.h" />
     <ClInclude Include="src\PBR.h" />
     <ClInclude Include="src\Physics.h" />
@@ -176,48 +190,50 @@
     <ClInclude Include="src\VirtualWorld.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\shaders\cloth_vertex.glsl" />
-    <None Include="data\shaders\composite_fragment.glsl" />
-    <None Include="data\shaders\composite_vertex.glsl" />
-    <None Include="data\shaders\diffuse_shadowed_fragment.glsl" />
-    <None Include="data\shaders\diffuse_shadowed_vertex.glsl" />
-    <None Include="data\shaders\directional_light_fragment.glsl" />
-    <None Include="data\shaders\directional_light_vertex.glsl" />
-    <None Include="data\shaders\gbuffer_fragment.glsl" />
-    <None Include="data\shaders\gbuffer_textured_fragment.glsl" />
-    <None Include="data\shaders\gbuffer_vertex.glsl" />
-    <None Include="data\shaders\gpuparticles_fragment.glsl" />
-    <None Include="data\shaders\gpuparticles_geometry.glsl" />
-    <None Include="data\shaders\gpuparticles_update_vertex.glsl" />
-    <None Include="data\shaders\gpuparticles_vertex.glsl" />
-    <None Include="data\shaders\navmesh_fragment.glsl" />
-    <None Include="data\shaders\navmesh_vertex.glsl" />
-    <None Include="data\shaders\normal_mapped_fragment.glsl" />
-    <None Include="data\shaders\normal_mapped_vertex.glsl" />
-    <None Include="data\shaders\fragment.glsl" />
-    <None Include="data\shaders\geometry_fragment.glsl" />
-    <None Include="data\shaders\lighting_fragment.glsl" />
-    <None Include="data\shaders\lighting_vertex.glsl" />
-    <None Include="data\shaders\particles_fragment.glsl" />
-    <None Include="data\shaders\particles_vertex.glsl" />
-    <None Include="data\shaders\perlin_fragment.glsl" />
-    <None Include="data\shaders\perlin_vertex.glsl" />
-    <None Include="data\shaders\point_light_fragment.glsl" />
-    <None Include="data\shaders\point_light_vertex.glsl" />
-    <None Include="data\shaders\post_fragment.glsl" />
-    <None Include="data\shaders\post_vertex.glsl" />
-    <None Include="data\shaders\reflective_fragment.glsl" />
-    <None Include="data\shaders\reflective_vertex.glsl" />
-    <None Include="data\shaders\shadowed_fragment.glsl" />
-    <None Include="data\shaders\shadowed_vertex.glsl" />
-    <None Include="data\shaders\skinned_fragment_pbr.glsl" />
-    <None Include="data\shaders\skinned_fragment_phong.glsl" />
-    <None Include="data\shaders\skinned_vertex.glsl" />
-    <None Include="data\shaders\skinned_vertex_anim.glsl" />
-    <None Include="data\shaders\textures_fragment.glsl" />
-    <None Include="data\shaders\textures_vertex.glsl" />
-    <None Include="data\shaders\geometry_vertex.glsl" />
-    <None Include="data\shaders\vertex.glsl" />
+    <None Include="data\shaders\basic.fs" />
+    <None Include="data\shaders\basic.vs" />
+    <None Include="data\shaders\cloth.vs" />
+    <None Include="data\shaders\composite.fs" />
+    <None Include="data\shaders\composite.vs" />
+    <None Include="data\shaders\diffuse_shadowed.fs" />
+    <None Include="data\shaders\diffuse_shadowed.vs" />
+    <None Include="data\shaders\directional_light.fs" />
+    <None Include="data\shaders\directional_light.vs" />
+    <None Include="data\shaders\gbuffer.fs" />
+    <None Include="data\shaders\gbuffer.vs" />
+    <None Include="data\shaders\gbuffer_textured.fs" />
+    <None Include="data\shaders\geometry.fs" />
+    <None Include="data\shaders\geometry.vs" />
+    <None Include="data\shaders\gpuparticles.fs" />
+    <None Include="data\shaders\gpuparticles.gs" />
+    <None Include="data\shaders\gpuparticles.vs" />
+    <None Include="data\shaders\gpuparticles_update.vs" />
+    <None Include="data\shaders\lighting.fs" />
+    <None Include="data\shaders\lighting.vs" />
+    <None Include="data\shaders\navmesh.fs" />
+    <None Include="data\shaders\navmesh.vs" />
+    <None Include="data\shaders\normal_mapped.fs" />
+    <None Include="data\shaders\normal_mapped.vs" />
+    <None Include="data\shaders\particles.fs" />
+    <None Include="data\shaders\particles.vs" />
+    <None Include="data\shaders\perlin.fs" />
+    <None Include="data\shaders\perlin.vs" />
+    <None Include="data\shaders\point_light.fs" />
+    <None Include="data\shaders\point_light.vs" />
+    <None Include="data\shaders\post.fs" />
+    <None Include="data\shaders\post.vs" />
+    <None Include="data\shaders\reflective.fs" />
+    <None Include="data\shaders\reflective.vs" />
+    <None Include="data\shaders\shadowed.fs" />
+    <None Include="data\shaders\shadowed.vs" />
+    <None Include="data\shaders\skinned.vs" />
+    <None Include="data\shaders\skinned_anim.vs" />
+    <None Include="data\shaders\skinned_pbr.fs" />
+    <None Include="data\shaders\skinned_phong.fs" />
+    <None Include="data\shaders\sprite.vs" />
+    <None Include="data\shaders\textures.fs" />
+    <None Include="data\shaders\textures.vs" />
+    <None Include="data\shaders\wavy.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

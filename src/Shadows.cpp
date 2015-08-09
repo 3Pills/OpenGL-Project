@@ -36,8 +36,8 @@ bool Shadows::startup(){
 
 	Gizmos::create();
 
-	LoadShader("./data/shaders/diffuse_shadowed_vertex.glsl", 0, "./data/shaders/diffuse_shadowed_fragment.glsl", &m_diffuseShadowProgramID);
-	LoadShader("./data/shaders/shadowed_vertex.glsl", 0, "./data/shaders/shadowed_fragment.glsl", &m_shadowProgramID);
+	LoadShader("./data/shaders/diffuse_shadowed.vs", 0, "./data/shaders/diffuse_shadowed.fs", &m_diffuseShadowProgramID);
+	LoadShader("./data/shaders/shadowed.vs", 0, "./data/shaders/shadowed.fs", &m_shadowProgramID);
 
 	BuildMeshes();
 	BuildShadowMap();
@@ -260,6 +260,6 @@ void Shadows::BuildShadowMap(){
 void Shadows::ReloadShader(){
 	glDeleteProgram(m_diffuseShadowProgramID);
 	glDeleteProgram(m_shadowProgramID);
-	LoadShader("./data/shaders/diffuse_shadowed_vertex.glsl", 0, "./data/shaders/diffuse_shadowed_fragment.glsl", &m_diffuseShadowProgramID);
-	LoadShader("./data/shaders/shadowed_vertex.glsl", 0, "./data/shaders/shadowed_fragment.glsl", &m_shadowProgramID);
+	LoadShader("./data/shaders/diffuse_shadowed.vs", 0, "./data/shaders/diffuse_shadowed.fs", &m_diffuseShadowProgramID);
+	LoadShader("./data/shaders/shadowed.vs", 0, "./data/shaders/shadowed.fs", &m_shadowProgramID);
 }

@@ -12,12 +12,12 @@ m_animationTimeStep(1), m_parentTransform(true){
 	GenerateGLMeshes(m_file);
 	SetAnimation(eRUN);
 
-	LoadShader("./data/shaders/skinned_vertex.glsl", 0, "./data/shaders/skinned_fragment_pbr.glsl", &m_shaders[0]);
-	LoadShader("./data/shaders/skinned_vertex.glsl", 0, "./data/shaders/gbuffer_textured_fragment.glsl", &m_shaders[1]);
-	LoadShader("./data/shaders/skinned_vertex.glsl", 0, "./data/shaders/shadowed_fragment.glsl", &m_shaders[2]);
-	LoadShader("./data/shaders/skinned_vertex_anim.glsl", 0, "./data/shaders/skinned_fragment_pbr.glsl", &m_shaders[3]);
-	LoadShader("./data/shaders/skinned_vertex_anim.glsl", 0, "./data/shaders/gbuffer_textured_fragment.glsl", &m_shaders[4]);
-	LoadShader("./data/shaders/skinned_vertex_anim.glsl", 0, "./data/shaders/shadowed_fragment.glsl", &m_shaders[5]);
+	LoadShader("./data/shaders/skinned.vs", 0, "./data/shaders/skinned_pbr.fs", &m_shaders[0]);
+	LoadShader("./data/shaders/skinned.vs", 0, "./data/shaders/gbuffer_textured.fs", &m_shaders[1]);
+	LoadShader("./data/shaders/skinned.vs", 0, "./data/shaders/shadowed.fs", &m_shaders[2]);
+	LoadShader("./data/shaders/skinned_anim.vs", 0, "./data/shaders/skinned_pbr.fs", &m_shaders[3]);
+	LoadShader("./data/shaders/skinned_anim.vs", 0, "./data/shaders/gbuffer_textured.fs", &m_shaders[4]);
+	LoadShader("./data/shaders/skinned_anim.vs", 0, "./data/shaders/shadowed.fs", &m_shaders[5]);
 }
 
 FBXModel::~FBXModel(){
@@ -77,17 +77,21 @@ void FBXModel::Update(float dt) {
 
 //Renders with individual shader data.
 void FBXModel::Render(Camera* a_camera, bool a_deferred, mat4* a_projView) {
-	int loc = -1;
 	//Get the correct index in the shader program array, then use program
 	unsigned int program = (m_file->getSkeletonCount() > 0) ? 3 : 0;
 	if (a_deferred) { program += 1; }
 	else if (a_projView != nullptr) { program += 2; }
 	program = m_shaders[program];
 
+	//store current shader prior to using model shader
+	int prevShader = 0;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &prevShader);
+
+	//Use model shader
 	glUseProgram(program);
 
 	//If a light matrix has been passed in, replace the camera projection view with the light's projection view.
-	loc = glGetUniformLocation(program, "projView");
+	int loc = glGetUniformLocation(program, "projView");
 	glUniformMatrix4fv(loc, 1, GL_FALSE, (float*)&((a_projView != nullptr) ? *a_projView : a_camera->GetProjectionView()));
 
 	//If the framebuffer is not being deferred pass an identity matrix as the view matrix.
@@ -154,6 +158,9 @@ void FBXModel::Render(Camera* a_camera, bool a_deferred, mat4* a_projView) {
 		glBindVertexArray(m_meshes[i].m_VAO);
 		glDrawElements(GL_TRIANGLES, m_meshes[i].m_indexCount, GL_UNSIGNED_INT, 0);
 	}
+
+	//Re-enable previous shader
+	glUseProgram(prevShader);
 }
 
 //Moves the bones in a skeleton to a position based on current time
@@ -202,10 +209,10 @@ void FBXModel::ReloadShader(){
 	for (int i = 0; i < 6; i++)
 		glDeleteProgram(m_shaders[i]);
 
-	LoadShader("./data/shaders/skinned_vertex.glsl", 0, "./data/shaders/skinned_fragment_pbr.glsl", &m_shaders[0]);
-	LoadShader("./data/shaders/skinned_vertex.glsl", 0, "./data/shaders/gbuffer_textured_fragment.glsl", &m_shaders[1]);
-	LoadShader("./data/shaders/skinned_vertex.glsl", 0, "./data/shaders/shadowed_fragment.glsl", &m_shaders[2]);
-	LoadShader("./data/shaders/skinned_vertex_anim.glsl", 0, "./data/shaders/skinned_fragment_pbr.glsl", &m_shaders[3]);
-	LoadShader("./data/shaders/skinned_vertex_anim.glsl", 0, "./data/shaders/gbuffer_textured_fragment.glsl", &m_shaders[4]);
-	LoadShader("./data/shaders/skinned_vertex_anim.glsl", 0, "./data/shaders/shadowed_fragment.glsl", &m_shaders[5]);
+	LoadShader("./data/shaders/skinned.vs", 0, "./data/shaders/skinned_pbr.fs", &m_shaders[0]);
+	LoadShader("./data/shaders/skinned.vs", 0, "./data/shaders/gbuffer_textured.fs", &m_shaders[1]);
+	LoadShader("./data/shaders/skinned.vs", 0, "./data/shaders/shadowed.fs", &m_shaders[2]);
+	LoadShader("./data/shaders/skinned_anim.vs", 0, "./data/shaders/skinned_fragment_pbr.glsl", &m_shaders[3]);
+	LoadShader("./data/shaders/skinned_anim.vs", 0, "./data/shaders/gbuffer_textured.fs", &m_shaders[4]);
+	LoadShader("./data/shaders/skinned_anim.vs", 0, "./data/shaders/shadowed.fs", &m_shaders[5]);
 }

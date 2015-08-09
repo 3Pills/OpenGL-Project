@@ -15,7 +15,7 @@ bool RenderTargets::startup(){
 
 	GenerateFramebuffer();
 	GeneratePlane();
-	LoadShader("./data/shaders/reflective_vertex.glsl", 0, "./data/shaders/reflective_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/reflective.vs", 0, "./data/shaders/reflective.fs", &m_programID);
 
 	Gizmos::create();
 	return true;

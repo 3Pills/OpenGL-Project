@@ -34,10 +34,10 @@ bool DeferredRendering::startup(){
 	BuildGBuffer();
 	BuildLightBuffer();
 
-	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
-	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/composite_fragment.glsl", &m_compositeProgram);
-	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_directionalLightProgram);
-	LoadShader("./data/shaders/point_light_vertex.glsl", 0, "./data/shaders/point_light_fragment.glsl", &m_pointLightProgram);
+	LoadShader("./data/shaders/gbuffer.vs", 0, "./data/shaders/gbuffer.fs", &m_gBufferProgram);
+	LoadShader("./data/shaders/composite.vs", 0, "./data/shaders/composite.fs", &m_compositeProgram);
+	LoadShader("./data/shaders/composite.vs", 0, "./data/shaders/directional_light.fs", &m_directionalLightProgram);
+	LoadShader("./data/shaders/point_light.vs", 0, "./data/shaders/point_light.fs", &m_pointLightProgram);
 
 	TwBar* m_bar = TwNewBar("Settings");
 	//TwAddVarRW(m_bar, "Draw Albedo", TW_TYPE_COLOR3F &m_bLi, "");
@@ -415,8 +415,8 @@ void DeferredRendering::RenderPointLight(vec3 a_lightPos, float a_radius, vec3 a
 
 void DeferredRendering::ReloadShader(){
 	glDeleteProgram(m_gBufferProgram);
-	LoadShader("./data/shaders/gbuffer_vertex.glsl", 0, "./data/shaders/gbuffer_fragment.glsl", &m_gBufferProgram);
-	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/composite_fragment.glsl", &m_compositeProgram);
-	LoadShader("./data/shaders/composite_vertex.glsl", 0, "./data/shaders/directional_light_fragment.glsl", &m_directionalLightProgram);
-	LoadShader("./data/shaders/point_light_vertex.glsl", 0, "./data/shaders/point_light_fragment.glsl", &m_pointLightProgram);
+	LoadShader("./data/shaders/gbuffer.vs", 0, "./data/shaders/gbuffer.fs", &m_gBufferProgram);
+	LoadShader("./data/shaders/composite.vs", 0, "./data/shaders/composite.fs", &m_compositeProgram);
+	LoadShader("./data/shaders/composite.vs", 0, "./data/shaders/directional_light.fs", &m_directionalLightProgram);
+	LoadShader("./data/shaders/point_light.vs", 0, "./data/shaders/point_light.fs", &m_pointLightProgram);
 }

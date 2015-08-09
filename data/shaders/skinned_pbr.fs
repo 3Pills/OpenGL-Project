@@ -15,10 +15,6 @@ uniform vec3 camPos;
 uniform float roughness;
 uniform float fresnelScale;
 
-uniform sampler2D diffuse;
-uniform sampler2D normal;
-uniform sampler2D specular;
-
 void main() {
 	//Numerical Constants
 	float e = 2.71828182845904523536028747135f;
@@ -26,11 +22,8 @@ void main() {
 
 	//Correcting the model normals to the lit side of the model
 	mat3 TBN = mat3(normalize(fTangent), normalize(fBiTangent), normalize(fNormal.xyz));
-	vec3 sampledNormal = texture(normal, fTexCoord).xyz;
+	vec3 sampledNormal = fNormal.xyz;
 	vec3 adjustedNormal = sampledNormal * 2 - 1;
-
-	vec3 matCol = texture(diffuse, fTexCoord).xyz;
-	vec3 matSpec = texture(specular, fTexCoord).xyz;
 
 	//Oren-Nayer Start
 	vec3 N = normalize(TBN * adjustedNormal);
@@ -78,7 +71,7 @@ void main() {
 	//Final Cook-Torrance Equation
 	float CookTorrance = max((D*G*F) / (NdE * pi), 0.0f);
 
-	vec4 A = vec4(vec3(matCol * lightCol * ambCol), 1);
+	vec4 A = vec4(vec3(lightCol + ambCol), 1);
 
 	fragColor = A * (OrenNayer + CookTorrance);
 }

@@ -23,12 +23,21 @@ class MyAllocator : public physx::PxAllocatorCallback{
 	}
 };
 
-PhysScene::PhysScene() {
-	PxAllocatorCallback *myCallback = new MyAllocator();
+PxSimulationFilterShader PhysScene::m_defaultFilterShader = PxDefaultSimulationFilterShader;
 
-	m_physicsFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, *myCallback, m_defaultErrorCallback);
-	m_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_physicsFoundation, PxTolerancesScale());
+PxDefaultErrorCallback PhysScene::m_defaultErrorCallback = PxDefaultErrorCallback();
+PxDefaultAllocator PhysScene::m_defaultAllocatorCallback = PxDefaultAllocator();
 
+PxVisualDebuggerConnection* PhysScene::m_debuggerConnection;
+
+PxFoundation* PhysScene::m_physicsFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, *(new MyAllocator()), PhysScene::m_defaultErrorCallback);
+PxPhysics* PhysScene::m_physics = PxCreatePhysics(PX_PHYSICS_VERSION, *m_physicsFoundation, PxTolerancesScale());
+PxScene* PhysScene::m_physicsScene = nullptr;
+
+PxRigidStatic* PhysScene::m_plane[6] = {};
+PxCooking* PhysScene::m_cooking;
+
+void PhysScene::Init() {
 	PxInitExtensions(*m_physics);
 
 	PxSceneDesc sceneDesc(m_physics->getTolerancesScale());
@@ -56,18 +65,15 @@ PhysScene::PhysScene() {
 		m_debuggerConnection = PxVisualDebuggerExt::createConnection(m_physics->getPvdConnectionManager(), "127.0.0.1", 5425, 100, PxVisualDebuggerExt::getAllConnectionFlags());
 }
 
-PhysScene::~PhysScene() {
+void PhysScene::Shutdown() {
 	if (m_debuggerConnection != nullptr)
 		m_debuggerConnection->release();
 	m_physics->release();
 }
 
 void PhysScene::Update(const float dt, const bool a_renderGizmos) {
-	//Clamping deltaTime to 1/30 if it exceeds that, to stop crazy things from happening
-	float dtClamped = (dt > 1.0f / 30.f) ? 1.0f / 30.0f : dt;
-
 	//Update physics
-	m_physicsScene->simulate(dtClamped);
+	m_physicsScene->simulate(dt);
 	while (m_physicsScene->fetchResults() == false)	{}
 
 	//Update models based on new physics positions
@@ -155,7 +161,33 @@ void PhysScene::AddWorldBounds(const vec3 a_extents) {
 
 PxRigidStatic* PhysScene::AddRigidBodyStatic(const PxTransform a_transform, PxGeometry* a_geometry, PxMaterial* a_physMaterial, void* a_userData){
 	PxRigidStatic* m_phys = PxCreateStatic(*m_physics, a_transform, *a_geometry, *a_physMaterial);
-	m_phys->userData = a_userData;
+
+	if (a_userData != nullptr) {
+		m_phys->userData = a_userData;
+		FBXModel* model = ((FBXModel*)a_userData);
+
+		PxGeometryHolder* geometry = new PxGeometryHolder();
+		geometry->storeAny(*a_geometry);
+
+		vec3 modelExtents = vec3(0);
+		switch (geometry->getType()) {
+		case PxGeometryType::eSPHERE:
+			modelExtents = vec3(0, geometry->sphere().radius, 0);
+			break;
+		case PxGeometryType::eCAPSULE:
+			modelExtents = vec3(geometry->capsule().halfHeight, 0, 0);
+
+			//Capsules are sideways by default, need to rotate soulspear to follow that.
+			model->m_modTransform = (glm::rotate(glm::radians(90.0f), vec3(0, 0, 1))) * model->m_modTransform;
+			break;
+		case PxGeometryType::eBOX:
+			modelExtents = vec3(0, geometry->box().halfExtents.y, 0);
+		}
+
+		//Set model position and rotation to the static rigidbody. This is the only time they are set, as it won't change
+		model->m_pos = vec3(a_transform.p.x, a_transform.p.y, a_transform.p.z) - modelExtents;
+		model->m_rot = quat(a_transform.q.w, a_transform.q.x, a_transform.q.y, a_transform.q.z);
+	}
 
 	m_physicsScene->addActor(*m_phys);
 	return m_phys;
@@ -224,21 +256,23 @@ PxRigidStatic* PhysScene::AttachRigidBodyTriangle(const PxTransform a_transform,
 
 	//reserve space for vert buffer
 	PxVec3 *verts = new PxVec3[numberVerts];
-	PxVec3 *indices = new PxVec3[numberIndices];
+	PxU32 *indices = new PxU32[numberIndices];
 	int vertIDX = 0;
+	int indexIDX = 0;
 
 	//copy our verts from all the sub meshes and tranform them into the same space
 	for (unsigned int i = 0; i < model->m_file->getMeshCount(); ++i){
 		FBXMeshNode* mesh = model->m_file->getMeshByIndex(i);
+
 		int numberV = mesh->m_vertices.size();
-		int numberI = mesh->m_indices.size();
 		for (int vertCount = 0; vertCount< numberV; vertCount++){
 			glm::vec4 temp = mesh->m_globalTransform * glm::scale(vec3(a_physModelScale)) * mesh->m_vertices[vertCount].position;
 			verts[vertIDX++] = PxVec3(temp.x, temp.y, temp.z);
 		}
-		for (int indexCount = 0; indexCount < numberV; indexCount++){
-			glm::vec4 temp = mesh->m_globalTransform * glm::scale(vec3(a_physModelScale)) * mesh->m_vertices[indexCount].position;
-			verts[vertIDX++] = PxVec3(temp.x, temp.y, temp.z);
+
+		int numberI = mesh->m_indices.size();
+		for (int indexCount = 0; indexCount < numberI; indexCount++){
+			indices[indexIDX++] = mesh->m_indices[indexCount];
 		}
 	}
 
@@ -258,7 +292,7 @@ PxRigidStatic* PhysScene::AttachRigidBodyTriangle(const PxTransform a_transform,
 	PxU32 size = buf->getSize();
 	PxDefaultMemoryInputData input(contents, size);
 	PxTriangleMesh* triangleMesh = m_physics->createTriangleMesh(input);
-	PxTransform pose = PxTransform(PxVec3(0.0f, 0, 0.0f));
+	PxTransform pose = PxTransform(PxVec3(0));
 	PxShape* convexShape = m_phys->createShape(PxTriangleMeshGeometry(triangleMesh), *a_physMaterial, pose);
 
 	return m_phys;
@@ -443,26 +477,18 @@ void PlayerHitReport::onShapeHit(const PxControllerShapeHit &hit) {
 	m_playerContactNormal = hit.worldNormal;
 
 	PxRigidDynamic* actor = hit.actor->isRigidDynamic();
-	if (actor) {
-		actor->addForce(hit.dir * hit.length);
+	if (actor ) {
+		//actor->addForce(hit.dir * hit.length);
 	}
 }
 
-void PlayerHitReport::onControllerHit(const PxControllersHit &hit) {
-	m_playerContactNormal = hit.worldNormal;
-
-	PxRigidDynamic* actor = hit.other->getActor()->isRigidDynamic();
-	if (actor) {
-		actor->addForce(hit.dir * hit.length);
-	}
-}
-
+void PlayerHitReport::onControllerHit(const PxControllersHit &hit) {}
 void PlayerHitReport::onObstacleHit(const PxControllerObstacleHit &hit) {}
 
-ClothData::ClothData(const unsigned int a_particleSize, const unsigned int a_rows, const unsigned int a_columns)
+ClothData::ClothData(const unsigned int a_particleSize, const unsigned int a_rows, const unsigned int a_columns, const char* a_filename)
 	: m_cloth(nullptr), m_rows(a_rows), m_columns(a_columns) {
 	//Load the shader for the cloth
-	LoadShader("./data/shaders/cloth_vertex.glsl", 0, "./data/shaders/gbuffer_textured_fragment.glsl", &m_program);
+	LoadShader("./data/shaders/cloth.vs", 0, "./data/shaders/gbuffer_textured.fs", &m_program);
 	// this position will represent the top middle vertex
 	glm::vec3 clothPosition = glm::vec3(0, 12, 0);
 	// shifting grid position for looks
@@ -512,6 +538,11 @@ ClothData::~ClothData() {
 	delete[] m_vertices;
 	delete[] m_indices;
 	delete[] m_texCoords;
+
+	glDeleteTextures(1, &m_texture);
+	glDeleteVertexArrays(1, &m_VAO);
+	glDeleteBuffers(1, &m_VBO);
+	glDeleteBuffers(1, &m_IBO);
 }
 
 void ClothData::GenerateGLBuffers() {

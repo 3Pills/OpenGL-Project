@@ -25,7 +25,7 @@ bool SceneManagement::startup(){
 			glm::rotate(glm::linearRand(-6.f, 6.f), glm::normalize(vec3(glm::linearRand(-10, 10), glm::linearRand(-10, 10), glm::linearRand(-10, 10))));
 	}
 
-	LoadShader("./data/shaders/lighting_vertex.glsl", 0, "./data/shaders/lighting_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/lighting.vs", 0, "./data/shaders/lighting.fs", &m_programID);
 
 	m_ambCol = vec3(0.1f);
 	m_lightDir = vec3(0, -1, 0);

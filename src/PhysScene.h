@@ -9,34 +9,34 @@
 using namespace physx;
 
 class PhysScene {
-	PxFoundation* m_physicsFoundation;
-	PxDefaultErrorCallback m_defaultErrorCallback;
-	PxDefaultAllocator m_defaultAllocatorCallback;
-	PxSimulationFilterShader m_defaultFilterShader = PxDefaultSimulationFilterShader;
-	PxVisualDebuggerConnection* m_debuggerConnection;
+	static PxFoundation* m_physicsFoundation;
+	static PxDefaultErrorCallback m_defaultErrorCallback;
+	static PxDefaultAllocator m_defaultAllocatorCallback;
+	static PxSimulationFilterShader m_defaultFilterShader;
+	static PxVisualDebuggerConnection* m_debuggerConnection;
 
-	PxRigidStatic* m_plane[6];
+	static PxRigidStatic* m_plane[6];
 
 public:
-	PxPhysics* m_physics;
-	PxScene* m_physicsScene;
-	PxCooking* m_cooking;
+	static PxPhysics* m_physics;
+	static PxScene* m_physicsScene;
+	static PxCooking* m_cooking;
 
-	PhysScene();
-	~PhysScene();
+	static void Init();
+	static void Shutdown();
 
-	void Update(const float dt, const bool a_renderGizmos);
-	void AddWorldBounds(const vec3 a_extents);
+	static void Update(const float dt, const bool a_renderGizmos);
+	static void AddWorldBounds(const vec3 a_extents);
 
-	PxRigidStatic*	AddRigidBodyStatic(		const PxTransform a_transform, PxGeometry* a_geometry, PxMaterial* a_physMaterial, void* a_userData = nullptr);
-	PxRigidDynamic* AddRigidBodyDynamic(	const PxTransform a_transform, PxGeometry* a_geometry, PxMaterial* a_physMaterial, void* a_userData = nullptr, const float a_density = 100.f);
-	PxRigidStatic*	AttachRigidBodyTriangle(const PxTransform a_transform, PxMaterial* a_physicsMaterial, void* a_userData, const float a_physModelScale = 1.f);
-	PxRigidDynamic* AttachRigidBodyConvex(	const PxTransform a_transform, PxMaterial* a_physicsMaterial, void* a_userData, const float a_density = 100.f, const float a_physModelScale = 1.f);
+	static PxRigidStatic*	AddRigidBodyStatic(		const PxTransform a_transform, PxGeometry* a_geometry, PxMaterial* a_physMaterial, void* a_userData = nullptr);
+	static PxRigidDynamic*	AddRigidBodyDynamic(	const PxTransform a_transform, PxGeometry* a_geometry, PxMaterial* a_physMaterial, void* a_userData = nullptr, const float a_density = 100.f);
+	static PxRigidStatic*	AttachRigidBodyTriangle(const PxTransform a_transform, PxMaterial* a_physicsMaterial, void* a_userData, const float a_physModelScale = 1.f);
+	static PxRigidDynamic*	AttachRigidBodyConvex(	const PxTransform a_transform, PxMaterial* a_physicsMaterial, void* a_userData, const float a_density = 100.f, const float a_physModelScale = 1.f);
 
-	PxRigidStatic*	AddHeightMap(float* a_heightMap, PxMaterial* a_physMaterial, glm::vec2 a_dims, glm::vec3 a_scale, unsigned int a_downScale);
-	PxCloth*		AddCloth(const glm::vec3& a_pos, unsigned int& a_vertexCount, unsigned int& a_indexCount, const glm::vec3* a_vertices, unsigned int* a_indices);
+	static PxCloth*			AddCloth(const glm::vec3& a_pos, unsigned int& a_vertexCount, unsigned int& a_indexCount, const glm::vec3* a_vertices, unsigned int* a_indices);
+	static PxRigidStatic*	AddHeightMap(float* a_heightMap, PxMaterial* a_physMaterial, glm::vec2 a_dims, glm::vec3 a_scale, unsigned int a_downScale);
 
-	PxController*	AddPlayerController(const PxExtendedVec3 a_pos, PxMaterial* a_physMaterial, void* a_userData);
+	static PxController*	AddPlayerController(const PxExtendedVec3 a_pos, PxMaterial* a_physMaterial, void* a_userData);
 };
 
 //Overload of the PxUserControllerHitReport for use in controlling the player.
@@ -56,6 +56,7 @@ public:
 struct ClothData {
 	PxCloth* m_cloth;
 
+	vec3 m_nailPos;
 	vec3* m_vertices, *m_normals;
 	vec2* m_texCoords;
 	unsigned int* m_indices;
@@ -65,7 +66,7 @@ struct ClothData {
 	unsigned int m_VAO, m_VBO, m_textureVBO, m_IBO;
 	unsigned int m_rows, m_columns;
 
-	ClothData(const unsigned int a_particleSize, const unsigned int a_rows, const unsigned int a_columns);
+	ClothData(const unsigned int a_particleSize, const unsigned int a_rows, const unsigned int a_columns, const char* a_filename);
 	~ClothData();
 
 	void GenerateGLBuffers();

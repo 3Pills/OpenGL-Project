@@ -43,7 +43,7 @@ public:
 	float m_specPow; //Specular power of lighting on the model
 	float m_roughness; //Roughness value of lighting on the model.
 	float m_fresnelScale; //Fresnel scale of lighting on the model.
-	bool m_parentTransform; //For disabling parenting rotation to PhysX models (mainly for player).
+	bool m_parentTransform; //For disabling parenting rotation to PhysX models (mainly for PxControllers).
 
 	FBXFile* m_file; //Main access for FBX File data.
 

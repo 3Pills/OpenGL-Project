@@ -24,17 +24,8 @@ Gizmos::Gizmos(unsigned int a_maxLines, unsigned int a_maxTris,
 	m_2Dtris(new GizmoTri[a_max2DTris])
 {
 	// create shaders
-	const char* vsSource = "#version 150\n \
-					 in vec4 Position; \
-					 in vec4 Colour; \
-					 out vec4 vColour; \
-					 uniform mat4 ProjectionView; \
-					 void main() { vColour = Colour; gl_Position = ProjectionView * Position; }";
-
-	const char* fsSource = "#version 150\n \
-					 in vec4 vColour; \
-                     out vec4 FragColor; \
-					 void main()	{ FragColor = vColour; }";
+	const char* vsSource = "#version 150\n in vec4 Position;\n in vec4 Colour;\n out vec4 vColour;\n uniform mat4 ProjectionView;\n void main() { vColour = Colour;\n gl_Position = ProjectionView * Position;\n }";
+	const char* fsSource = "#version 150\n in vec4 vColour;\n out vec4 FragColor;\n void main() { FragColor = vColour;\n }";
     
     
 	unsigned int vs = glCreateShader(GL_VERTEX_SHADER);

@@ -21,6 +21,7 @@ struct VertexNormal {
 
 struct VertexParticle {
 	vec4 position;
+	vec2 texCoord;
 	vec4 color;
 };
 

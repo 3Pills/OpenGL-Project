@@ -63,10 +63,12 @@ float a_startSize, float a_endSize, vec4 a_startColor, vec4 a_endColor) {
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_maxParticles * 6 * sizeof(unsigned int), m_indexData, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0); //Position
-	glEnableVertexAttribArray(1); //Color
+	glEnableVertexAttribArray(1); //TexCoord
+	glEnableVertexAttribArray(2); //Color
 
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(VertexParticle), 0);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(VertexParticle), (void*)sizeof(vec4));
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(VertexParticle), (void*)(sizeof(vec4) + sizeof(vec2)));
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -162,6 +164,11 @@ void Emitter::Update(float a_dt, mat4 a_camTransform) {
 		m_vertexData[i * 4 + 1].position = particleTransform * vec4(-1,-1, 0, 1);
 		m_vertexData[i * 4 + 2].position = particleTransform * vec4( 1,-1, 0, 1);
 		m_vertexData[i * 4 + 3].position = particleTransform * vec4( 1, 1, 0, 1);
+
+		m_vertexData[i * 4 + 0].texCoord = vec2(0,1);
+		m_vertexData[i * 4 + 1].texCoord = vec2(0,0);
+		m_vertexData[i * 4 + 2].texCoord = vec2(1,0);
+		m_vertexData[i * 4 + 3].texCoord = vec2(1,1);
 
 		m_vertexData[i * 4 + 0].color = m_particles[i].color;
 		m_vertexData[i * 4 + 1].color = m_particles[i].color;

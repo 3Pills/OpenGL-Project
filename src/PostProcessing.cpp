@@ -18,7 +18,7 @@ bool PostProcessing::startup(){
 	GenerateFramebuffer();
 	GenerateQuad();
 
-	LoadShader("./data/shaders/post_vertex.glsl", 0, "./data/shaders/post_fragment.glsl", &m_postProgramID);
+	LoadShader("./data/shaders/post.vs", 0, "./data/shaders/post.fs", &m_postProgramID);
 
 	Gizmos::create();
 	return true;
@@ -166,5 +166,5 @@ void PostProcessing::GenerateQuad(){
 
 void PostProcessing::ReloadShader(){
 	glDeleteProgram(m_postProgramID);
-	LoadShader("./data/shaders/post_vertex.glsl", 0, "./data/shaders/post_fragment.glsl", &m_postProgramID);
+	LoadShader("./data/shaders/post.vs", 0, "./data/shaders/post.fs", &m_postProgramID);
 }

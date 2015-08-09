@@ -17,7 +17,7 @@ bool Lighting::startup(){
 	m_oCamera.SetPerspective(glm::radians(50.0f), 1280.0f / 720.0f, 0.1f, 20000.0f);
 	Gizmos::create();
 
-	LoadShader("./data/shaders/lighting_vertex.glsl", "", "./data/shaders/lighting_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/lighting.vs", "", "./data/shaders/lighting.fs", &m_programID);
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string err = tinyobj::LoadObj(shapes, materials, "./data/models/stanford/bunny.obj");
@@ -208,5 +208,5 @@ void Lighting::CleanOpenGLBuffers(){
 
 void Lighting::ReloadShader(){
 	glDeleteProgram(m_programID);
-	LoadShader("./data/shaders/lighting_vertex.glsl", "", "./data/shaders/lighting_fragment.glsl", &m_programID);
+	LoadShader("./data/shaders/lighting.vs", "", "./data/shaders/lighting.fs", &m_programID);
 }
