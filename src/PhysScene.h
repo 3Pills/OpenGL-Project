@@ -5,6 +5,7 @@
 #include <PxScene.h>
 #include "glm_header.h"
 #include "Camera.h"
+#include "Utility.h"
 
 using namespace physx;
 
@@ -63,8 +64,8 @@ struct ClothData {
 
 	unsigned int m_program, m_texture;
 	unsigned int m_indexCount, m_vertexCount;
-	unsigned int m_VAO, m_VBO, m_textureVBO, m_IBO;
 	unsigned int m_rows, m_columns;
+	OpenGLData m_buffers; //OpenGL buffers
 
 	ClothData(const unsigned int a_particleSize, const unsigned int a_rows, const unsigned int a_columns, const char* a_filename);
 	~ClothData();

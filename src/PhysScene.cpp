@@ -1,7 +1,7 @@
 #include "PhysScene.h"
 #include "FBXModel.h"
 #include <Gizmos.h>
-#include "Utility.h"
+#include "stb_image.h"
 
 #define Assert(val) if (val){}else{ *((char*)0) = 0;}
 #define ArrayCount(val) (sizeof(val)/sizeof(val[0]))
@@ -421,14 +421,14 @@ PxCloth* PhysScene::AddCloth(const glm::vec3& a_pos, unsigned int& a_vertexCount
 
 	// set up the particles for each vertex
 	PxClothParticle* particles = new PxClothParticle[a_vertexCount];
-	for (unsigned int i = 0; i < a_vertexCount; ++i)
-	{
+	for (unsigned int i = 0; i < a_vertexCount; ++i) {
 		particles[i].pos.x = a_vertices[i].x;
 		particles[i].pos.y = a_vertices[i].y;
 		particles[i].pos.z = a_vertices[i].z;
 
 		particles[i].invWeight = 1.f;
 	}
+	particles[0].invWeight = 0.f;
 
 	clothDesc.points.data = particles;
 	clothDesc.points.stride = sizeof(PxClothParticle);
@@ -532,6 +532,20 @@ ClothData::ClothData(const unsigned int a_particleSize, const unsigned int a_row
 			}
 		}
 	}
+
+	//Add texture
+	int width, height, channels;
+	unsigned char* data = stbi_load(a_filename, &width, &height, &channels, STBI_default);
+
+	glGenTextures(1, &m_texture);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, channels, width, height, 0, (channels == 3) ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	stbi_image_free(data);
 }
 
 ClothData::~ClothData() {
@@ -540,19 +554,19 @@ ClothData::~ClothData() {
 	delete[] m_texCoords;
 
 	glDeleteTextures(1, &m_texture);
-	glDeleteVertexArrays(1, &m_VAO);
-	glDeleteBuffers(1, &m_VBO);
-	glDeleteBuffers(1, &m_IBO);
+	glDeleteVertexArrays(1, &m_buffers.m_VAO);
+	glDeleteBuffers(1, &m_buffers.m_VBO);
+	glDeleteBuffers(1, &m_buffers.m_IBO);
 }
 
 void ClothData::GenerateGLBuffers() {
-	glGenVertexArrays(1, &m_VAO);
-	glGenBuffers(1, &m_VBO);
-	glGenBuffers(1, &m_IBO);
+	glGenVertexArrays(1, &m_buffers.m_VAO);
+	glGenBuffers(1, &m_buffers.m_VBO);
+	glGenBuffers(1, &m_buffers.m_IBO);
 
-	glBindVertexArray(m_VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IBO);
+	glBindVertexArray(m_buffers.m_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_buffers.m_VBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_buffers.m_IBO);
 
 	//Cloth objects will hold Positional, TexCoord and Normal data, respectively.
 	glBufferData(GL_ARRAY_BUFFER, (sizeof(vec3) + sizeof(vec2) + sizeof(vec3)) * m_vertexCount, 0, GL_STATIC_DRAW);
@@ -588,6 +602,12 @@ void ClothData::Render(Camera* a_camera) {
 	loc = glGetUniformLocation(m_program, "textureScale");
 	glUniform1f(loc, 1.0f);
 
+	loc = glGetUniformLocation(m_program, "diffuse");
+	glUniform1i(loc, 0);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+
 	//Updating the position and normal data of the cloth. To access this data the cloth must be locked.
 	PxClothParticleData* data = m_cloth->lockParticleData(PxDataAccessFlag::eREADABLE);
 	unsigned int particleCount = m_cloth->getNbParticles();
@@ -603,18 +623,25 @@ void ClothData::Render(Camera* a_camera) {
 		unsigned int y = (i % m_columns == 0) ? i + 1 : i - 1;
 
 		//Use cross product to calculate the normal of the current vertex. Assign it to the normals array.
-		m_normals[i] = glm::normalize(glm::cross(m_vertices[x] - m_vertices[i], m_vertices[y] - m_vertices[i]));
+		//TODO: Currently gets the reverse normal sometimes.
+		vec3 normal = glm::normalize(glm::cross(m_vertices[x] - m_vertices[i], m_vertices[y] - m_vertices[i]));
 	}
 	//Open the buffer for writing and update the arrays.
-	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_buffers.m_VBO);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * m_vertexCount, m_vertices);
 	//Normals are stored third, so we have to skip the texcoords with the correct buffer space
 	glBufferSubData(GL_ARRAY_BUFFER, (sizeof(vec3) + sizeof(vec2))* m_vertexCount, sizeof(vec3)* m_vertexCount, m_normals);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	//Disable the back of the cloth being culled.
+	glDisable(GL_CULL_FACE);
+
 	//Draw the cloth
-	glBindVertexArray(m_VAO);
+	glBindVertexArray(m_buffers.m_VAO);
 	glDrawElements(GL_TRIANGLES, m_indexCount, GL_UNSIGNED_INT, 0);
+
+	//Re-enabled back-culling.
+	glEnable(GL_CULL_FACE);
 
 	data->unlock();
 }

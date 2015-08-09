@@ -19,5 +19,5 @@ void main() {
 
 	//fx objects are rendered independant of the other two, so they blend additively.
 	//Clamping the light because it has overflow problems
-	FragColour =fx + (albedo * (clamp(vec4(0), light, vec4(255)) + vec4(ambCol, 0)));
+	FragColour = (albedo * (clamp(vec4(0), light, vec4(255)) + vec4(ambCol, 0))) + fx;
 }

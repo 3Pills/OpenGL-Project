@@ -7,14 +7,15 @@ layout(location = 2) in vec4 Normal;
 out vec4 fPosition;
 out vec4 fNormal;
 out vec2 fTexCoord;
+out vec4 fColor;
 
-uniform mat4 view;
 uniform mat4 projView;
 
 void main() {
-	fPosition = (view * vec4(Position.xyz, 1));
-	fNormal = (view * vec4(Normal.xyz, 0));
+	fPosition = Position;
+	fNormal = Normal;
 	fTexCoord = TexCoord;
+	fColor = vec4(1);
 
 	gl_Position = projView * vec4(Position.xyz, 1);
 } 

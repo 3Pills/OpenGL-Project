@@ -203,7 +203,7 @@ bool VirtualWorld::startup(){
 	TwAddVarRW(m_generalBar, "Rotation",		TW_TYPE_QUAT4F,&m_pRot,			"group=ProceduralGeneration");
 	//Only the scale variable affects simulation in realtime. All others require recreating the perlinTexture.
 
-	m_cloths.push_back(new ClothData(4, 4, 8));
+	m_cloths.push_back(new ClothData(4, 4, 8, "./data/textures/crate.png"));
 	AddCloth(PhysScene::AddCloth(vec3(0, 40, 0), m_cloths.back()->m_vertexCount, m_cloths.back()->m_indexCount, m_cloths.back()->m_vertices, m_cloths.back()->m_indices));
 
 	return true;

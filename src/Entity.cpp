@@ -13,7 +13,7 @@ Entity::~Entity() {
 
 void Entity::Update(const float dt) {
 	//Velocity falloff
-	m_velocity = vec3(m_velocity.x * dt * 30.f, m_velocity.y, m_velocity.z * dt * 30.f);
+	m_velocity = vec3(m_velocity.x * 0.95f, m_velocity.y, m_velocity.z * 0.95f);
 
 	FBXModel* playerModel = (FBXModel*)m_controller->getActor()->userData;
 
